@@ -31,6 +31,10 @@ export interface StoredTargeting {
   where?: WhereRules;
   how?: ConditionGroup[];
   when?: Frequency;
+  /** Once a visitor has seen the experiment, skip WHO and HOW. */
+  stay?: boolean;
+  /** Wait up to this long (ms) for the dataLayer keys the rules use. */
+  waitForDataLayerMs?: number;
 }
 
 function conditions(groups: ConditionGroup[] = []): Condition[] {

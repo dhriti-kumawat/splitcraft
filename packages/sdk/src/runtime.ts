@@ -17,7 +17,7 @@ import { loadQaPanel } from './qa/loader';
 import type { QaExperiment, QaSource, QaState } from './qa/types';
 import { injectStyles, onceInView, waitForElement } from './helpers';
 import { onRouteChange } from './router';
-import { evaluateTargeting, type Targeting } from './targeting';
+import { evaluateTargeting, waitForDataLayer, type Targeting } from './targeting';
 import {
   createQueue,
   createTracker,
@@ -142,12 +142,24 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
   ];
 
   const runExperiment = async (exp: ExperimentConfig, st: VisitorState): Promise<void> => {
+    const t = exp.targeting;
+    if (t.waitForDataLayerMs) {
+      await waitForDataLayer(t, t.waitForDataLayerMs, () => {
+        const w = window as unknown as { dataLayer?: unknown[] };
+        return Array.isArray(w.dataLayer) ? w.dataLayer : [];
+      });
+    }
     const ctx = buildContext(st, exp.key, config.country, Date.now());
     const forcedKey = forced[exp.key];
     const forcedVariant = exp.variants.find((v) => v.key === forcedKey);
     // A forced variant skips WHO / HOW / WHEN and traffic, but still only runs on its pages.
+    // "Stay in audience": a visitor who has seen it before skips WHO / HOW.
     const matched = await evaluateTargeting(
-      forcedVariant ? { where: exp.targeting.where } : exp.targeting,
+      forcedVariant
+        ? { where: t.where }
+        : t.stay && st.x[exp.key]
+          ? { where: t.where, when: t.when }
+          : t,
       ctx,
     );
     const variantKey = !matched

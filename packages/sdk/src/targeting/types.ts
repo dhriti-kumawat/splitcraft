@@ -10,6 +10,10 @@ export interface Targeting {
   /** Triggers: conditions in the current visit. Top-level groups are ANDed. */
   how?: ConditionGroup[];
   when?: Frequency;
+  /** Once a visitor has seen the experiment, skip WHO and HOW (WHERE and WHEN still apply). */
+  stay?: boolean;
+  /** Wait up to this long for the dataLayer keys WHO / HOW use before deciding. */
+  waitForDataLayerMs?: number;
 }
 
 // ---------------------------------------------------------------- groups

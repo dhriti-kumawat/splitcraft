@@ -52,6 +52,8 @@ export function TargetingPage() {
   const { pages, elements } = where;
   const [how, setHow] = useState<ConditionGroup[]>(t.how ?? []);
   const [when, setWhen] = useState<Frequency>(t.when ?? { mode: 'every_load' });
+  const [stay, setStay] = useState(t.stay === true);
+  const [waitMs, setWaitMs] = useState(String(t.waitForDataLayerMs ?? 0));
   const [submitted, setSubmitted] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
 
@@ -60,13 +62,18 @@ export function TargetingPage() {
     ...(toWhere(where) ? { where: toWhere(where) } : {}),
     ...(how.some((g) => g.items.length) ? { how: how.filter((g) => g.items.length) } : {}),
     ...(when.mode !== 'every_load' ? { when } : {}),
+    ...(stay ? { stay: true } : {}),
+    ...(Number(waitMs) > 0 ? { waitForDataLayerMs: Math.round(Number(waitMs)) } : {}),
   };
+  const waitId = useId();
+  const waitProblem = !(Number(waitMs) >= 0 && Number(waitMs) <= 5000);
   const snapshot = JSON.stringify(next);
   const dirty = snapshot !== JSON.stringify(t);
   const problems =
     pageRuleProblems(where) +
     groupsProblemCount(how) +
-    (when.mode === 'every_n_days' && !(when.days >= 1) ? 1 : 0);
+    (when.mode === 'every_n_days' && !(when.days >= 1) ? 1 : 0) +
+    (waitProblem ? 1 : 0);
   const ended = experiment.status === 'ended';
 
   const save = () => {
@@ -257,6 +264,46 @@ export function TargetingPage() {
             <span className={styles.sub}>How often a matched visitor sees the variant</span>
           </div>
           <FrequencyPicker value={when} onChange={setWhen} />
+        </section>
+
+        <section className={styles.section} aria-labelledby="eval-h">
+          <div className={styles.titleRow}>
+            <h2 className={styles.title} id="eval-h">
+              Evaluation
+            </h2>
+            <span className={styles.sub}>Checked on each page load and route change</span>
+          </div>
+          <label className={styles.row}>
+            <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} />
+            <span>
+              <b>Once matched, stay in audience.</b>{' '}
+              <span className={styles.sub}>
+                After a visitor sees the test, WHO and HOW aren't checked again; pages and frequency
+                still are.
+              </span>
+            </span>
+          </label>
+          <div className={styles.row}>
+            <label htmlFor={waitId}>Wait for dataLayer up to</label>
+            <input
+              id={waitId}
+              type="number"
+              min={0}
+              max={5000}
+              step={100}
+              className={`${styles.input} ${styles.number}`}
+              value={waitMs}
+              onChange={(e) => setWaitMs(e.target.value)}
+              aria-describedby={`${waitId}-hint`}
+              aria-invalid={waitProblem}
+            />
+            <span>ms</span>
+            <span id={`${waitId}-hint`} className={styles.sub}>
+              {waitProblem
+                ? 'Between 0 and 5,000 ms.'
+                : 'For dataLayer conditions pushed after the page loads. 0 = decide at once.'}
+            </span>
+          </div>
         </section>
 
         <div className={styles.saveBar}>
