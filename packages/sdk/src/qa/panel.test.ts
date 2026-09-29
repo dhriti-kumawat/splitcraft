@@ -67,8 +67,10 @@ afterEach(() => {
 describe('mountQaPanel', () => {
   it('renders the design content inside a shadow root', () => {
     mountQaPanel(fakeSource(designState));
-    expect(shadow().querySelector('section')!.getAttribute('aria-label')).toBe('Splitly QA panel');
-    expect(text()).toContain('Splitly QA');
+    expect(shadow().querySelector('section')!.getAttribute('aria-label')).toBe(
+      'Splitcraft QA panel',
+    );
+    expect(text()).toContain('Splitcraft QA');
     expect(text()).toContain('forced by URL');
     expect(text()).toContain('Trust badges');
     expect(text()).toContain('B · forced');

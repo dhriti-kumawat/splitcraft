@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Splitly · Variant code</title>
+<title>Splitcraft · Variant code</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -36,7 +36,7 @@ a{color:#0F6B57}a:hover{color:#0A4E40}
 <aside style="width: 240px; flex-shrink: 0; background: #15171A; display: flex; flex-direction: column; gap: 22px; padding: 20px 14px; box-sizing: border-box">
 <div style="display: flex; align-items: center; gap: 10px; padding: 4px 8px">
 <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="#0F6B57"></rect><rect x="6.5" y="7" width="5.5" height="12" rx="1.5" fill="#FFFFFF"></rect><rect x="14" y="7" width="5.5" height="12" rx="1.5" fill="#F2B37A"></rect></svg>
-<span style="font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em">Splitly</span>
+<span style="font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em">Splitcraft</span>
 </div>
 <button class="sb">
 <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 6px; background: #3A2E22; color: #F2B37A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">DW</span>
@@ -133,7 +133,7 @@ a{color:#0F6B57}a:hover{color:#0A4E40}
 13
 14</pre>
 <pre class="mono" style="margin: 0; padding-right: 20px; font-size: 13px; line-height: 1.85; color: #D8DCD5; white-space: pre"><span class="c">// Variant B: trust badges under the Book button</span>
-splitly.<span class="f">waitForElement</span>(<span class="s">'.book-now-btn'</span>, (btn) <span class="k">=&gt;</span> {
+splitcraft.<span class="f">waitForElement</span>(<span class="s">'.book-now-btn'</span>, (btn) <span class="k">=&gt;</span> {
   <span class="k">const</span> row = document.<span class="f">createElement</span>(<span class="s">'ul'</span>);
   row.className = <span class="s">'spl-trust'</span>;
   row.innerHTML = <span class="s">`</span>
@@ -142,8 +142,8 @@ splitly.<span class="f">waitForElement</span>(<span class="s">'.book-now-btn'</s
 <span class="s">    </span><span class="h">&lt;li&gt;</span><span class="s">Pay in 3 instalments</span><span class="h">&lt;/li&gt;</span><span class="s">`</span>;
   btn.<span class="f">insertAdjacentElement</span>(<span class="s">'afterend'</span>, row);
 
-  splitly.<span class="f">onceInView</span>(row, () <span class="k">=&gt;</span> {
-    splitly.<span class="f">trackEvent</span>(<span class="s">'trust_badges_seen'</span>);
+  splitcraft.<span class="f">onceInView</span>(row, () <span class="k">=&gt;</span> {
+    splitcraft.<span class="f">trackEvent</span>(<span class="s">'trust_badges_seen'</span>);
   });
 });</pre>
 </div>

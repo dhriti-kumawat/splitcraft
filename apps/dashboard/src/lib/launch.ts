@@ -14,7 +14,7 @@ export function syntaxError(js: string): string | null {
   if (!js.trim()) return null;
   try {
     // Parses only; nothing runs.
-    new Function('splitly', js);
+    new Function('splitcraft', js);
     return null;
   } catch (e) {
     return e instanceof Error ? e.message : String(e);
@@ -66,7 +66,7 @@ export function canLaunch(checks: Check[]): boolean {
   return checks.every((c) => c.ok || !c.blocking);
 }
 
-const QA_KEY = (id: string) => `splitly_qa_${id}`;
+const QA_KEY = (id: string) => `splitcraft_qa_${id}`;
 
 export function qaDone(experimentId: string): boolean {
   try {
@@ -90,5 +90,5 @@ export function previewUrl(exp: Experiment, project: Project, variantKey?: strin
     variantKey ?? exp.variants.find((v) => v.key !== controlKey(exp))?.key ?? controlKey(exp);
   const host = project.mainDomain;
   const scheme = host.startsWith('localhost') ? 'http' : 'https';
-  return `${scheme}://${host}/?splitly_force=${encodeURIComponent(`${exp.key}:${key}`)}`;
+  return `${scheme}://${host}/?splitcraft_force=${encodeURIComponent(`${exp.key}:${key}`)}`;
 }

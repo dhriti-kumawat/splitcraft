@@ -7,7 +7,7 @@ import { useData } from '../../data/context';
 import { keys, useInviteQuery } from '../../data/queries';
 import styles from '../auth/AuthPage.module.css';
 
-const WORKSPACE_KEY = 'splitly_workspace';
+const WORKSPACE_KEY = 'splitcraft_workspace';
 
 /** /invite/:token — join a workspace from an invite link. */
 export function InvitePage() {
@@ -116,7 +116,7 @@ export function InvitePage() {
       <header className={styles.header}>
         <Link to="/projects" className={styles.brand}>
           <Logo size={28} />
-          Splitly
+          Splitcraft
         </Link>
       </header>
       <main className={styles.main}>
@@ -134,7 +134,7 @@ function Message({ title, text }: { title: string; text: string }) {
         <p className={styles.subtitle}>{text}</p>
       </div>
       <Link to="/projects" className={styles.cta}>
-        Go to Splitly
+        Go to Splitcraft
       </Link>
     </div>
   );

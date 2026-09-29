@@ -1,7 +1,7 @@
 # Build plan
 
 > **Status (2026-09-29):** Phases 0–4 are built and merged (PRs #1–#21). Phase 5: README, screenshots,
-> the traffic simulator and the GitHub Pages workflow are done; installing Splitly on a real demo site,
+> the traffic simulator and the GitHub Pages workflow are done; installing Splitcraft on a real demo site,
 > GIFs and the write-ups are still to do. Known gaps are listed at the end of the README.
 
 Order matters: each phase uses the previous one. One branch + PR per task.
@@ -21,7 +21,7 @@ Prompts are written to paste into Claude Code as-is.
 4. `feat/sdk-tracking`
    > Exposure events (once per page per experiment), goal tracking for click selectors (delegated listener), pageview rules and `trackEvent`. Batch and send with `navigator.sendBeacon` fallback to fetch; also push to `window.dataLayer`. Tests.
 5. `feat/sdk-qa-mode`
-   > `?splitly_force=exp:variant` support and the QA panel from design/screens/17-qa-mode-mobile.html, rendered in a shadow root so site CSS can't break it.
+   > `?splitcraft_force=exp:variant` support and the QA panel from design/screens/17-qa-mode-mobile.html, rendered in a shadow root so site CSS can't break it.
 6. `chore/sdk-size-budget`
    > Add a size check in CI that fails above 7 KB gzipped (main bundle) and 3 KB (QA panel). Budget raised from 5 KB, see DECISIONS #17.
 
@@ -45,7 +45,7 @@ Prompts are written to paste into Claude Code as-is.
 > Build the home page from design/screens/00-home.html as React components. Responsive down to 390 px. Lighthouse 95+.
 
 ## Phase 5 · Polish for portfolio
-- Install Splitly on your own demo site and run one real test.
+- Install Splitcraft on your own demo site and run one real test.
 - Traffic simulator script to fill results for demos.
 - README with architecture diagram, GIFs, bundle size, Lighthouse score.
 - Write-up / LinkedIn post per phase.

@@ -1,7 +1,7 @@
 import { configUrl, INSTALL_TARGETS, snippet } from './snippet';
 
 const values = {
-  sdkUrl: 'https://cdn.splitly.dev/v1.js',
+  sdkUrl: 'https://splitcraft.app/sdk/v1.js',
   publicKey: 'prj_0123456789abcdef0123456789abcdef',
   configUrl: configUrl('https://abc.supabase.co/', 'prj_0123456789abcdef0123456789abcdef'),
 };

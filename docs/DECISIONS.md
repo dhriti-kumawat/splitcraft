@@ -4,7 +4,7 @@ Why things are the way they are. Read before changing direction.
 
 | # | Decision | Why |
 |---|---|---|
-| 1 | Build Splitly as the flagship portfolio project | Proves understanding of how Optimizely / AB Tasty work inside, the strongest interview story for a CRO developer. |
+| 1 | Build Splitcraft as the flagship portfolio project | Proves understanding of how Optimizely / AB Tasty work inside, the strongest interview story for a CRO developer. |
 | 2 | Code editor, **no visual editor** in v1 | Matches real CRO dev work (custom JS/CSS). Visual editors break on dynamic sites and would add 2+ weeks. Can return as v2. |
 | 3 | Use libraries for commodity parts, write the core yourself | Monaco (editor), Recharts (charts), Supabase (db/auth), a hash function are fine. Bucketing, targeting, anti-flicker, tracking, QA mode and stats choices must be your own code, because that is what interviews ask about. Never fork GrowthBook and rename it. |
 | 4 | Workspace → Projects, not "Sites" | A project can be a site, a web app or a staging copy; it owns snippet, audiences, metrics, experiments. |
@@ -19,7 +19,7 @@ Why things are the way they are. Read before changing direction.
 | 13 | Auth = centered minimal card | Split-screen brand panel didn't feel right; top platforms (GrowthBook, Optimizely) use minimal centered login. |
 | 14 | No fake logos, testimonials or customer numbers on the marketing site | Portfolio credibility. "Works with your stack" lists integrations as text only. |
 | 15 | Brand | Ink `#15171A`, accent `#0F6B57`, variant B `#D97A2B` / `#F2B37A`, control `#3B5B8C`, ground `#F4F5F2`. Instrument Sans + JetBrains Mono. Logo = rounded square with a white and an orange bar. |
-| 16 | QA panel ships as a separate file (`splitly-qa.iife.js`) | The main SDK has a tight size budget (see #17). The panel is only needed when `?splitly_force` is in the URL, so it loads on demand and normal visitors never download it. |
+| 16 | QA panel ships as a separate file (`splitcraft-qa.iife.js`) | The main SDK has a tight size budget (see #17). The panel is only needed when `?splitcraft_force` is in the URL, so it loads on demand and normal visitors never download it. |
 | 17 | SDK budget raised from 5 KB to 7 KB gzipped (QA panel: 3 KB, separate file) | The complete runtime (targeting context, sessions, page history, UTMs, source detection, tracking, anti-flicker) measured 6.46 KB. Hitting 5 KB meant dropping spec features such as page history or first-touch UTMs. 7 KB keeps every v1 feature with some headroom; CI enforces it. |
 | 18 | Database tests run on PGlite, not Docker | PGlite is real Postgres in WebAssembly, installed from npm. Migrations, RLS policies and SQL functions are tested in Vitest locally and in CI without Docker. Supabase's `auth` schema and roles are stubbed in `supabase/tests/db.ts`; real auth is checked once deployed. |
 | 19 | Pageview goals are matched in the browser in v1 | Storing every page view would make pageview metrics retroactive but multiply event volume against the 100k/month free tier. Retroactive pageview metrics can come in v1.1. |

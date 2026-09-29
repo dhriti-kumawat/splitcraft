@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Splitly · Click tracker</title>
+<title>Splitcraft · Click tracker</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -45,7 +45,7 @@ a{color:#0F6B57}a:hover{color:#0A4E40}
 <aside style="width: 240px; flex-shrink: 0; background: #15171A; display: flex; flex-direction: column; gap: 20px; padding: 20px 14px; box-sizing: border-box">
 <div style="display: flex; align-items: center; gap: 10px; padding: 4px 8px">
 <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="#0F6B57"></rect><rect x="6.5" y="7" width="5.5" height="12" rx="1.5" fill="#FFFFFF"></rect><rect x="14" y="7" width="5.5" height="12" rx="1.5" fill="#F2B37A"></rect></svg>
-<span style="font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em">Splitly</span>
+<span style="font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em">Splitcraft</span>
 </div>
 <button class="sb">
 <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 6px; background: #3A2E22; color: #F2B37A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">DW</span>
@@ -165,12 +165,12 @@ a{color:#0F6B57}a:hover{color:#0A4E40}
 </section>
 
 <section style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 10px; background: #15171A">
-<div style="display: flex; align-items: center; justify-content: space-between"><span class="lbl" style="color: #AEB4AC">Code Splitly runs</span><span class="mono" style="font-size: 11px; color: #8C938A">read-only</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between"><span class="lbl" style="color: #AEB4AC">Code Splitcraft runs</span><span class="mono" style="font-size: 11px; color: #8C938A">read-only</span></div>
 <pre class="mono" style="margin: 0; font-size: 11.5px; line-height: 1.7; color: #D8DCD5; white-space: pre"><span class="c">// one listener, works for SPA re-renders</span>
 document.<span class="f">addEventListener</span>(<span class="s">'click'</span>, (e) <span class="k">=&gt;</span> {
   <span class="k">if</span> (e.target.<span class="f">closest</span>(
     <span class="s">'.book-now-btn, [data-cta="book"]'</span>
-  )) splitly.<span class="f">trackEvent</span>(<span class="s">'book_click'</span>);
+  )) splitcraft.<span class="f">trackEvent</span>(<span class="s">'book_click'</span>);
 }, <span class="k">true</span>);</pre>
 </section>
 

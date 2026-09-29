@@ -183,8 +183,8 @@ function Invites({
           Invite people
         </h2>
         <p className={styles.sub}>
-          Splitly creates a link for them; it doesn't send emails yet. The link works for that email
-          address only, once, for 7 days.
+          Splitcraft creates a link for them; it doesn't send emails yet. The link works for that
+          email address only, once, for 7 days.
         </p>
       </div>
       <form className={styles.form} onSubmit={submit} noValidate>

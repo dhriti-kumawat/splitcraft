@@ -208,7 +208,7 @@ export function GoalsPage() {
           {
             source: 'custom-js',
             name: 'Custom event',
-            text: 'Your code calls splitly.trackEvent(), with a value if you like',
+            text: 'Your code calls splitcraft.trackEvent(), with a value if you like',
           },
         ].map((t) => (
           <Link

@@ -1,6 +1,6 @@
 import { injectStyles } from './helpers';
 
-export const ANTIFLICKER_ID = 'splitly-antiflicker';
+export const ANTIFLICKER_ID = 'splitcraft-antiflicker';
 export const ANTIFLICKER_MAX_MS = 400;
 
 /**

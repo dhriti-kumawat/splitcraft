@@ -19,13 +19,13 @@ describe('applyVariant', () => {
     expect(document.getElementById(styleId('css-only'))?.textContent).toBe('.cta{color:red}');
   });
 
-  it('runs the variant JS with the splitly helpers', () => {
+  it('runs the variant JS with the splitcraft helpers', () => {
     document.body.innerHTML = '<h1>Old</h1>';
     applyVariant({
       experimentKey: 'js-run',
       variantKey: 'b',
       js: `document.querySelector('h1').textContent = 'New';
-           splitly.injectStyles('h1{font-weight:700}', 'from-variant');`,
+           splitcraft.injectStyles('h1{font-weight:700}', 'from-variant');`,
     });
     expect(document.querySelector('h1')?.textContent).toBe('New');
     expect(document.getElementById('from-variant')).not.toBeNull();
@@ -34,7 +34,11 @@ describe('applyVariant', () => {
   it('passes extra helpers such as trackEvent to variant code', () => {
     const trackEvent = vi.fn();
     applyVariant(
-      { experimentKey: 'extra', variantKey: 'b', js: 'splitly.trackEvent("seen", { value: 1 })' },
+      {
+        experimentKey: 'extra',
+        variantKey: 'b',
+        js: 'splitcraft.trackEvent("seen", { value: 1 })',
+      },
       { trackEvent },
     );
     expect(trackEvent).toHaveBeenCalledWith('seen', { value: 1 });

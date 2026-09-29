@@ -1,10 +1,10 @@
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
 import { useEffect, useRef } from 'react';
-import { SPLITLY_DTS } from '../lib/templates';
+import { SPLITCRAFT_DTS } from '../lib/templates';
 
 // Colours from design/tokens.css (code editor, dark).
 const beforeMount: BeforeMount = (monaco) => {
-  monaco.editor.defineTheme('splitly-dark', {
+  monaco.editor.defineTheme('splitcraft-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
@@ -23,7 +23,7 @@ const beforeMount: BeforeMount = (monaco) => {
       'editorCursor.foreground': '#F2B37A',
     },
   });
-  monaco.languages.typescript.javascriptDefaults.addExtraLib(SPLITLY_DTS, 'splitly.d.ts');
+  monaco.languages.typescript.javascriptDefaults.addExtraLib(SPLITCRAFT_DTS, 'splitcraft.d.ts');
 };
 
 interface Props {
@@ -50,7 +50,7 @@ export function CodeEditor({ language, value, onChange, label, readOnly, onSave 
       language={language}
       value={value}
       onChange={(v) => onChange(v ?? '')}
-      theme="splitly-dark"
+      theme="splitcraft-dark"
       beforeMount={beforeMount}
       onMount={onMount}
       loading={<span style={{ color: '#8C938A', padding: 20 }}>Loading editor…</span>}

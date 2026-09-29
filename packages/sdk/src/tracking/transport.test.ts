@@ -31,10 +31,10 @@ afterEach(() => {
 
 describe('send', () => {
   it('uses sendBeacon with a text/plain body', async () => {
-    send('https://api.splitly.dev/e', '{"a":1}');
+    send('https://api.splitcraft.app/e', '{"a":1}');
     expect(beacon).toHaveBeenCalledOnce();
     const [url, blob] = beacon.mock.calls[0]!;
-    expect(url).toBe('https://api.splitly.dev/e');
+    expect(url).toBe('https://api.splitcraft.app/e');
     expect((blob as Blob).type).toBe('text/plain;charset=utf-8');
     expect(await (blob as Blob).text()).toBe('{"a":1}');
     expect(fetchMock).not.toHaveBeenCalled();
@@ -42,9 +42,9 @@ describe('send', () => {
 
   it('falls back to fetch with keepalive when sendBeacon refuses', () => {
     beacon.mockReturnValue(false);
-    send('https://api.splitly.dev/e', '{}');
+    send('https://api.splitcraft.app/e', '{}');
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.splitly.dev/e',
+      'https://api.splitcraft.app/e',
       expect.objectContaining({ method: 'POST', body: '{}', keepalive: true, credentials: 'omit' }),
     );
   });

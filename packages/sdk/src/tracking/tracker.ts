@@ -17,7 +17,7 @@ export function createTracker(queue: EventQueue, visitorId: string): Tracker {
       if (exposed.has(once)) return false;
       exposed.add(once);
       queue.push({ type: 'exposure', experimentKey, variantKey, ...base() });
-      pushDataLayer({ event: 'splitly_exposure', splitly: { experimentKey, variantKey } });
+      pushDataLayer({ event: 'splitcraft_exposure', splitcraft: { experimentKey, variantKey } });
       return true;
     },
 
@@ -29,7 +29,7 @@ export function createTracker(queue: EventQueue, visitorId: string): Tracker {
       if (typeof value === 'number' && Number.isFinite(value)) event.value = value;
       if (Object.keys(rest).length > 0) event.props = rest;
       queue.push(event);
-      pushDataLayer({ event: 'splitly_event', splitly: { key, value: event.value } });
+      pushDataLayer({ event: 'splitcraft_event', splitcraft: { key, value: event.value } });
     },
   };
 }

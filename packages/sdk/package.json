@@ -1,15 +1,15 @@
 {
-  "name": "@splitly/sdk",
+  "name": "@splitcraft/sdk",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/splitly.js",
-  "module": "./dist/splitly.js",
+  "main": "./dist/splitcraft.js",
+  "module": "./dist/splitcraft.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/splitly.js"
+      "import": "./dist/splitcraft.js"
     }
   },
   "files": [

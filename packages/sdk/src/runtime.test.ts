@@ -27,7 +27,7 @@ const config = (
   extra: Partial<ProjectConfig> = {},
 ): ProjectConfig => ({
   projectKey: 'prj_test',
-  eventsUrl: 'https://api.splitly.dev/e',
+  eventsUrl: 'https://api.splitcraft.app/e',
   experiments,
   ...extra,
 });
@@ -56,7 +56,7 @@ afterEach(() => {
   // applyVariant remembers where it ran; reset so each test starts clean.
   for (const key of ['trust', 'sticky']) removeVariant(key);
   delete (window as unknown as { __ran?: number }).__ran;
-  delete window.splitlyQa;
+  delete window.splitcraftQa;
   localStorage.clear();
   sessionStorage.clear();
   document.head.innerHTML = '';
@@ -143,12 +143,12 @@ describe('start', () => {
     expect(ran()).toBe(1);
   });
 
-  it('lets variant code send events with splitly.trackEvent', async () => {
+  it('lets variant code send events with splitcraft.trackEvent', async () => {
     runtime = start(
       config([
         exp({
           variants: [
-            { key: 'b', name: 'B', weight: 1, js: 'splitly.trackEvent("trust_badges_seen")' },
+            { key: 'b', name: 'B', weight: 1, js: 'splitcraft.trackEvent("trust_badges_seen")' },
           ],
         }),
       ]),
@@ -161,7 +161,9 @@ describe('start', () => {
   it('runs custom JS trackers from the config', async () => {
     runtime = start(
       config([], {
-        goals: { custom: [{ key: 'add_on', code: 'splitly.trackEvent("add_on", { value: 5 })' }] },
+        goals: {
+          custom: [{ key: 'add_on', code: 'splitcraft.trackEvent("add_on", { value: 5 })' }],
+        },
       }),
     );
     const goals = (await sentEvents()).filter((e) => e.type === 'goal');
@@ -201,7 +203,7 @@ describe('QA mode', () => {
   const panel = () => ({ mount: vi.fn<(source: QaSource) => () => void>(() => () => {}) });
 
   it('applies the forced variant even when the visitor would not qualify', async () => {
-    history.replaceState({}, '', '/trips/norway?splitly_force=trust:control');
+    history.replaceState({}, '', '/trips/norway?splitcraft_force=trust:control');
     const e = exp({
       trafficPct: 0,
       targeting: { who: [{ mode: 'all', items: [{ type: 'visitor_type', value: 'returning' }] }] },
@@ -210,15 +212,15 @@ describe('QA mode', () => {
         { key: 'b', name: 'B', weight: 50 },
       ],
     });
-    window.splitlyQa = panel();
+    window.splitcraftQa = panel();
     runtime = start(config([e]), { qaPanelUrl: '/qa.js' });
     await settle();
     expect(ran()).toBe(99);
   });
 
   it('still respects WHERE for forced variants', async () => {
-    history.replaceState({}, '', '/about?splitly_force=trust:b');
-    window.splitlyQa = panel();
+    history.replaceState({}, '', '/about?splitcraft_force=trust:b');
+    window.splitcraftQa = panel();
     runtime = start(
       config([exp({ targeting: { where: { include: [{ op: 'matches', value: '/trips/*' }] } } })]),
       { qaPanelUrl: '/qa.js' },
@@ -228,9 +230,9 @@ describe('QA mode', () => {
   });
 
   it('mounts the QA panel with forced and bucketed experiments', async () => {
-    history.replaceState({}, '', '/trips/norway?splitly_force=trust:b');
+    history.replaceState({}, '', '/trips/norway?splitcraft_force=trust:b');
     const qa = panel();
-    window.splitlyQa = qa;
+    window.splitcraftQa = qa;
     runtime = start(
       config([exp(), exp({ key: 'sticky', name: 'Sticky Book Now bar' })], {
         goals: { clicks: [{ key: 'book_click', selector: '.book' }] },
@@ -270,9 +272,9 @@ describe('boot', () => {
     const fetchMock = vi.fn(() => Promise.resolve(new Response(JSON.stringify(config([exp()])))));
     vi.stubGlobal('fetch', fetchMock);
     runtime = (await boot(
-      script({ src: 'https://cdn.splitly.dev/v1.js', 'data-project': 'prj_1' }),
+      script({ src: 'https://splitcraft.app/sdk/v1.js', 'data-project': 'prj_1' }),
     ))!;
-    expect(fetchMock).toHaveBeenCalledWith('https://cdn.splitly.dev/v1/config/prj_1.json', {
+    expect(fetchMock).toHaveBeenCalledWith('https://splitcraft.app/v1/config/prj_1.json', {
       credentials: 'omit',
     });
     await settle();
@@ -282,22 +284,24 @@ describe('boot', () => {
   it('hides the page until the variants are applied', async () => {
     let resolveFetch: (r: Response) => void = () => {};
     vi.stubGlobal('fetch', () => new Promise<Response>((r) => (resolveFetch = r)));
-    const booting = boot(script({ src: 'https://cdn.splitly.dev/v1.js', 'data-project': 'prj_1' }));
-    expect(document.getElementById('splitly-antiflicker')).not.toBeNull();
+    const booting = boot(
+      script({ src: 'https://splitcraft.app/sdk/v1.js', 'data-project': 'prj_1' }),
+    );
+    expect(document.getElementById('splitcraft-antiflicker')).not.toBeNull();
     resolveFetch(new Response(JSON.stringify(config([exp()]))));
     runtime = (await booting)!;
     await settle();
-    expect(document.getElementById('splitly-antiflicker')).toBeNull();
+    expect(document.getElementById('splitcraft-antiflicker')).toBeNull();
   });
 
   it('shows the page and gives up when the config cannot load', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.stubGlobal('fetch', () => Promise.resolve(new Response('', { status: 404 })));
     const rt = await boot(
-      script({ src: 'https://cdn.splitly.dev/v1.js', 'data-project': 'prj_1' }),
+      script({ src: 'https://splitcraft.app/sdk/v1.js', 'data-project': 'prj_1' }),
     );
     expect(rt).toBeNull();
-    expect(document.getElementById('splitly-antiflicker')).toBeNull();
+    expect(document.getElementById('splitcraft-antiflicker')).toBeNull();
   });
 
   it('uses data-config when given, and does nothing without data-project', async () => {

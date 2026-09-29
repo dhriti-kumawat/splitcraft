@@ -1,5 +1,5 @@
-export const VISITOR_COOKIE = 'splitly_vid';
-export const VISITOR_STORAGE_KEY = 'splitly_vid';
+export const VISITOR_COOKIE = 'splitcraft_vid';
+export const VISITOR_STORAGE_KEY = 'splitcraft_vid';
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 const VALID_ID = /^[A-Za-z0-9_-]{8,64}$/;
 

@@ -1,5 +1,5 @@
 {
-  "name": "@splitly/simulator",
+  "name": "@splitcraft/simulator",
   "version": "0.0.0",
   "private": true,
   "type": "module",

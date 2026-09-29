@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
 const budgets = [
-  { file: 'dist/splitly.iife.js', maxBytes: 7000 },
-  { file: 'dist/splitly-qa.iife.js', maxBytes: 3000 },
+  { file: 'dist/splitcraft.iife.js', maxBytes: 7000 },
+  { file: 'dist/splitcraft-qa.iife.js', maxBytes: 3000 },
 ];
 
 let failed = false;

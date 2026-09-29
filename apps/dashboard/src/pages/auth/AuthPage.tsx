@@ -9,7 +9,7 @@ import styles from './AuthPage.module.css';
 
 const COPY: Record<Mode, { title: string; subtitle: string; cta: string; busy: string }> = {
   login: {
-    title: 'Log in to Splitly',
+    title: 'Log in to Splitcraft',
     subtitle: 'Welcome back. Your experiments are waiting.',
     cta: 'Log in',
     busy: 'Logging in…',
@@ -560,7 +560,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <div className={styles.switch}>
             {mode === 'login' && (
               <>
-                <span>New to Splitly?</span>
+                <span>New to Splitcraft?</span>
                 <Link to={`/signup${query}`} className={styles.link}>
                   Create an account
                 </Link>
@@ -590,7 +590,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
       <header className={styles.header}>
         <Link to="/login" className={styles.brand}>
           <Logo size={28} />
-          Splitly
+          Splitcraft
         </Link>
         {SITE_URL && (
           <a href={SITE_URL} className={styles.back}>
@@ -602,7 +602,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
         <div className={styles.card}>{body}</div>
       </main>
       <footer className={styles.footer}>
-        <span>© 2026 Splitly</span>
+        <span>© 2026 Splitcraft</span>
         {SITE_URL && (
           <>
             {link('/privacy', 'Privacy')}

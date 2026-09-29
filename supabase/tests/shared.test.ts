@@ -179,14 +179,14 @@ describe('toSdkConfig goals', () => {
     expect(
       build(
         metric('custom_js', {
-          code: 'splitly.trackEvent("goal_key")',
+          code: 'splitcraft.trackEvent("goal_key")',
           pages: [{ op: 'matches', value: '/trips/*' }, { op: 'bad' }],
         }),
       ).custom,
     ).toEqual([
       {
         key: 'goal_key',
-        code: 'splitly.trackEvent("goal_key")',
+        code: 'splitcraft.trackEvent("goal_key")',
         pages: [{ op: 'matches', value: '/trips/*' }],
       },
     ]);

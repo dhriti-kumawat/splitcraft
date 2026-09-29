@@ -1,4 +1,4 @@
-# Splitly backend (Supabase)
+# Splitcraft backend (Supabase)
 
 - `migrations/` — schema, Row Level Security, and the SQL functions behind the SDK endpoints.
 - `functions/config` — `GET /functions/v1/config/<public key>.json`: the config the SDK loads.
@@ -28,7 +28,7 @@ Then install the snippet with the config URL:
 
 ```html
 <script
-  src="https://cdn.splitly.dev/v1.js"
+  src="https://splitcraft.app/sdk/v1.js"
   data-project="prj_…"
   data-config="https://<your-project-ref>.supabase.co/functions/v1/config/prj_….json"
   async

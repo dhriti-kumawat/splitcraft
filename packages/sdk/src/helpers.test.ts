@@ -91,7 +91,7 @@ describe('onceInView', () => {
 describe('injectStyles', () => {
   it('adds a style element to the head', () => {
     injectStyles('.cta{color:red}');
-    const style = document.head.querySelector('style[data-splitly]');
+    const style = document.head.querySelector('style[data-splitcraft]');
     expect(style?.textContent).toBe('.cta{color:red}');
   });
 

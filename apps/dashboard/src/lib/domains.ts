@@ -1,5 +1,5 @@
 /**
- * Turn what people paste ("https://www.MyTrips.dev/trips?x=1") into the domain Splitly
+ * Turn what people paste ("https://www.MyTrips.dev/trips?x=1") into the domain Splitcraft
  * stores ("www.mytrips.dev"). Keeps a port, since dev servers need one.
  */
 export function normalizeDomain(input: string): string {

@@ -6,7 +6,7 @@ import {
 } from '@supabase/supabase-js';
 import { MESSAGES, type AuthApi, type AuthUser } from './api';
 
-const KEEP_KEY = 'splitly_keep_logged_in';
+const KEEP_KEY = 'splitcraft_keep_logged_in';
 
 /**
  * Session storage that follows "Keep me logged in": localStorage survives closing the

@@ -38,7 +38,7 @@ describe('selectorHealth', () => {
 
 describe('trackerChecks', () => {
   it('checks syntax, the key and the trackEvent call', () => {
-    const good = "splitly.trackEvent('add_on_selected', { value: 1 })";
+    const good = "splitcraft.trackEvent('add_on_selected', { value: 1 })";
     expect(trackerChecks(good, 'add_on_selected', null).every((c) => c.ok)).toBe(true);
     const bad = trackerChecks('console.log(1)', 'add_on_selected', 'Unexpected token');
     expect(bad.map((c) => c.ok)).toEqual([false, false, false]);
@@ -51,7 +51,7 @@ describe('measuresFor and clickCode', () => {
     expect(measuresFor('custom_js')).toContain('sum');
   });
 
-  it('shows the listener Splitly runs', () => {
+  it('shows the listener Splitcraft runs', () => {
     expect(clickCode('.a, .b', true, 'book_click')).toContain('e.target.closest(".a, .b")');
     expect(clickCode('.a', true, 'book_click')).toContain('counted once per page');
   });

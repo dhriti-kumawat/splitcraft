@@ -103,7 +103,7 @@ describe('custom JS tracker', () => {
     await user.click(screen.getByRole('button', { name: 'Insert snippet' }));
     expect(
       (screen.getByRole('textbox', { name: 'Tracker code' }) as HTMLTextAreaElement).value,
-    ).toContain("splitly.trackEvent('add_on_selected'");
+    ).toContain("splitcraft.trackEvent('add_on_selected'");
     expect(
       await screen.findByText('Event key add_on_selected found in the code'),
     ).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe('custom JS tracker', () => {
     });
     expect(await screen.findByText(/Syntax error:/)).toBeInTheDocument();
     fireEvent.change(screen.getByRole('textbox', { name: 'Tracker code' }), {
-      target: { value: "splitly.trackEvent('add_on_selected', { value: 12 })" },
+      target: { value: "splitcraft.trackEvent('add_on_selected', { value: 12 })" },
     });
 
     await user.click(screen.getByRole('button', { name: '+ Page' }));
@@ -126,7 +126,7 @@ describe('custom JS tracker', () => {
         eventKey: 'add_on_selected',
         measure: 'sum',
         sourceConfig: {
-          code: "splitly.trackEvent('add_on_selected', { value: 12 })",
+          code: "splitcraft.trackEvent('add_on_selected', { value: 12 })",
           pages: [{ op: 'matches', value: '/trips/*' }],
         },
       }),

@@ -1,4 +1,4 @@
-/** Push to `window.dataLayer`, creating it if needed, so GTM / GA4 see Splitly events too. */
+/** Push to `window.dataLayer`, creating it if needed, so GTM / GA4 see Splitcraft events too. */
 export function pushDataLayer(entry: Record<string, unknown>): void {
   try {
     const w = window as unknown as { dataLayer?: unknown[] };

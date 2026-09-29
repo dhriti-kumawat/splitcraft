@@ -2,24 +2,24 @@
 import { loadQaPanel } from './loader';
 
 afterEach(() => {
-  delete window.splitlyQa;
+  delete window.splitcraftQa;
   document.head.innerHTML = '';
 });
 
 describe('loadQaPanel', () => {
   it('adds a script tag and resolves once the bundle registers', async () => {
-    const promise = loadQaPanel('https://cdn.splitly.dev/v1-qa.js');
+    const promise = loadQaPanel('https://splitcraft.app/sdk/v1-qa.js');
     const script = document.head.querySelector('script')!;
-    expect(script.src).toBe('https://cdn.splitly.dev/v1-qa.js');
+    expect(script.src).toBe('https://splitcraft.app/sdk/v1-qa.js');
     const panel = { mount: vi.fn() };
-    window.splitlyQa = panel;
+    window.splitcraftQa = panel;
     script.dispatchEvent(new Event('load'));
     await expect(promise).resolves.toBe(panel);
   });
 
   it('reuses an already loaded bundle', async () => {
     const panel = { mount: vi.fn() };
-    window.splitlyQa = panel;
+    window.splitcraftQa = panel;
     await expect(loadQaPanel('/qa.js')).resolves.toBe(panel);
     expect(document.head.querySelector('script')).toBeNull();
   });

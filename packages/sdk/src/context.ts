@@ -1,7 +1,7 @@
 import type { DeviceType, SourceType, TargetingContext, UtmParam } from './targeting/types';
 import { createVisitorId } from './visitor';
 
-const STORAGE_KEY = 'splitly_state';
+const STORAGE_KEY = 'splitcraft_state';
 const SESSION_MS = 30 * 60 * 1000;
 const HISTORY_MAX = 50;
 const HISTORY_MS = 30 * 24 * 60 * 60 * 1000;
@@ -9,7 +9,7 @@ const UTM_PARAMS: UtmParam[] = ['source', 'medium', 'campaign', 'term', 'content
 
 type Utm = Partial<Record<UtmParam, string>>;
 
-/** Everything Splitly remembers about a visitor between page loads. Short keys keep it small. */
+/** Everything Splitcraft remembers about a visitor between page loads. Short keys keep it small. */
 export interface VisitorState {
   /** Current session. */
   s?: { id: string; n: number; at: number; p: number; src: SourceType };

@@ -128,10 +128,10 @@ describe('runCustomTrackers', () => {
       [
         {
           key: 'add_on',
-          code: 'splitly.trackEvent("add_on", { value: 12 })',
+          code: 'splitcraft.trackEvent("add_on", { value: 12 })',
           pages: [{ op: 'matches', value: '/trips/*' }],
         },
-        { key: 'everywhere', code: 'splitly.trackEvent("everywhere")' },
+        { key: 'everywhere', code: 'splitcraft.trackEvent("everywhere")' },
       ],
       { trackEvent },
     );

@@ -49,9 +49,9 @@ function Header() {
     <header className={styles.header}>
       <div className={`${styles.wrap} ${styles.headerInner}`}>
         <div className={styles.navLeft}>
-          <a href="#main" className={styles.brand} aria-label="Splitly home">
+          <a href="#main" className={styles.brand} aria-label="Splitcraft home">
             <Logo size={28} />
-            Splitly
+            Splitcraft
           </a>
           <nav aria-label="Main" className={styles.nav}>
             {NAV.map((n) => (
@@ -127,8 +127,8 @@ function Hero() {
             Know what works before you ship it.
           </h1>
           <p className={`${styles.lede} ${styles.heroLede}`}>
-            Splitly runs A/B tests on your live site with one small snippet. Write variants in code,
-            target exactly who you mean, and get results you can defend.
+            Splitcraft runs A/B tests on your live site with one small snippet. Write variants in
+            code, target exactly who you mean, and get results you can defend.
           </p>
           <div className={styles.actions}>
             <a className={styles.primary} href={`${DASHBOARD_URL}/signup`}>
@@ -153,18 +153,20 @@ function ProductShot() {
   return (
     <figure
       style={{ margin: 0 }}
-      aria-label="The Splitly results screen for an example test: variant B is ahead with a 96% chance to beat Control, uplift +9.7%, 24,860 visitors."
+      aria-label="The Splitcraft results screen for an example test: variant B is ahead with a 96% chance to beat Control, uplift +9.7%, 24,860 visitors."
     >
       <div className={styles.shot} aria-hidden="true">
         <div className={styles.chrome}>
           <span className={styles.dot} />
           <span className={styles.dot} />
           <span className={styles.dot} />
-          <span className={styles.url}>app.splitly.dev/trip-demo/experiments/sticky-book-bar</span>
+          <span className={styles.url}>
+            app.splitcraft.app/trip-demo/experiments/sticky-book-bar
+          </span>
         </div>
         <div className={styles.app}>
           <div className={styles.side}>
-            <span className={styles.sideBrand}>Splitly</span>
+            <span className={styles.sideBrand}>Splitcraft</span>
             <span className={`${styles.sideItem} ${styles.sideOn}`}>Experiments</span>
             <span className={styles.sideItem}>Audiences</span>
             <span className={styles.sideItem}>Metrics</span>
@@ -224,12 +226,12 @@ function ProductShot() {
       <div className={styles.floatCode} aria-hidden="true">
         <pre>
           <span className={styles.c}>// variant B</span>
-          {'\n'}splitly.<span className={styles.f}>waitForElement</span>(
+          {'\n'}splitcraft.<span className={styles.f}>waitForElement</span>(
           <span className={styles.s}>'.price'</span>, (el) <span className={styles.k}>=&gt;</span>{' '}
           {'{'}
           {'\n  '}
           <span className={styles.f}>mountStickyBar</span>(el);
-          {'\n  '}splitly.<span className={styles.f}>trackEvent</span>(
+          {'\n  '}splitcraft.<span className={styles.f}>trackEvent</span>(
           <span className={styles.s}>'book_click'</span>);
           {'\n'}
           {'});'}
@@ -292,14 +294,14 @@ function Product() {
               <span className={styles.fileOff}>variant.css</span>
             </div>
             <pre>
-              splitly.<span className={styles.f}>waitForElement</span>(
+              splitcraft.<span className={styles.f}>waitForElement</span>(
               <span className={styles.s}>'.cta'</span>,{'\n  '}(btn){' '}
               <span className={styles.k}>=&gt;</span> {'{'}
               {'\n    '}btn.textContent = <span className={styles.s}>'Reserve now'</span>;{'\n    '}
-              splitly.
+              splitcraft.
               <span className={styles.f}>onceInView</span>(btn, (){' '}
               <span className={styles.k}>=&gt;</span>
-              {'\n      '}splitly.<span className={styles.f}>trackEvent</span>(
+              {'\n      '}splitcraft.<span className={styles.f}>trackEvent</span>(
               <span className={styles.s}>'cta_seen'</span>));
               {'\n'}
               {'});'}
@@ -366,13 +368,13 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
         <span className={styles.c}>{'<!-- 1. Paste once in <head> -->'}</span>
         {'\n'}
         <span className={styles.k}>{'<script'}</span> <span className={styles.f}>src</span>=
-        <span className={styles.s}>"https://cdn.splitly.dev/v1.js"</span>
+        <span className={styles.s}>"https://splitcraft.app/sdk/v1.js"</span>
         {'\n        '}
         <span className={styles.f}>data-project</span>=<span className={styles.s}>"prj_…"</span>{' '}
         <span className={styles.k}>{'async></script>'}</span>
         {'\n'}
         <span className={styles.c}>// 2. Track anything from your own code</span>
-        {'\n'}splitly.<span className={styles.f}>trackEvent</span>(
+        {'\n'}splitcraft.<span className={styles.f}>trackEvent</span>(
         <span className={styles.s}>'purchase'</span>, {'{'}
         {'\n  '}value: <span className={styles.f}>142000</span>,{'\n  '}currency:{' '}
         <span className={styles.s}>'INR'</span>
@@ -380,7 +382,7 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
         {'});'}
         {'\n'}
         <span className={styles.c}>// 3. React to SPA navigation in variant code</span>
-        {'\n'}splitly.<span className={styles.f}>onRouteChange</span>((url){' '}
+        {'\n'}splitcraft.<span className={styles.f}>onRouteChange</span>((url){' '}
         <span className={styles.k}>=&gt;</span> <span className={styles.f}>refreshBadges</span>
         (url));
       </>
@@ -396,7 +398,7 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
         <span className={styles.k}>{'<Script'}</span>
         {'\n  '}
         <span className={styles.f}>src</span>=
-        <span className={styles.s}>"https://cdn.splitly.dev/v1.js"</span>
+        <span className={styles.s}>"https://splitcraft.app/sdk/v1.js"</span>
         {'\n  '}
         <span className={styles.f}>data-project</span>=<span className={styles.s}>"prj_…"</span>
         {'\n  '}
@@ -415,7 +417,7 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
         <span className={styles.c}>{'<!-- Tags › New › Custom HTML, trigger: All Pages -->'}</span>
         {'\n'}
         <span className={styles.k}>{'<script'}</span> <span className={styles.f}>src</span>=
-        <span className={styles.s}>"https://cdn.splitly.dev/v1.js"</span>
+        <span className={styles.s}>"https://splitcraft.app/sdk/v1.js"</span>
         {'\n        '}
         <span className={styles.f}>data-project</span>=<span className={styles.s}>"prj_…"</span>{' '}
         <span className={styles.k}>{'async></script>'}</span>
@@ -450,8 +452,8 @@ function Developers() {
             Built for the person who writes the variant.
           </h2>
           <p className={`${styles.lede} ${styles.onDarkMuted}`}>
-            Splitly is a TypeScript SDK first and a dashboard second. It loads async and keeps its
-            work small.
+            Splitcraft is a TypeScript SDK first and a dashboard second. It loads async and keeps
+            its work small.
           </p>
           <ul className={styles.checks}>
             <li>
@@ -492,7 +494,7 @@ function Developers() {
               </span>
               <span>
                 <b>QA mode</b>: force any variant with{' '}
-                <span className={styles.inlineCode}>?splitly_force=</span>
+                <span className={styles.inlineCode}>?splitcraft_force=</span>
               </span>
             </li>
           </ul>
@@ -567,7 +569,7 @@ function Statistics() {
           Results you can defend in any review.
         </h2>
         <p className={styles.lede}>
-          Splitly checks the things that quietly break experiments, and tells you in plain words
+          Splitcraft checks the things that quietly break experiments, and tells you in plain words
           when a result is not ready.
         </p>
       </div>
@@ -590,7 +592,7 @@ function HowItWorks() {
   const steps = [
     [
       'Install the snippet',
-      'Paste one script tag or add it through GTM. Splitly confirms the install on the first page view.',
+      'Paste one script tag or add it through GTM. Splitcraft confirms the install on the first page view.',
     ],
     [
       'Build and QA the variant',
@@ -690,7 +692,7 @@ function Footer() {
           <div className={styles.footerBrand}>
             <span className={styles.brand}>
               <Logo />
-              Splitly
+              Splitcraft
             </span>
             <span>A/B testing for teams who write their own variants.</span>
             <span>
@@ -716,7 +718,7 @@ function Footer() {
           </nav>
         </div>
         <div className={styles.footerBottom}>
-          <span>© 2026 Splitly</span>
+          <span>© 2026 Splitcraft</span>
           <span>Example numbers on this page come from a demo test, not a customer.</span>
         </div>
       </div>

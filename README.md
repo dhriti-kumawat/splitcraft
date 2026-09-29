@@ -1,6 +1,6 @@
-# Splitly
+# Splitcraft
 
-**Know what works before you ship it.** Splitly is a small A/B testing platform: a client-side SDK that
+**Know what works before you ship it.** Splitcraft is a small A/B testing platform: a client-side SDK that
 runs experiments on a live site, and a dashboard to build variants in code, target audiences, define
 metrics and read results with honest statistics.
 
@@ -11,9 +11,9 @@ the bucketing, targeting, anti-flicker, tracking, QA mode and statistics are wri
 
 ## What it does
 
-- **Variants in real code.** Write each variant's JS and CSS in a Monaco editor with typed `splitly.*`
+- **Variants in real code.** Write each variant's JS and CSS in a Monaco editor with typed `splitcraft.*`
   helpers, templates, a live syntax check and version history. Preview any variant on your site with
-  `?splitly_force=experiment:variant`, which also opens a QA panel.
+  `?splitcraft_force=experiment:variant`, which also opens a QA panel.
 - **Targeting without limits.** WHO (saved segments) / WHERE (URL and element rules) / HOW (session
   triggers) / WHEN (frequency), built from nested ALL / ANY / NONE groups, with a plain-English summary
   and a URL tester that runs the SDK's own matcher.
@@ -36,7 +36,7 @@ the bucketing, targeting, anti-flicker, tracking, QA mode and statistics are wri
 flowchart LR
   subgraph Site["Customer site"]
     SDK["SDK (6.6 KB gzip)<br/>visitor id · targeting · bucketing<br/>anti-flicker · apply · tracking"]
-    QA["QA panel<br/>(separate 2 KB file,<br/>only with ?splitly_force)"]
+    QA["QA panel<br/>(separate 2 KB file,<br/>only with ?splitcraft_force)"]
   end
   subgraph Supabase
     CFG["Edge Function<br/>GET /config/:key.json"]
