@@ -5,10 +5,16 @@ import { PlusIcon } from '../../components/icons';
 import { PageHeader } from '../../components/PageHeader';
 import { Pill } from '../../components/Pill';
 import { Sparkline } from '../../components/Sparkline';
-import type { Project, ProjectStats } from '../../data/api';
-import { useOverviewQuery, useWorkspaceMutations } from '../../data/queries';
+import type { ActivityItem, Experiment, Project, ProjectStats, VariantStats } from '../../data/api';
+import {
+  useActivityQuery,
+  useExperimentsByProject,
+  useOverviewQuery,
+  useWorkspaceMutations,
+} from '../../data/queries';
 import { initials, useWorkspace } from '../../data/workspace';
 import { TopBarActions } from '../../layout/TopBarActions';
+import { percent, summarize, timeAgo } from '../../lib/experiments';
 import { compactNumber } from '../../lib/format';
 import { NewProjectDrawer } from './NewProjectDrawer';
 import styles from './ProjectsPage.module.css';
@@ -26,6 +32,10 @@ export function ProjectsPage() {
   const overview = useOverviewQuery(workspace.id);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const statsFor = (id: string) => overview.data?.find((s) => s.projectId === id);
+  const byProject = useExperimentsByProject(
+    projects.filter((p) => p.installedAt).map((p) => p.id),
+    { stats: true },
+  );
 
   return (
     <div className={styles.layout}>
@@ -47,7 +57,12 @@ export function ProjectsPage() {
         <ul className={styles.grid}>
           {projects.map((project, i) => (
             <li key={project.id}>
-              <ProjectCard project={project} stats={statsFor(project.id)} tone={i % 3} />
+              <ProjectCard
+                project={project}
+                stats={statsFor(project.id)}
+                bestUplift={bestUplift(byProject[project.id])}
+                tone={i % 3}
+              />
             </li>
           ))}
           <li>
@@ -60,6 +75,7 @@ export function ProjectsPage() {
             </button>
           </li>
         </ul>
+        <RecentActivity workspaceId={workspace.id} />
       </section>
 
       {drawerOpen && <NewProjectDrawer onClose={() => setDrawerOpen(false)} />}
@@ -128,13 +144,98 @@ function NameWorkspace() {
   );
 }
 
+/**
+ * The biggest positive uplift among the project's live tests that have a clear winner
+ * (at least a 95% chance to beat control). Undefined while loading, null when none.
+ */
+function bestUplift(
+  data: { experiments?: Experiment[]; stats?: VariantStats[] } | undefined,
+): number | null | undefined {
+  if (!data?.experiments || !data.stats) return undefined;
+  const uplifts = data.experiments
+    .filter((e) => e.status === 'live')
+    .map((e) => summarize(e, data.stats!).best)
+    .filter((b) => b && b.chanceToWin >= 0.95 && b.uplift > 0)
+    .map((b) => b!.uplift);
+  return uplifts.length ? Math.max(...uplifts) : null;
+}
+
+const ACTIVITY_TEXT: Record<ActivityItem['kind'], (subject: string) => string> = {
+  project_created: (s) => `Project “${s}” created`,
+  project_installed: (s) => `${s} snippet sent its first event`,
+  experiment_created: (s) => `Experiment “${s}” created`,
+  experiment_launched: (s) => `“${s}” launched`,
+  experiment_ended: (s) => `“${s}” ended`,
+  experiment_archived: (s) => `“${s}” archived`,
+  segment_created: (s) => `Audience “${s}” created`,
+  segment_updated: (s) => `Audience “${s}” edited`,
+  metric_created: (s) => `Metric “${s}” created`,
+};
+
+function activityLink(item: ActivityItem): string {
+  const base = `/p/${item.projectId}`;
+  if (item.kind.startsWith('experiment_')) return `${base}/experiments/${item.subjectId}`;
+  if (item.kind.startsWith('segment_')) return `${base}/audiences/${item.subjectId}`;
+  if (item.kind === 'metric_created') return `${base}/metrics/${item.subjectId}`;
+  return item.kind === 'project_installed' ? `${base}/experiments` : `${base}/install`;
+}
+
+function RecentActivity({ workspaceId }: { workspaceId: string }) {
+  const [limit, setLimit] = useState(5);
+  const activity = useActivityQuery(workspaceId, limit);
+  const items = activity.data ?? [];
+  return (
+    <section className={styles.activity} aria-labelledby="activity-h">
+      <div className={styles.activityHead}>
+        <h2 id="activity-h" className={styles.activityTitle}>
+          Recent activity
+        </h2>
+        {items.length === limit && limit < 30 && (
+          <button type="button" className={styles.more} onClick={() => setLimit(30)}>
+            Show more
+          </button>
+        )}
+      </div>
+      {activity.isError ? (
+        <p className={styles.activityEmpty} role="alert">
+          Couldn't load activity: {activity.error.message}
+        </p>
+      ) : activity.isPending ? (
+        <p className={styles.activityEmpty} aria-busy="true">
+          Loading activity…
+        </p>
+      ) : items.length === 0 ? (
+        <p className={styles.activityEmpty}>
+          Nothing yet. Create a project, then experiments and audiences show up here.
+        </p>
+      ) : (
+        <ul className={styles.activityList}>
+          {items.map((item) => (
+            <li key={`${item.kind}-${item.subjectId}`} className={styles.activityItem}>
+              <span className={`${styles.activityDot} ${styles[item.kind.split('_')[0]!]}`} />
+              <Link to={activityLink(item)} className={styles.activityText}>
+                {ACTIVITY_TEXT[item.kind](item.subject)}
+              </Link>
+              <span className={styles.activityMeta}>
+                {item.projectName} · {timeAgo(item.at)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function ProjectCard({
   project,
   stats,
+  bestUplift,
   tone,
 }: {
   project: Project;
   stats?: ProjectStats;
+  bestUplift?: number | null;
   tone: number;
 }) {
   const installed = Boolean(project.installedAt);
@@ -173,10 +274,17 @@ function ProjectCard({
               <dt>Visitors, 30d</dt>
               <dd>{stats ? compactNumber(stats.visitors30d) : '…'}</dd>
             </div>
-            <div className={styles.stat}>
-              <dt>No winner yet</dt>
-              <dd className={styles.muted}>—</dd>
-            </div>
+            {bestUplift ? (
+              <div className={styles.stat}>
+                <dt>Best uplift</dt>
+                <dd className={styles.up}>{percent(bestUplift)}</dd>
+              </div>
+            ) : (
+              <div className={styles.stat}>
+                <dt>No winner yet</dt>
+                <dd className={styles.muted}>{bestUplift === undefined ? '…' : '—'}</dd>
+              </div>
+            )}
           </dl>
           {stats && <Sparkline values={stats.dailyVisitors} {...LINE[tone]!} />}
           <div className={styles.chips}>

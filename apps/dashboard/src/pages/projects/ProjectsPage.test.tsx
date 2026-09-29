@@ -281,3 +281,36 @@ describe('workspaces', () => {
     expect(screen.getByText(/JWT expired/)).toBeInTheDocument();
   });
 });
+
+describe('best uplift and recent activity', () => {
+  it('shows the best clear uplift on a project card', async () => {
+    await openProjects();
+    const trip = screen.getByRole('article', { name: 'Trip Demo' });
+    expect(await within(trip).findByText('+9.7%')).toBeInTheDocument();
+    expect(within(trip).getByText('Best uplift')).toBeInTheDocument();
+    const lab = screen.getByRole('article', { name: 'Checkout Lab' });
+    expect(within(lab).getByText('No winner yet')).toBeInTheDocument();
+  });
+
+  it('lists recent activity with links and project names', async () => {
+    await openProjects();
+    const panel = await screen.findByRole('region', { name: 'Recent activity' });
+    const launched = await within(panel).findByRole('link', {
+      name: '“Sticky Book Now bar” launched',
+    });
+    expect(launched).toHaveAttribute('href', '/p/trip-demo/experiments/sticky');
+    expect(within(panel).getByText('Trip Demo · 12 min ago')).toBeInTheDocument();
+    expect(
+      within(panel).getByRole('link', { name: 'Audience “High-intent returners” edited' }),
+    ).toHaveAttribute('href', '/p/trip-demo/audiences/seg-returners');
+  });
+
+  it('explains an empty activity feed', async () => {
+    await openProjects(fakeData({ activity: [] }));
+    expect(
+      await screen.findByText(
+        'Nothing yet. Create a project, then experiments and audiences show up here.',
+      ),
+    ).toBeInTheDocument();
+  });
+});

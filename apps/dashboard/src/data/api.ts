@@ -57,6 +57,27 @@ export interface ProjectStats {
   dailyVisitors: number[];
 }
 
+export type ActivityKind =
+  | 'project_created'
+  | 'project_installed'
+  | 'experiment_created'
+  | 'experiment_launched'
+  | 'experiment_ended'
+  | 'experiment_archived'
+  | 'segment_created'
+  | 'segment_updated'
+  | 'metric_created';
+
+/** One line in Recent activity: the latest change to a project, experiment, segment or metric. */
+export interface ActivityItem {
+  kind: ActivityKind;
+  projectId: string;
+  projectName: string;
+  subjectId: string;
+  subject: string;
+  at: string;
+}
+
 export interface NewProject {
   workspaceId: string;
   name: string;
@@ -210,6 +231,7 @@ export interface DataApi {
   acceptInvite(token: string): Promise<string>;
   getProject(projectId: string): Promise<Project | null>;
   projectOverview(workspaceId: string): Promise<ProjectStats[]>;
+  workspaceActivity(workspaceId: string, limit: number): Promise<ActivityItem[]>;
   eventsThisMonth(workspaceId: string): Promise<number>;
   createProject(project: NewProject): Promise<Project>;
   updateProject(

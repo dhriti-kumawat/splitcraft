@@ -1,4 +1,5 @@
 import type {
+  ActivityItem,
   DailyArm,
   DataApi,
   Invite,
@@ -46,6 +47,34 @@ export const PROJECTS: Project[] = [
     allowedDomains: ['*.vercel.app'],
   }),
   project({ id: 'portfolio', name: 'Portfolio', mainDomain: 'alexmorgan.dev', installedAt: null }),
+];
+
+// Recent activity from 10-projects.html, as the SQL function would return it.
+export const ACTIVITY: ActivityItem[] = [
+  {
+    kind: 'experiment_launched',
+    projectId: 'trip-demo',
+    projectName: 'Trip Demo',
+    subjectId: 'sticky',
+    subject: 'Sticky Book Now bar',
+    at: new Date(Date.now() - 12 * 60_000).toISOString(),
+  },
+  {
+    kind: 'segment_updated',
+    projectId: 'trip-demo',
+    projectName: 'Trip Demo',
+    subjectId: 'seg-returners',
+    subject: 'High-intent returners',
+    at: new Date(Date.now() - 60 * 60_000).toISOString(),
+  },
+  {
+    kind: 'metric_created',
+    projectId: 'checkout-lab',
+    projectName: 'Checkout Lab',
+    subjectId: 'm-purchase',
+    subject: 'Purchase',
+    at: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+  },
 ];
 
 export const STATS: ProjectStats[] = [
@@ -328,6 +357,7 @@ export function fakeData(
     segments?: Segment[];
     results?: Record<string, MetricArm[]>;
     people?: Person[];
+    activity?: ActivityItem[];
   } = {},
 ) {
   const projects = (opts.projects ?? PROJECTS).map((p) => ({
@@ -432,6 +462,7 @@ export function fakeData(
       return p && { ...p };
     },
     projectOverview: async () => STATS,
+    workspaceActivity: async (_ws, limit) => (opts.activity ?? ACTIVITY).slice(0, limit),
     eventsThisMonth: async () => 48_210,
     async createProject(input) {
       created.push(input);
