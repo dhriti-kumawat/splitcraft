@@ -17,12 +17,13 @@ import { targetingSummary } from '../../lib/targeting';
 import { NewExperimentDialog } from './NewExperimentDialog';
 import styles from './ExperimentsPage.module.css';
 
-const FILTERS: Array<{ id: 'all' | ExperimentStatus; label: string }> = [
+const FILTERS: Array<{ id: 'all' | ExperimentStatus | 'archived'; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'live', label: 'Live' },
   { id: 'draft', label: 'Draft' },
   { id: 'paused', label: 'Paused' },
   { id: 'ended', label: 'Ended' },
+  { id: 'archived', label: 'Archived' },
 ];
 
 const STATUS_LABEL: Record<ExperimentStatus, string> = {
@@ -44,18 +45,19 @@ export function ExperimentsPage() {
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
 
-  const rows = useMemo(
+  const all = useMemo(
     () =>
       (experiments.data ?? []).map((exp) => ({ exp, summary: summarize(exp, stats.data ?? []) })),
     [experiments.data, stats.data],
   );
-  const count = (id: (typeof FILTERS)[number]['id']) =>
-    id === 'all' ? rows.length : rows.filter((r) => r.exp.status === id).length;
+  // Archived experiments only show under their own filter.
+  const rows = all.filter((r) => !r.exp.archivedAt);
+  const archived = all.filter((r) => r.exp.archivedAt);
+  const inFilter = (id: (typeof FILTERS)[number]['id']) =>
+    id === 'archived' ? archived : id === 'all' ? rows : rows.filter((r) => r.exp.status === id);
   const query = search.trim().toLowerCase();
-  const shown = rows.filter(
-    (r) =>
-      (filter === 'all' || r.exp.status === filter) &&
-      (!query || r.exp.name.toLowerCase().includes(query) || r.exp.key.includes(query)),
+  const shown = inFilter(filter).filter(
+    (r) => !query || r.exp.name.toLowerCase().includes(query) || r.exp.key.includes(query),
   );
   const live = rows.filter((r) => r.exp.status === 'live');
 
@@ -96,7 +98,7 @@ export function ExperimentsPage() {
               onClick={() => setFilter(f.id)}
             >
               {f.label}
-              <span className={styles.count}>{count(f.id)}</span>
+              <span className={styles.count}>{inFilter(f.id).length}</span>
             </button>
           ))}
         </div>
@@ -113,9 +115,11 @@ export function ExperimentsPage() {
           </p>
         ) : shown.length === 0 ? (
           <p className={styles.empty}>
-            {rows.length === 0
-              ? 'No experiments yet. Create one to start testing.'
-              : 'No experiments match this filter.'}
+            {filter === 'archived' && !query
+              ? 'No archived experiments. Archive a stopped experiment from its More actions menu.'
+              : all.length === 0
+                ? 'No experiments yet. Create one to start testing.'
+                : 'No experiments match this filter.'}
           </p>
         ) : (
           <table className={styles.table}>

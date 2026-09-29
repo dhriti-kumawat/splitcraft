@@ -1,11 +1,18 @@
 import { useState } from 'react';
-import { NavLink, Outlet, useParams } from 'react-router';
+import { NavLink, Outlet, useNavigate, useParams } from 'react-router';
 import { Button } from '../../components/Button';
 import { Dialog } from '../../components/Dialog';
 import dialogStyles from '../../components/Dialog.module.css';
+import { MoreIcon } from '../../components/icons';
+import { Menu, type MenuItem } from '../../components/Menu';
 import { Pill } from '../../components/Pill';
-import { useExperimentQuery, useUpdateExperiment } from '../../data/queries';
-import { useCurrentProject } from '../../data/workspace';
+import {
+  useDeleteExperiment,
+  useDuplicateExperiment,
+  useExperimentQuery,
+  useUpdateExperiment,
+} from '../../data/queries';
+import { useCurrentProject, useWorkspace } from '../../data/workspace';
 import { TopBarActions } from '../../layout/TopBarActions';
 import {
   canLaunch,
@@ -56,6 +63,7 @@ export function ExperimentLayout() {
         <div className={styles.title}>
           <h1>{experiment.name}</h1>
           <Pill tone={experiment.status}>{STATUS[experiment.status]}</Pill>
+          {experiment.archivedAt && <Pill tone="draft">Archived</Pill>}
         </div>
         <nav aria-label="Experiment steps">
           <ol className={styles.steps}>
@@ -83,19 +91,24 @@ export function ExperimentLayout() {
 
 function Actions({ experiment, project }: ExperimentContext) {
   const update = useUpdateExperiment(experiment);
+  const duplicate = useDuplicateExperiment(experiment);
+  const navigate = useNavigate();
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [qa, setQa] = useState(() => qaDone(experiment.id));
   const ready = canLaunch(launchChecks(experiment, project, qa));
   const now = () => new Date().toISOString();
+  const archived = Boolean(experiment.archivedAt);
+  const error = update.error ?? duplicate.error;
 
   return (
     <TopBarActions>
-      {update.isError && (
+      {error && (
         <span className={styles.error} role="alert">
-          {update.error.message}
+          {error.message}
         </span>
       )}
-      {experiment.status !== 'ended' && (
+      {experiment.status !== 'ended' && !archived && (
         <a
           className={styles.linkButton}
           href={previewUrl(experiment, project)}
@@ -109,7 +122,7 @@ function Actions({ experiment, project }: ExperimentContext) {
           Preview on site
         </a>
       )}
-      {experiment.status === 'draft' && (
+      {experiment.status === 'draft' && !archived && (
         <Button
           disabled={!ready || update.isPending}
           aria-describedby={ready ? undefined : 'launch-blockers'}
@@ -132,7 +145,7 @@ function Actions({ experiment, project }: ExperimentContext) {
           </button>
         </>
       )}
-      {experiment.status === 'paused' && (
+      {experiment.status === 'paused' && !archived && (
         <>
           <Button disabled={update.isPending} onClick={() => update.mutate({ status: 'live' })}>
             Resume
@@ -141,6 +154,23 @@ function Actions({ experiment, project }: ExperimentContext) {
             End experiment
           </button>
         </>
+      )}
+      <MoreActions
+        experiment={experiment}
+        onDuplicate={() =>
+          duplicate.mutate(undefined, {
+            onSuccess: (copy) => navigate(`/p/${project.id}/experiments/${copy.id}/basics`),
+          })
+        }
+        onArchive={(on) => update.mutate({ archivedAt: on ? now() : null })}
+        onDelete={() => setConfirmDelete(true)}
+      />
+      {confirmDelete && (
+        <DeleteDialog
+          experiment={experiment}
+          onDeleted={() => navigate(`/p/${project.id}/experiments`, { replace: true })}
+          onClose={() => setConfirmDelete(false)}
+        />
       )}
       {confirmEnd && (
         <Dialog
@@ -164,5 +194,79 @@ function Actions({ experiment, project }: ExperimentContext) {
         </Dialog>
       )}
     </TopBarActions>
+  );
+}
+
+function MoreActions({
+  experiment,
+  onDuplicate,
+  onArchive,
+  onDelete,
+}: {
+  experiment: ExperimentContext['experiment'];
+  onDuplicate(): void;
+  onArchive(on: boolean): void;
+  onDelete(): void;
+}) {
+  const { user } = useWorkspace();
+  const live = experiment.status === 'live';
+  const stopFirst = live ? 'End or pause it first.' : undefined;
+  const items: MenuItem[] = [
+    { label: 'Duplicate', onSelect: onDuplicate },
+    experiment.archivedAt
+      ? { label: 'Unarchive', onSelect: () => onArchive(false) }
+      : { label: 'Archive', onSelect: () => onArchive(true), disabledReason: stopFirst },
+    {
+      label: 'Delete',
+      onSelect: onDelete,
+      danger: true,
+      disabledReason:
+        user.role === 'member' ? 'Only workspace owners and admins can delete.' : stopFirst,
+    },
+  ];
+  return (
+    <Menu label="More actions" items={items}>
+      <MoreIcon />
+    </Menu>
+  );
+}
+
+function DeleteDialog({
+  experiment,
+  onDeleted,
+  onClose,
+}: {
+  experiment: ExperimentContext['experiment'];
+  onDeleted(): void;
+  onClose(): void;
+}) {
+  const remove = useDeleteExperiment(experiment);
+  return (
+    <Dialog
+      title={`Delete “${experiment.name}”?`}
+      description="This permanently deletes the experiment, its variant code and history, and every event it collected. It can't be undone. Archive it instead to keep the results."
+      onClose={onClose}
+    >
+      {remove.isError && (
+        <div className={dialogStyles.body}>
+          <div role="alert" className={dialogStyles.alert}>
+            Couldn't delete: {remove.error.message}
+          </div>
+        </div>
+      )}
+      <div className={dialogStyles.foot}>
+        <Button variant="secondary" onClick={onClose}>
+          Keep experiment
+        </Button>
+        <button
+          type="button"
+          className={styles.dangerButton}
+          disabled={remove.isPending}
+          onClick={() => remove.mutate(undefined, { onSuccess: onDeleted })}
+        >
+          {remove.isPending ? 'Deleting…' : 'Delete experiment'}
+        </button>
+      </div>
+    </Dialog>
   );
 }

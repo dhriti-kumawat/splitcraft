@@ -54,6 +54,7 @@ interface ExperimentRow {
   plan: Experiment['plan'] | null;
   started_at: string | null;
   ended_at: string | null;
+  archived_at: string | null;
   created_at: string;
   variants: Array<Omit<Variant, 'weight'> & { weight: number | string }> | null;
   primary_metric: { name: string } | null;
@@ -78,6 +79,7 @@ export function toExperiment(row: ExperimentRow): Experiment {
     plan: row.plan ?? {},
     startedAt: row.started_at,
     endedAt: row.ended_at,
+    archivedAt: row.archived_at,
     createdAt: row.created_at,
     variants: (row.variants ?? [])
       .map((v) => ({ ...v, weight: Number(v.weight) }))
@@ -111,6 +113,7 @@ const PATCH_COLUMNS: Record<keyof ExperimentPatch, string> = {
   plan: 'plan',
   startedAt: 'started_at',
   endedAt: 'ended_at',
+  archivedAt: 'archived_at',
 };
 
 interface MetricRow {
@@ -490,6 +493,28 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
           .single(),
       ) as unknown as ExperimentRow;
       return toExperiment(row);
+    },
+
+    async duplicateExperiment(experimentId) {
+      const id = check(
+        await supabase.rpc('duplicate_experiment', { p_experiment: experimentId }),
+      ) as unknown as string;
+      const row = check(
+        await supabase.from('experiments').select(EXPERIMENT_COLUMNS).eq('id', id).single(),
+      ) as unknown as ExperimentRow;
+      return toExperiment(row);
+    },
+
+    async deleteExperiment(experimentId) {
+      // Row Level Security hides the row from members and while live, so nothing is deleted.
+      const rows = check(
+        await supabase.from('experiments').delete().eq('id', experimentId).select('id'),
+      ) as unknown as unknown[];
+      if (!rows.length) {
+        throw new Error(
+          'Only owners and admins can delete an experiment, and not while it is live.',
+        );
+      }
     },
 
     async updateVariant(variantId, patch) {

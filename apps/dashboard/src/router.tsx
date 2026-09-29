@@ -8,6 +8,7 @@ import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
 import { AppShell } from './layout/AppShell';
+import { ExperimentName, MetricName, SegmentName } from './layout/CrumbNames';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProjectRoute } from './pages/ProjectRoute';
@@ -76,7 +77,9 @@ export const routes: RouteObject[] = [
               {
                 path: ':expId',
                 element: <ExperimentLayout />,
-                handle: crumb('Experiment'),
+                handle: {
+                  crumbs: ({ params }) => [{ label: <ExperimentName id={params.expId!} /> }],
+                } satisfies RouteHandle,
                 children: [
                   { index: true, element: <Navigate to="basics" replace /> },
                   { path: 'basics', element: <BasicsPage /> },
@@ -124,7 +127,11 @@ export const routes: RouteObject[] = [
                 lazy: async () => ({
                   Component: (await import('./pages/audiences/AudiencesPage')).AudiencesPage,
                 }),
-                handle: crumb('Segment'),
+                handle: {
+                  crumbs: ({ params }) => [
+                    { label: <SegmentName projectId={params.projectId!} id={params.segmentId!} /> },
+                  ],
+                } satisfies RouteHandle,
               },
             ],
           },
@@ -145,7 +152,11 @@ export const routes: RouteObject[] = [
                 lazy: async () => ({
                   Component: (await import('./pages/metrics/MetricEditor')).MetricEditor,
                 }),
-                handle: crumb('Metric'),
+                handle: {
+                  crumbs: ({ params }) => [
+                    { label: <MetricName projectId={params.projectId!} id={params.metricId!} /> },
+                  ],
+                } satisfies RouteHandle,
               },
             ],
           },

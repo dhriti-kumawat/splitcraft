@@ -80,3 +80,15 @@
   font-size: 13px;
   color: var(--danger);
 }
+
+.dangerButton {
+  composes: button from '../../components/Button.module.css';
+  border: 1px solid var(--danger);
+  background: var(--surface);
+  color: var(--danger);
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: var(--danger);
+  color: #ffffff;
+}

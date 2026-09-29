@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from '../components/Button';
 import { RequireAuth } from '../auth/RequireAuth';
@@ -64,6 +64,36 @@ describe('breadcrumb', () => {
       'href',
       '/p/trip-demo/experiments',
     );
+  });
+});
+
+describe('name breadcrumbs', () => {
+  it('shows the experiment name', async () => {
+    await renderAt('/p/trip-demo/experiments/trust/basics');
+    await waitFor(() =>
+      expect(breadcrumb()).toEqual([
+        "Dhriti's Workspace",
+        'Trip Demo',
+        'Experiments',
+        'Trust badges under Book button',
+      ]),
+    );
+  });
+
+  it('shows the segment name', async () => {
+    await renderAt('/p/trip-demo/audiences/seg-mobile');
+    await waitFor(() => expect(breadcrumb().at(-1)).toBe('Mobile first-timers'));
+    expect(breadcrumb()).toEqual([
+      "Dhriti's Workspace",
+      'Trip Demo',
+      'Audiences',
+      'Mobile first-timers',
+    ]);
+  });
+
+  it('shows the metric name', async () => {
+    await renderAt('/p/trip-demo/metrics/m-book');
+    await waitFor(() => expect(breadcrumb().at(-1)).toBe('Book click'));
   });
 });
 
