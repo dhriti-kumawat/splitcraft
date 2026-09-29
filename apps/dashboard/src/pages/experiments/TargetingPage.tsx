@@ -388,7 +388,7 @@ export function TargetingPage() {
             </span>
           )}
         </section>
-        <UrlTester targeting={next} domain={project.mainDomain} />
+        <UrlTester targeting={next} domain={project.mainDomain} testPage={experiment.previewUrl} />
         <section className={styles.section} aria-labelledby="explain-h">
           <span className={styles.lbl} id="explain-h">
             Segment vs trigger
@@ -555,8 +555,17 @@ function whoSentence(t: StoredTargeting, segmentName: (id: string) => string): s
   return `${parts.join(', ')}.`;
 }
 
-function UrlTester({ targeting, domain }: { targeting: StoredTargeting; domain: string }) {
-  const [url, setUrl] = useState(`${domain}/`);
+function UrlTester({
+  targeting,
+  domain,
+  testPage,
+}: {
+  targeting: StoredTargeting;
+  domain: string;
+  testPage: string | null;
+}) {
+  // Start with the experiment's test page (without the scheme), or the home page.
+  const [url, setUrl] = useState(testPage ? testPage.replace(/^https?:\/\//, '') : `${domain}/`);
   const id = useId();
   const result = testUrl(url, targeting);
   return (

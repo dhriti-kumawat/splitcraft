@@ -118,6 +118,7 @@ const experiment = (
   startedAt: null,
   endedAt: null,
   archivedAt: null,
+  previewUrl: null,
   autoPaused: null,
   createdAt: daysAgo(30),
   variants: variants(e.id),
