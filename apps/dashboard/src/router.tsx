@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
 import { AuthPage } from './pages/auth/AuthPage';
+import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -49,7 +50,7 @@ export const routes: RouteObject[] = [
             children: [
               {
                 index: true,
-                element: <Placeholder title="Experiments" step="feat/experiments-list" />,
+                element: <ExperimentsPage />,
               },
               {
                 path: ':expId/*',

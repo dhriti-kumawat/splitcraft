@@ -1,4 +1,12 @@
-import type { DataApi, NewProject, Project, ProjectStats, Workspace } from '../data/api';
+import type {
+  DataApi,
+  Experiment,
+  NewProject,
+  Project,
+  ProjectStats,
+  VariantStats,
+  Workspace,
+} from '../data/api';
 
 export const WORKSPACE: Workspace = {
   id: 'ws_1',
@@ -49,9 +57,118 @@ export const STATS: ProjectStats[] = [
   { projectId: 'portfolio', liveTests: 0, visitors30d: 0, dailyVisitors: Array(30).fill(0) },
 ];
 
+const DAY = 24 * 60 * 60 * 1000;
+const daysAgo = (n: number) => new Date(Date.now() - n * DAY).toISOString();
+const variants = (id: string) => [
+  { id: `${id}-b`, key: 'b', name: 'B', weight: 50, js: '', css: '', version: 1 },
+  { id: `${id}-c`, key: 'control', name: 'Control', weight: 50, js: '', css: '', version: 1 },
+];
+const experiment = (
+  e: Partial<Experiment> & Pick<Experiment, 'id' | 'name' | 'status'>,
+): Experiment => ({
+  projectId: 'trip-demo',
+  key: e.id,
+  hypothesis: '',
+  trafficPct: 100,
+  targeting: {},
+  primaryMetricId: 'm-book',
+  primaryMetricName: 'Book click',
+  plannedSample: null,
+  startedAt: null,
+  endedAt: null,
+  createdAt: daysAgo(30),
+  variants: variants(e.id),
+  ...e,
+});
+
+// The five experiments from 11-experiments-list.html, as test data.
+export const EXPERIMENTS: Experiment[] = [
+  experiment({
+    id: 'sticky',
+    name: 'Sticky Book Now bar',
+    status: 'live',
+    startedAt: daysAgo(14),
+    plannedSample: 13_500,
+    targeting: {
+      where: { include: [{ op: 'matches', value: '/trips/*' }] },
+      how: [{ mode: 'all', items: [{ type: 'device_type', value: ['mobile'] }] }],
+    },
+  }),
+  experiment({
+    id: 'hero',
+    name: 'Hero headline: price-led',
+    status: 'live',
+    startedAt: daysAgo(9),
+    primaryMetricName: 'Search started',
+    targeting: { where: { include: [{ op: 'is', value: '/' }] } },
+  }),
+  experiment({ id: 'trust', name: 'Trust badges under Book button', status: 'draft' }),
+  experiment({
+    id: 'price',
+    name: 'Price summary in checkout',
+    status: 'paused',
+    startedAt: daysAgo(4),
+    primaryMetricName: 'Purchase',
+  }),
+  experiment({
+    id: 'urgency',
+    name: 'Urgency banner: “3 spots left”',
+    status: 'ended',
+    startedAt: daysAgo(30),
+    endedAt: daysAgo(9),
+  }),
+];
+
+// Sticky uses the PRODUCT_SPEC §6 worked example.
+export const EXPERIMENT_STATS: VariantStats[] = [
+  {
+    experimentId: 'sticky',
+    variantKey: 'control',
+    visitors: 12_480,
+    conversions: 622,
+    visitors7d: 6_300,
+  },
+  {
+    experimentId: 'sticky',
+    variantKey: 'b',
+    visitors: 12_380,
+    conversions: 677,
+    visitors7d: 6_250,
+  },
+  {
+    experimentId: 'hero',
+    variantKey: 'control',
+    visitors: 4_460,
+    conversions: 446,
+    visitors7d: 3_400,
+  },
+  { experimentId: 'hero', variantKey: 'b', visitors: 4_441, conversions: 448, visitors7d: 3_400 },
+  { experimentId: 'price', variantKey: 'control', visitors: 1_570, conversions: 80, visitors7d: 0 },
+  { experimentId: 'price', variantKey: 'b', visitors: 1_552, conversions: 78, visitors7d: 0 },
+  // −2.3% with about a 7% chance to win, as in the design.
+  {
+    experimentId: 'urgency',
+    variantKey: 'control',
+    visitors: 20_640,
+    conversions: 5_910,
+    visitors7d: 0,
+  },
+  { experimentId: 'urgency', variantKey: 'b', visitors: 20_648, conversions: 5_776, visitors7d: 0 },
+];
+
 /** In-memory DataApi seeded with the design's projects. */
-export function fakeData(opts: { projects?: Project[]; workspaces?: Workspace[] } = {}) {
+export function fakeData(
+  opts: {
+    projects?: Project[];
+    workspaces?: Workspace[];
+    experiments?: Experiment[];
+    stats?: VariantStats[];
+    lastEventAt?: string | null;
+  } = {},
+) {
   const projects = [...(opts.projects ?? PROJECTS)];
+  const experiments = [...(opts.experiments ?? EXPERIMENTS)];
+  const createdExperiments: string[] = [];
   const created: NewProject[] = [];
   let installNext = false;
 
@@ -78,10 +195,31 @@ export function fakeData(opts: { projects?: Project[]; workspaces?: Workspace[] 
       projects.push(p);
       return p;
     },
+    listExperiments: async (projectId) =>
+      experiments.filter((e) => e.projectId === projectId).map((e) => ({ ...e })),
+    experimentStats: async () => opts.stats ?? EXPERIMENT_STATS,
+    lastEventAt: async () =>
+      opts.lastEventAt === undefined
+        ? new Date(Date.now() - 2 * 60_000).toISOString()
+        : opts.lastEventAt,
+    async createExperiment(projectId, name) {
+      createdExperiments.push(name);
+      const e = experiment({
+        id: `exp-${createdExperiments.length}`,
+        name,
+        status: 'draft',
+        projectId,
+        primaryMetricId: null,
+        primaryMetricName: null,
+      });
+      experiments.unshift(e);
+      return e;
+    },
   };
   return {
     api,
     created,
+    createdExperiments,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;

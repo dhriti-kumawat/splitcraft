@@ -25,3 +25,14 @@ describe('toProject', () => {
     });
   });
 });
+
+describe('experimentKey', () => {
+  it('slugs names into valid keys', async () => {
+    const { experimentKey } = await import('./supabaseData');
+    expect(experimentKey('Trust badges under Book button')).toBe('trust-badges-under-book-button');
+    expect(experimentKey('Urgency banner: “3 spots left”')).toBe('urgency-banner-3-spots-left');
+    expect(experimentKey('Café crème')).toBe('cafe-creme');
+    expect(experimentKey('***')).toMatch(/^exp-[a-z0-9]+$/);
+    expect(experimentKey('x'.repeat(100))).toHaveLength(56);
+  });
+});

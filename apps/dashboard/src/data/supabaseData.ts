@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { DataApi, Project, Workspace } from './api';
+import type { StoredTargeting } from '../lib/targeting';
+import type { DataApi, Experiment, ExperimentStatus, Project, Variant, Workspace } from './api';
 
 interface ProjectRow {
   id: string;
@@ -26,6 +27,61 @@ export function toProject(row: ProjectRow): Project {
     installedAt: row.installed_at,
     createdAt: row.created_at,
   };
+}
+
+interface ExperimentRow {
+  id: string;
+  project_id: string;
+  key: string;
+  name: string;
+  hypothesis: string;
+  status: ExperimentStatus;
+  traffic_pct: number | string;
+  targeting: StoredTargeting | null;
+  primary_metric_id: string | null;
+  planned_sample: number | null;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  variants: Array<Omit<Variant, 'weight'> & { weight: number | string }> | null;
+  primary_metric: { name: string } | null;
+}
+
+const EXPERIMENT_COLUMNS =
+  '*, variants (id, key, name, weight, js, css, version), primary_metric:metrics!primary_metric_id (name)';
+
+export function toExperiment(row: ExperimentRow): Experiment {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    key: row.key,
+    name: row.name,
+    hypothesis: row.hypothesis,
+    status: row.status,
+    trafficPct: Number(row.traffic_pct),
+    targeting: row.targeting ?? {},
+    primaryMetricId: row.primary_metric_id,
+    primaryMetricName: row.primary_metric?.name ?? null,
+    plannedSample: row.planned_sample,
+    startedAt: row.started_at,
+    endedAt: row.ended_at,
+    createdAt: row.created_at,
+    variants: (row.variants ?? [])
+      .map((v) => ({ ...v, weight: Number(v.weight) }))
+      .sort((a, b) => a.key.localeCompare(b.key)),
+  };
+}
+
+/** "Trust badges under Book button" → "trust-badges-under-book-button". */
+export function experimentKey(name: string): string {
+  const key = name
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 56);
+  return /^[a-z0-9]/.test(key) ? key : `exp-${key || Date.now().toString(36)}`;
 }
 
 function check<T>(result: { data: T | null; error: { message: string } | null }): T {
@@ -106,6 +162,75 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
           .single(),
       ) as ProjectRow;
       return toProject(row);
+    },
+
+    async listExperiments(projectId) {
+      const rows = check(
+        await supabase
+          .from('experiments')
+          .select(EXPERIMENT_COLUMNS)
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false }),
+      ) as unknown as ExperimentRow[];
+      return rows.map(toExperiment);
+    },
+
+    async experimentStats(projectId) {
+      const rows = check(
+        await supabase.rpc('experiment_stats', { p_project: projectId }),
+      ) as Array<{
+        experiment_id: string;
+        variant_key: string;
+        visitors: number;
+        conversions: number;
+        visitors_7d: number;
+      }>;
+      return rows.map((r) => ({
+        experimentId: r.experiment_id,
+        variantKey: r.variant_key,
+        visitors: r.visitors,
+        conversions: r.conversions,
+        visitors7d: r.visitors_7d,
+      }));
+    },
+
+    async lastEventAt(projectId) {
+      const rows = check(
+        await supabase
+          .from('events')
+          .select('created_at')
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false })
+          .limit(1),
+      ) as Array<{ created_at: string }>;
+      return rows[0]?.created_at ?? null;
+    },
+
+    async createExperiment(projectId, name) {
+      const base = experimentKey(name);
+      // Keys are unique per project; add -2, -3… on a clash.
+      for (let attempt = 1; attempt <= 20; attempt++) {
+        const key = attempt === 1 ? base : `${base}-${attempt}`;
+        const { data, error } = await supabase
+          .from('experiments')
+          .insert({ project_id: projectId, key, name })
+          .select('id')
+          .single();
+        if (error?.code === '23505') continue;
+        if (error) throw new Error(error.message);
+        const id = (data as { id: string }).id;
+        check(
+          await supabase.from('variants').insert([
+            { experiment_id: id, key: 'control', name: 'Control', weight: 50 },
+            { experiment_id: id, key: 'b', name: 'B', weight: 50 },
+          ]),
+        );
+        const row = check(
+          await supabase.from('experiments').select(EXPERIMENT_COLUMNS).eq('id', id).single(),
+        ) as unknown as ExperimentRow;
+        return toExperiment(row);
+      }
+      throw new Error('Could not find a free experiment key. Try a different name.');
     },
   };
 }
