@@ -136,7 +136,7 @@ A metric = **event source** + **how to measure**.
 
 - Loaded by `<script src="https://cdn.splitly.dev/v1.js" data-project="prj_xxx" async>`,
   or npm + `useExperiment(key)` React hook.
-- < 5 KB gzipped, no runtime dependencies.
+- < 7 KB gzipped (QA panel loaded separately, < 3 KB), no runtime dependencies.
 - Flow: read/create visitor id cookie → fetch project config → evaluate targeting →
   bucket → anti-flicker (hide page max 400 ms) → apply variant JS/CSS → send exposure →
   listen for goals → push events to backend and `window.dataLayer`.

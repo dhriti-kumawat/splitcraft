@@ -19,7 +19,7 @@ Prompts are written to paste into Claude Code as-is.
 5. `feat/sdk-qa-mode`
    > `?splitly_force=exp:variant` support and the QA panel from design/screens/17-qa-mode-mobile.html, rendered in a shadow root so site CSS can't break it.
 6. `chore/sdk-size-budget`
-   > Add a size check in CI that fails above 5 KB gzipped.
+   > Add a size check in CI that fails above 7 KB gzipped (main bundle) and 3 KB (QA panel). Budget raised from 5 KB, see DECISIONS #17.
 
 ## Phase 2 · Backend (Supabase)
 > Create SQL migrations for the data model in PRODUCT_SPEC §10 with Row Level Security. Add an Edge Function (or insert-only policy) for SDK events and a config endpoint the SDK fetches by project public key. Put keys in `.env.example` as placeholders only.
