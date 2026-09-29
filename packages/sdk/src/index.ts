@@ -15,3 +15,6 @@ export {
   type PageviewGoal,
   type Tracker,
 } from './tracking';
+export { clearForcedVariants, getForcedVariants, withForce, type ForcedVariants } from './qa/force';
+export { loadQaPanel } from './qa/loader';
+export type { QaSource, QaState, QaExperiment, QaEvent } from './qa/types';
