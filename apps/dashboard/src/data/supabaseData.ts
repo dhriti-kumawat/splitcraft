@@ -67,6 +67,7 @@ interface ExperimentRow {
   started_at: string | null;
   ended_at: string | null;
   archived_at: string | null;
+  preview_url: string | null;
   auto_paused: Experiment['autoPaused'];
   created_at: string;
   variants: Array<Omit<Variant, 'weight'> & { weight: number | string }> | null;
@@ -93,6 +94,7 @@ export function toExperiment(row: ExperimentRow): Experiment {
     startedAt: row.started_at,
     endedAt: row.ended_at,
     archivedAt: row.archived_at,
+    previewUrl: row.preview_url ?? null,
     autoPaused: row.auto_paused ?? null,
     createdAt: row.created_at,
     variants: (row.variants ?? [])
@@ -128,6 +130,7 @@ const PATCH_COLUMNS: Record<keyof ExperimentPatch, string> = {
   startedAt: 'started_at',
   endedAt: 'ended_at',
   archivedAt: 'archived_at',
+  previewUrl: 'preview_url',
 };
 
 interface MetricRow {

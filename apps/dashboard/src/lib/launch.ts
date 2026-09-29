@@ -88,7 +88,50 @@ export function markQaDone(experimentId: string): void {
 export function previewUrl(exp: Experiment, project: Project, variantKey?: string): string {
   const key =
     variantKey ?? exp.variants.find((v) => v.key !== controlKey(exp))?.key ?? controlKey(exp);
-  const host = project.mainDomain;
-  const scheme = host.startsWith('localhost') ? 'http' : 'https';
-  return `${scheme}://${host}/?splitcraft_force=${encodeURIComponent(`${exp.key}:${key}`)}`;
+  // The experiment's test page, or the site's home page.
+  const url = new URL(
+    exp.previewUrl ?? `${schemeFor(project.mainDomain)}://${project.mainDomain}/`,
+  );
+  url.searchParams.set('splitcraft_force', `${exp.key}:${key}`);
+  return url.href;
+}
+
+const schemeFor = (host: string) =>
+  /^(localhost|127\.0\.0\.1)(:|$)/.test(host) ? 'http' : 'https';
+
+/**
+ * The test page an experiment runs on, from what someone typed: a path (on the main
+ * domain) or a full URL on one of the project's domains (main, www., or "Also allow on").
+ */
+export function testPageUrl(
+  input: string,
+  project: Pick<Project, 'mainDomain' | 'allowedDomains'>,
+): { url: string | null; error?: string } {
+  const raw = input.trim();
+  if (!raw) return { url: null };
+  const main = project.mainDomain;
+  const full = raw.startsWith('/')
+    ? `${schemeFor(main)}://${main}${raw}`
+    : /^https?:\/\//i.test(raw)
+      ? raw
+      : `${schemeFor(raw)}://${raw}`;
+  let url: URL;
+  try {
+    url = new URL(full);
+  } catch {
+    return { url: null, error: 'Enter a page on your site, like /trips/norway.' };
+  }
+  const host = url.hostname.toLowerCase();
+  const allowed = [main, `www.${main}`, ...project.allowedDomains].some((entry) => {
+    const d = entry.toLowerCase().split(':')[0]!;
+    return host === d || (d.startsWith('*.') && host.endsWith(d.slice(1)));
+  });
+  if (!allowed) {
+    return {
+      url: null,
+      error: `${host} isn't one of this project's domains. Add it in Settings › Also allow on.`,
+    };
+  }
+  url.searchParams.delete('splitcraft_force');
+  return { url: url.href };
 }
