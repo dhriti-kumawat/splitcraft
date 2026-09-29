@@ -33,7 +33,7 @@ beforeAll(async () => {
   // Alice creates a workspace, a project, an experiment with a variant, and receives events.
   await as(db, alice, async () => {
     [{ id: aliceWs }] = await rows<{ id: string }>(
-      `insert into workspaces (name) values ('Dhriti''s Workspace') returning id`,
+      `insert into workspaces (name) values ('Northwind Travel') returning id`,
     );
     [{ id: aliceProject }] = await rows<{ id: string }>(
       `insert into projects (workspace_id, name, main_domain) values ($1, 'Trip Demo', 'mytrips.dev') returning id`,
@@ -73,7 +73,7 @@ describe('workspaces', () => {
       await as(db, bob, () => rows<{ name: string }>('select name from workspaces order by name'))
     ).map((r) => r.name);
     // The workspace Bob created plus the one made for him at sign-up; never Alice's.
-    expect(names).toEqual(["Bob's Workspace", "My's Workspace"]);
+    expect(names).toEqual(["Bob's Workspace", 'My workspace']);
   });
 
   it('does not let a non-member rename or delete a workspace', async () => {
@@ -84,7 +84,7 @@ describe('workspaces', () => {
     const [ws] = await as(db, alice, () =>
       rows('select name from workspaces where id = $1', [aliceWs]),
     );
-    expect(ws).toEqual({ name: "Dhriti's Workspace" });
+    expect(ws).toEqual({ name: 'Northwind Travel' });
   });
 
   it('does not let a user add themselves to someone else’s workspace', async () => {
