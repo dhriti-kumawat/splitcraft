@@ -101,3 +101,36 @@ describe('experiment actions menu', () => {
     expect(del).toHaveTextContent('Only workspace owners and admins can delete.');
   });
 });
+
+describe('automatic pause', () => {
+  it('explains why a crossed guardrail paused the experiment', async () => {
+    const price = EXPERIMENTS.find((e) => e.id === 'price')!;
+    await open(
+      'price',
+      fakeData({
+        experiments: EXPERIMENTS.map((e) =>
+          e.id === 'price'
+            ? {
+                ...price,
+                autoPaused: {
+                  at: '2026-09-28T10:00:00Z',
+                  metricId: 'm-purchase',
+                  variantKey: 'b',
+                  uplift: -0.4,
+                  upliftLow: -0.637,
+                  upliftHigh: -0.163,
+                  maxPct: 2,
+                },
+              }
+            : e,
+        ),
+      }),
+    );
+    expect(
+      await screen.findByText(
+        /Purchase in B changed −40\.0% \(95% range −63\.7% to −16\.3%\), past its 2% limit/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Paused automatically on 28 Sept.')).toBeInTheDocument();
+  });
+});

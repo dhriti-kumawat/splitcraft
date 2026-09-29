@@ -19,6 +19,16 @@
   letter-spacing: -0.02em;
 }
 
+.autoPause {
+  margin: 12px 0 4px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--warn-soft);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .steps {
   display: flex;
   gap: 26px;
