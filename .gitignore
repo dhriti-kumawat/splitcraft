@@ -17,3 +17,4 @@ coverage/
 
 # Supabase CLI local state
 supabase/.temp/
+dist-ssr/
