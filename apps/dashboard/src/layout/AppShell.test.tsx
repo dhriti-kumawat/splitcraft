@@ -1,6 +1,8 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from '../components/Button';
+import { RequireAuth } from '../auth/RequireAuth';
+import { WorkspaceProvider } from '../data/WorkspaceProvider';
 import { renderApp } from '../test/renderApp';
 import { AppShell } from './AppShell';
 import { TopBarActions } from './TopBarActions';
@@ -91,7 +93,7 @@ describe('sidebar', () => {
 
   it('shows event usage as a meter', async () => {
     await renderAt('/projects');
-    const meter = screen.getByRole('meter', { name: 'Events this month' });
+    const meter = await screen.findByRole('meter', { name: 'Events this month' });
     expect(meter).toHaveAttribute('aria-valuenow', '48210');
     expect(meter).toHaveAttribute('aria-valuemax', '100000');
     expect(screen.getByText('48,210')).toBeInTheDocument();
@@ -153,13 +155,19 @@ describe('top bar actions', () => {
   it('renders page actions into the top bar', async () => {
     await renderAt('/demo', [
       {
-        element: <AppShell />,
+        element: (
+          <RequireAuth>
+            <WorkspaceProvider>
+              <AppShell />
+            </WorkspaceProvider>
+          </RequireAuth>
+        ),
         children: [
           {
             path: 'demo',
             element: (
               <TopBarActions>
-                <Button>New project</Button>
+                <Button>Export</Button>
               </TopBarActions>
             ),
           },
@@ -167,7 +175,7 @@ describe('top bar actions', () => {
       },
     ]);
     const header = screen.getByRole('banner');
-    expect(within(header).getByRole('button', { name: 'New project' })).toBeInTheDocument();
+    expect(within(header).getByRole('button', { name: 'Export' })).toBeInTheDocument();
   });
 });
 

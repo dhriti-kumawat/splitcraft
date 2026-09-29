@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react';
 import { useParams } from 'react-router';
-import type { Project, User, Workspace } from './demo';
+import type { Project, Role, Workspace } from './api';
 
 export interface WorkspaceData {
-  user: User;
+  user: { id: string; name: string; role: Role };
   workspace: Workspace;
+  workspaces: Workspace[];
   projects: Project[];
+  selectWorkspace(id: string): void;
 }
 
 export const WorkspaceContext = createContext<WorkspaceData | null>(null);

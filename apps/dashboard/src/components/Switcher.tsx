@@ -8,6 +8,7 @@ export interface SwitcherItem {
   to: string;
   label: string;
   hint?: string;
+  onSelect?: () => void;
 }
 
 interface Props {
@@ -78,7 +79,10 @@ export function Switcher({ label, badge, title, subtitle, items, currentId, foot
                   to={item.to}
                   className={styles.item}
                   aria-current={current ? 'true' : undefined}
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    item.onSelect?.();
+                    setOpen(false);
+                  }}
                 >
                   <span className={styles.text}>
                     <span className={styles.title}>{item.label}</span>

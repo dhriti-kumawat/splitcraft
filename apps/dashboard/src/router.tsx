@@ -1,12 +1,14 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
+import { WorkspaceProvider } from './data/WorkspaceProvider';
 import { AuthPage } from './pages/auth/AuthPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { Placeholder } from './pages/Placeholder';
 import { ProjectRoute } from './pages/ProjectRoute';
-import { ProjectsPage } from './pages/ProjectsPage';
+import { InstallPage } from './pages/projects/InstallPage';
+import { ProjectsPage } from './pages/projects/ProjectsPage';
 
 const crumb = (label: string, to?: string): RouteHandle => ({ crumbs: () => [{ label, to }] });
 
@@ -20,7 +22,9 @@ export const routes: RouteObject[] = [
   {
     element: (
       <RequireAuth>
-        <AppShell />
+        <WorkspaceProvider>
+          <AppShell />
+        </WorkspaceProvider>
       </RequireAuth>
     ),
     children: [
@@ -80,7 +84,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: 'install',
-            element: <Placeholder title="Install" step="feat/projects" />,
+            element: <InstallPage />,
             handle: crumb('Install'),
           },
           {

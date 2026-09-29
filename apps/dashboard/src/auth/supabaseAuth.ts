@@ -1,4 +1,9 @@
-import { createClient, type AuthError, type User } from '@supabase/supabase-js';
+import {
+  createClient,
+  type AuthError,
+  type SupabaseClient,
+  type User,
+} from '@supabase/supabase-js';
 import { MESSAGES, type AuthApi, type AuthUser } from './api';
 
 const KEEP_KEY = 'splitly_keep_logged_in';
@@ -40,10 +45,14 @@ export function messageFor(error: AuthError | Error): string {
   return MESSAGES.unknown;
 }
 
-export function createSupabaseAuth(url: string, anonKey: string): AuthApi {
-  const supabase = createClient(url, anonKey, {
+/** One client for auth and data, with the "keep me logged in" session storage. */
+export function createSupabase(url: string, anonKey: string): SupabaseClient {
+  return createClient(url, anonKey, {
     auth: { storage: sessionStore, persistSession: true, autoRefreshToken: true },
   });
+}
+
+export function createSupabaseAuth(supabase: SupabaseClient): AuthApi {
   const origin = window.location.origin;
 
   return {
