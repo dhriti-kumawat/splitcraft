@@ -17,6 +17,8 @@ export interface AuthApi {
   signIn(email: string, password: string, keepLoggedIn: boolean): Promise<AuthResult>;
   signUp(name: string, email: string, password: string): Promise<SignUpResult>;
   sendPasswordReset(email: string): Promise<AuthResult>;
+  /** Email a one-time login link (existing accounts only). */
+  sendLoginLink(email: string, next: string): Promise<AuthResult>;
   updatePassword(password: string): Promise<AuthResult>;
   signInWithProvider(provider: Provider): Promise<AuthResult>;
   signOut(): Promise<void>;

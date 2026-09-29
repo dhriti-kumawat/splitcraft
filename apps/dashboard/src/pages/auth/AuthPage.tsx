@@ -20,6 +20,12 @@ const COPY: Record<Mode, { title: string; subtitle: string; cta: string; busy: s
     cta: 'Create workspace',
     busy: 'Creating workspace…',
   },
+  magic: {
+    title: 'Log in with an email link',
+    subtitle: "Enter your email and we'll send a link that logs you in. No password needed.",
+    cta: 'Email me a link',
+    busy: 'Sending…',
+  },
   forgot: {
     title: 'Reset your password',
     subtitle: 'Enter the email you signed up with and we will send you a reset link.',
@@ -39,7 +45,7 @@ const RESEND_SECONDS = 30;
 const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined)?.replace(/\/$/, '');
 
 type Result =
-  | { kind: 'sent'; email: string }
+  | { kind: 'sent'; email: string; what: 'reset' | 'login' }
   | { kind: 'confirm'; email: string }
   | { kind: 'welcome'; name: string }
   | { kind: 'created' }
@@ -99,7 +105,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const shown = (k: keyof FieldErrors) => Boolean((submitted || touched[k]) && errors[k]);
   const touch = (k: string) => () => setTouched((t) => ({ ...t, [k]: true }));
   const copy = COPY[mode];
-  const hasPassword = mode !== 'forgot';
+  const hasPassword = mode !== 'forgot' && mode !== 'magic';
   const withRules = (mode === 'signup' || mode === 'reset') && password.length > 0;
   const score = strength(password);
 
@@ -139,11 +145,18 @@ export function AuthPage({ mode }: { mode: Mode }) {
           setResult(
             r.needsConfirmation ? { kind: 'confirm', email: cleanEmail } : { kind: 'created' },
           );
-      } else if (mode === 'forgot') {
-        const r = await api.sendPasswordReset(cleanEmail);
+      } else if (mode === 'forgot' || mode === 'magic') {
+        const r =
+          mode === 'magic'
+            ? await api.sendLoginLink(cleanEmail, next)
+            : await api.sendPasswordReset(cleanEmail);
         if (!r.ok) setFormError(r.error);
         else {
-          setResult({ kind: 'sent', email: cleanEmail });
+          setResult({
+            kind: 'sent',
+            email: cleanEmail,
+            what: mode === 'magic' ? 'login' : 'reset',
+          });
           setResendIn(RESEND_SECONDS);
         }
       } else {
@@ -163,7 +176,10 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
   const resend = async () => {
     if (resendIn > 0 || result?.kind !== 'sent') return;
-    const r = await api.sendPasswordReset(result.email);
+    const r =
+      result.what === 'login'
+        ? await api.sendLoginLink(result.email, next)
+        : await api.sendPasswordReset(result.email);
     if (r.ok) setResendIn(RESEND_SECONDS);
     else setFormError(r.error);
   };
@@ -208,8 +224,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <h1 className={styles.title}>Check your email</h1>
           {result.kind === 'sent' ? (
             <p role="status" className={styles.subtitle}>
-              We sent a reset link to <b>{result.email}</b>. It works for 30 minutes. Check spam if
-              it isn't there in a minute.
+              We sent a {result.what === 'login' ? 'login' : 'reset'} link to <b>{result.email}</b>
+              {result.what === 'login'
+                ? ' if it has an account. Open it on this device to log in.'
+                : '. It works for 30 minutes.'}{' '}
+              Check spam if it isn't there in a minute.
             </p>
           ) : (
             <p role="status" className={styles.subtitle}>
@@ -560,6 +579,12 @@ export function AuthPage({ mode }: { mode: Mode }) {
           </button>
         </form>
 
+        {mode === 'login' && (
+          <Link to={`/login/link${query}`} className={`${styles.link} ${styles.center}`}>
+            Email me a login link instead
+          </Link>
+        )}
+
         {mode !== 'reset' && (
           <div className={styles.switch}>
             {mode === 'login' && (
@@ -578,7 +603,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
                 </Link>
               </>
             )}
-            {mode === 'forgot' && (
+            {(mode === 'forgot' || mode === 'magic') && (
               <Link to={`/login${query}`} className={styles.link}>
                 ← Back to log in
               </Link>

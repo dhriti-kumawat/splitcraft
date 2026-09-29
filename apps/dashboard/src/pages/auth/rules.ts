@@ -1,6 +1,6 @@
 // Validation from PRODUCT_SPEC §8 and design/screens/01-auth-desktop.html.
 
-export type Mode = 'login' | 'signup' | 'forgot' | 'reset';
+export type Mode = 'login' | 'signup' | 'forgot' | 'reset' | 'magic';
 
 export interface Fields {
   name: string;
