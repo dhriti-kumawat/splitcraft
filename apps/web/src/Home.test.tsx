@@ -12,9 +12,12 @@ describe('home page', () => {
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'Works with your stack',
       'Everything a test needs, from the first line of code to the final call.',
+      'The details that make testing safe.',
       'Built for the person who writes the variant.',
       'Results you can defend in any review.',
       'Live in an afternoon.',
+      'Free while you find what works.',
+      'Before you install.',
       'Run your first test today.',
       'Product',
       'Developers',
@@ -71,10 +74,9 @@ describe('home page', () => {
       'Book a demo',
       '4.8 KB',
       '52 segment',
-      'useExperiment',
-      'Segment',
+      // "Segment" the product, not an integration (useExperiment and LCP exist now).
+      'Segment ',
       'support@splitcraft.app',
-      'LCP',
     ]) {
       expect(text, claim).not.toContain(claim);
     }
@@ -82,6 +84,18 @@ describe('home page', () => {
     expect(
       screen.getByText('Example numbers on this page come from a demo test, not a customer.'),
     ).toBeInTheDocument();
+  });
+
+  it('answers common questions and shows the free plan', async () => {
+    render(<Home />);
+    const pricing = screen.getByRole('region', { name: 'Free while you find what works.' });
+    expect(within(pricing).getByText('100,000 events a month')).toBeInTheDocument();
+    expect(within(pricing).getByRole('link', { name: 'Start free' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/signup'),
+    );
+    const faq = screen.getByRole('region', { name: 'Before you install.' });
+    expect(within(faq).getAllByRole('group')).toHaveLength(6);
   });
 
   it('describes the product illustration for screen readers', () => {

@@ -33,9 +33,12 @@ export function Home() {
         <Hero />
         <Stack />
         <Product />
+        <Capabilities />
         <Developers />
         <Statistics />
         <HowItWorks />
+        <Pricing />
+        <Faq />
         <Cta />
       </main>
       <Footer />
@@ -122,7 +125,7 @@ function Hero() {
         <div className={`${styles.heroText} ${styles.rise}`}>
           <span className={styles.badge}>
             <span className={`${styles.chip} ${styles.new}`}>New</span>
-            Custom JS trackers and click trackers
+            Reach estimates and automatic guardrail pauses
           </span>
           <h1 className={styles.h1} id="hero-title">
             Know what works before you ship it.
@@ -140,6 +143,17 @@ function Hero() {
             </a>
           </div>
           <span className={styles.fine}>Free up to 100,000 events a month. No card needed.</span>
+          <ul className={styles.trust} aria-label="At a glance">
+            <li>
+              <b>&lt; 8 KB</b> snippet
+            </li>
+            <li>
+              <b>400 ms</b> max anti-flicker
+            </li>
+            <li>
+              <b>95%</b> uplift ranges
+            </li>
+          </ul>
         </div>
         <div className={`${styles.shotWrap} ${styles.rise} ${styles.delay}`}>
           <ProductShot />
@@ -431,6 +445,199 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
   },
 ];
 
+/** Icons for the capabilities grid: decorative, paired with visible titles. */
+const ICONS: Record<string, string> = {
+  guard: 'M10 2.5l6 2.2v4.6c0 3.9-2.6 6.9-6 8.2-3.4-1.3-6-4.3-6-8.2V4.7l6-2.2zM7 10l2 2 4-4',
+  reach: 'M3 16.5h14M5 14V9M9 14V5M13 14v-3M17 14V7',
+  qa: 'M2.5 10s2.8-5 7.5-5 7.5 5 7.5 5-2.8 5-7.5 5-7.5-5-7.5-5zM10 12.2a2.2 2.2 0 100-4.4 2.2 2.2 0 000 4.4z',
+  vitals: 'M2.5 10.5h3.2l2-4.5 3.2 9 2.1-4.5h4.5',
+  audience:
+    'M7 9a3 3 0 100-6 3 3 0 000 6zM1.8 16.5c.6-2.8 2.7-4.5 5.2-4.5s4.6 1.7 5.2 4.5M13.5 8.5a2.4 2.4 0 100-4.8M14.8 11.8c1.9.4 3.1 1.9 3.5 4',
+  team: 'M4 4.5h12v8H8.5L5 15.5v-3H4zM7.5 8.5h5',
+  react:
+    'M10 11.3a1.3 1.3 0 100-2.6 1.3 1.3 0 000 2.6zM10 14.5c4.4 0 8-2 8-4.5s-3.6-4.5-8-4.5-8 2-8 4.5 3.6 4.5 8 4.5z',
+  search: 'M9 14.5a5.5 5.5 0 100-11 5.5 5.5 0 000 11zM13 13l4 4',
+};
+
+function Capabilities() {
+  const items: Array<[keyof typeof ICONS, string, string]> = [
+    [
+      'guard',
+      'Guardrails that act',
+      'A variant that hurts purchases or Core Web Vitals is paused automatically.',
+    ],
+    [
+      'reach',
+      'Reach before launch',
+      'See how many visitors your targeting matches, per rule group, and how long the test will take.',
+    ],
+    [
+      'qa',
+      'Preview on any page',
+      'Force a variant on your own screen with a QA panel, even before the snippet is on that page.',
+    ],
+    [
+      'vitals',
+      'Web Vitals per variant',
+      'LCP, INP and CLS measured in the browser, without adding weight for everyone else.',
+    ],
+    [
+      'audience',
+      'Reusable audiences',
+      'Save segments, triggers and page sets once and use them in every test.',
+    ],
+    [
+      'team',
+      'Built for teams',
+      'Workspaces with owners, admins and members, invite links, and an activity feed.',
+    ],
+    [
+      'react',
+      'React and npm',
+      'Install with a script tag or npm, and branch in components with useExperiment.',
+    ],
+    [
+      'search',
+      'Fast to work in',
+      'Command palette, duplicate and archive, and a dashboard that works on your phone.',
+    ],
+  ];
+  return (
+    <section
+      id="features"
+      className={`${styles.wrap} ${styles.section} ${styles.capabilities}`}
+      aria-labelledby="cap-title"
+    >
+      <div className={styles.stackCol} style={{ maxWidth: 720, marginBottom: 40 }}>
+        <span className={styles.eyebrow}>And everything around it</span>
+        <h2 className={styles.h2} id="cap-title">
+          The details that make testing safe.
+        </h2>
+      </div>
+      <ul className={styles.capGrid}>
+        {items.map(([icon, title, text]) => (
+          <li key={title} className={styles.cap}>
+            <span className={styles.capIcon} aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d={ICONS[icon]} />
+              </svg>
+            </span>
+            <h3 className={styles.capTitle}>{title}</h3>
+            <p className={styles.capText}>{text}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function Pricing() {
+  const included = [
+    '100,000 events a month',
+    'Unlimited projects and experiments',
+    'Every targeting rule and metric',
+    'Guardrails, reach estimates, QA mode',
+    'Team roles and invite links',
+  ];
+  return (
+    <section
+      id="pricing"
+      className={`${styles.wrap} ${styles.section}`}
+      aria-labelledby="price-title"
+    >
+      <div className={styles.pricing}>
+        <div className={styles.stackCol}>
+          <span className={styles.eyebrow}>Pricing</span>
+          <h2 className={styles.h2} id="price-title">
+            Free while you find what works.
+          </h2>
+          <p className={styles.lede}>
+            One plan, no card, every feature. When a workspace reaches its monthly events,
+            experiments pause and visitors see your original site until the month resets.
+          </p>
+        </div>
+        <div className={styles.priceCard}>
+          <div className={styles.priceHead}>
+            <span className={styles.priceName}>Free</span>
+            <span className={styles.price}>
+              $0 <small>/ month</small>
+            </span>
+          </div>
+          <ul className={styles.priceList}>
+            {included.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <a className={styles.primary} href={`${DASHBOARD_URL}/signup`}>
+            Start free
+          </a>
+          <span className={styles.fine}>Higher-volume plans aren&apos;t available yet.</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Faq() {
+  const faqs: Array<[string, string]> = [
+    [
+      'Will it slow my site down?',
+      'The snippet is under 8 KB compressed and loads async. Anti-flicker hides the page for at most 400 ms while variants apply, and you can turn it off per project.',
+    ],
+    [
+      'Does it work with React, Next.js and single-page apps?',
+      'Yes. Splitcraft re-checks targeting on every route change, and the npm package has a useExperiment hook for branching in components.',
+    ],
+    [
+      'Do I need to write code?',
+      'Variants are written in JavaScript and CSS, with helpers like waitForElement and templates. Splitcraft is for teams comfortable with code, not a visual editor.',
+    ],
+    [
+      'How do I know a result is real?',
+      'Every result shows its 95% range, a chance to win, a sample ratio check and how close it is to its planned sample, and says in plain words when it is not ready.',
+    ],
+    [
+      'What data does it collect?',
+      'A random visitor id, the pages and goals your experiments use, and per-session traits like device, traffic source and country. No names, emails or form contents, unless your own tracking code sends them.',
+    ],
+    [
+      'Can I read how it works?',
+      'Yes. The developer docs cover install, the SDK, targeting, metrics and the statistics, and the code is on GitHub.',
+    ],
+  ];
+  return (
+    <section
+      id="faq"
+      className={`${styles.wrap} ${styles.section} ${styles.faqSection}`}
+      aria-labelledby="faq-title"
+    >
+      <div className={styles.stackCol} style={{ marginBottom: 32 }}>
+        <span className={styles.eyebrow}>Questions</span>
+        <h2 className={styles.h2} id="faq-title">
+          Before you install.
+        </h2>
+      </div>
+      <div className={styles.faq}>
+        {faqs.map(([q, a]) => (
+          <details key={q} className={styles.faqItem}>
+            <summary>{q}</summary>
+            <p>{a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Developers() {
   const [tab, setTab] = useState(SNIPPETS[0]!.id);
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -569,7 +776,7 @@ function Statistics() {
       className={`${styles.wrap} ${styles.section}`}
       aria-labelledby="stats-title"
     >
-      <div className={styles.stackCol} style={{ maxWidth: 760, marginBottom: 56 }}>
+      <div className={styles.stackCol} style={{ maxWidth: 760, marginBottom: 40 }}>
         <span className={styles.eyebrow}>Statistics</span>
         <h2 className={styles.h2} id="stats-title">
           Results you can defend in any review.
@@ -579,6 +786,7 @@ function Statistics() {
           when a result is not ready.
         </p>
       </div>
+      <ResultCard />
       <ol className={styles.stats}>
         {points.map(([title, text], i) => (
           <li key={title} className={styles.stat}>
@@ -591,6 +799,37 @@ function Statistics() {
         ))}
       </ol>
     </section>
+  );
+}
+
+/** Illustration of a result, using the spec's worked example (not customer data). */
+function ResultCard() {
+  return (
+    <figure
+      className={styles.resultCard}
+      aria-label="Example result: B is up 9.7%, 95% range −1.4% to +20.8%, 96% chance to beat Control"
+    >
+      <div className={styles.resultTop}>
+        <span className={styles.resultVerdict}>B is ahead, with a 96% chance to beat Control</span>
+        <span className={styles.resultPill}>SRM check: pass</span>
+      </div>
+      <div className={styles.rangeRow} aria-hidden="true">
+        <span className={styles.rangeLabel}>Uplift, B vs Control</span>
+        <div className={styles.rangeTrack}>
+          <span className={styles.rangeZero} />
+          <span className={styles.rangeBar} />
+          <span className={styles.rangeDot} />
+        </div>
+        <div className={styles.rangeTicks}>
+          <span>−1.4%</span>
+          <b>+9.7%</b>
+          <span>+20.8%</span>
+        </div>
+      </div>
+      <figcaption className={styles.resultCaption}>
+        Worked example from the product spec: 12,480 vs 12,380 visitors, 92% of the planned sample.
+      </figcaption>
+    </figure>
   );
 }
 
@@ -615,7 +854,7 @@ function HowItWorks() {
       className={`${styles.wrap} ${styles.section} ${styles.how}`}
       aria-labelledby="how-title"
     >
-      <div className={styles.stackCol} style={{ marginBottom: 48 }}>
+      <div className={styles.stackCol} style={{ marginBottom: 40 }}>
         <span className={styles.eyebrow}>How it works</span>
         <h2 className={styles.h2} id="how-title">
           Live in an afternoon.
@@ -641,7 +880,7 @@ function HowItWorks() {
 
 function Cta() {
   return (
-    <section id="pricing" className={styles.wrap} aria-labelledby="cta-title">
+    <section id="start" className={styles.wrap} aria-labelledby="cta-title">
       <div className={styles.cta}>
         <div className={styles.stackCol} style={{ maxWidth: 640 }}>
           <h2 className={`${styles.h2} ${styles.ctaTitle}`} id="cta-title">
@@ -706,6 +945,14 @@ function Footer() {
               A portfolio project by Dhriti Kumawat, built to understand how experimentation
               platforms work inside.
             </span>
+            <div className={styles.footerActions}>
+              <a className={styles.footerStart} href={`${DASHBOARD_URL}/signup`}>
+                Start free
+              </a>
+              <a className={styles.footerDocs} href="/docs/">
+                Read the docs
+              </a>
+            </div>
           </div>
           <nav className={styles.footerCols} aria-label="Footer">
             {cols.map((c) => (
@@ -725,7 +972,7 @@ function Footer() {
           </nav>
         </div>
         <div className={styles.footerBottom}>
-          <span>© 2026 Splitcraft</span>
+          <span>© {new Date().getFullYear()} Splitcraft</span>
           <span>Example numbers on this page come from a demo test, not a customer.</span>
         </div>
       </div>
