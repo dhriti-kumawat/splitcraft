@@ -6,6 +6,7 @@ import { AuthPage } from './pages/auth/AuthPage';
 import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
+import { TargetingPage } from './pages/experiments/TargetingPage';
 import { VariantsPage } from './pages/experiments/VariantsPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
@@ -64,10 +65,7 @@ export const routes: RouteObject[] = [
                   { index: true, element: <Navigate to="basics" replace /> },
                   { path: 'basics', element: <BasicsPage /> },
                   { path: 'variants', element: <VariantsPage /> },
-                  {
-                    path: 'targeting',
-                    element: <Placeholder title="Targeting" step="feat/targeting" />,
-                  },
+                  { path: 'targeting', element: <TargetingPage /> },
                   { path: 'goals', element: <Placeholder title="Goals" step="feat/goals" /> },
                   { path: 'results', element: <Placeholder title="Results" step="feat/results" /> },
                 ],
