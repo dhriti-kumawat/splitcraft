@@ -3,3 +3,6 @@ export const VERSION = '0.0.0';
 export { getVisitorId } from './visitor';
 export { assignVariant, bucketOf, type Allocation, type VariantWeight } from './bucketing';
 export { evaluateTargeting, type Targeting, type TargetingContext } from './targeting';
+export { injectStyles, onceInView, onRouteChange, waitForElement } from './helpers';
+export { applyVariant, removeVariant, type VariantCode } from './apply';
+export { hidePage } from './antiflicker';
