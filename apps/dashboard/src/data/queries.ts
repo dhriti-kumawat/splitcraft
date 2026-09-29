@@ -1,6 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ConditionGroup } from '../lib/targeting';
-import type { Experiment, ExperimentPatch, Metric, NewProject, VariantPatch } from './api';
+import type {
+  Experiment,
+  ExperimentGoal,
+  ExperimentPatch,
+  GuardrailLimit,
+  Metric,
+  NewProject,
+  VariantPatch,
+} from './api';
 import { useData } from './context';
 
 export const keys = {
@@ -260,5 +268,29 @@ export function useMetricMutations(projectId: string) {
       onSuccess: refresh,
     }),
     remove: useMutation({ mutationFn: (id: string) => api.deleteMetric(id), onSuccess: refresh }),
+  };
+}
+
+export function useGoalMutations(experimentId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => void client.invalidateQueries({ queryKey: keys.goals(experimentId) });
+  return {
+    set: useMutation({
+      mutationFn: ({
+        metricId,
+        role,
+        limit,
+      }: {
+        metricId: string;
+        role: ExperimentGoal['role'];
+        limit: GuardrailLimit | null;
+      }) => api.setExperimentGoal(experimentId, metricId, role, limit),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (metricId: string) => api.removeExperimentGoal(experimentId, metricId),
+      onSuccess: refresh,
+    }),
   };
 }

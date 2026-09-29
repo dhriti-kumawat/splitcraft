@@ -206,7 +206,7 @@ export const METRICS: Metric[] = [
 export const GOALS: Record<string, ExperimentGoal[]> = {
   sticky: [
     { role: 'secondary', limit: null, metric: METRICS[3]! },
-    { role: 'guardrail', limit: { direction: 'decrease', maxPct: 2 }, metric: METRICS[1]! },
+    { role: 'guardrail', limit: { maxPct: 2 }, metric: METRICS[1]! },
   ],
 };
 
@@ -268,6 +268,9 @@ export function fakeData(
   const patches: Array<{ id: string; patch: unknown }> = [];
   const variantPatches: Array<{ id: string; patch: unknown }> = [];
   let metrics = METRICS.map((m) => ({ ...m }));
+  const goals: Record<string, ExperimentGoal[]> = Object.fromEntries(
+    Object.entries(GOALS).map(([k, v]) => [k, v.map((g) => ({ ...g }))]),
+  );
   let segments = (opts.segments ?? SEGMENTS).map((x) => ({ ...x }));
   const versions: Record<
     string,
@@ -394,7 +397,21 @@ export function fakeData(
     async deleteMetric(id) {
       metrics = metrics.filter((x) => x.id !== id);
     },
-    experimentGoals: async (id) => GOALS[id] ?? [],
+    experimentGoals: async (id) =>
+      (goals[id] ?? []).map((g) => ({
+        ...g,
+        metric: metrics.find((m) => m.id === g.metric.id) ?? g.metric,
+      })),
+    async setExperimentGoal(experimentId, metricId, role, limit) {
+      const list = (goals[experimentId] ??= []);
+      const metric = metrics.find((m) => m.id === metricId)!;
+      const existing = list.find((g) => g.metric.id === metricId);
+      if (existing) Object.assign(existing, { role, limit });
+      else list.push({ metric, role, limit });
+    },
+    async removeExperimentGoal(experimentId, metricId) {
+      goals[experimentId] = (goals[experimentId] ?? []).filter((g) => g.metric.id !== metricId);
+    },
     async createExperiment(projectId, name) {
       createdExperiments.push(name);
       const e = experiment({
@@ -417,6 +434,7 @@ export function fakeData(
     variantPatches,
     segmentsNow: () => segments,
     metricsNow: () => metrics,
+    goalsNow: () => goals,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;

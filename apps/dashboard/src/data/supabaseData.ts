@@ -346,6 +346,27 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       check(await supabase.from('variants').update(patch).eq('id', variantId));
     },
 
+    async setExperimentGoal(experimentId, metricId, role, limit) {
+      check(
+        await supabase
+          .from('experiment_metrics')
+          .upsert(
+            { experiment_id: experimentId, metric_id: metricId, role, limit },
+            { onConflict: 'experiment_id,metric_id' },
+          ),
+      );
+    },
+
+    async removeExperimentGoal(experimentId, metricId) {
+      check(
+        await supabase
+          .from('experiment_metrics')
+          .delete()
+          .eq('experiment_id', experimentId)
+          .eq('metric_id', metricId),
+      );
+    },
+
     async listVariantVersions(variantId) {
       const rows = check(
         await supabase
@@ -460,7 +481,11 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         limit: Record<string, unknown> | null;
         metrics: MetricRow;
       }>;
-      return rows.map((r) => ({ role: r.role, limit: r.limit, metric: toMetric(r.metrics) }));
+      return rows.map((r) => ({
+        role: r.role,
+        limit: typeof r.limit?.maxPct === 'number' ? { maxPct: r.limit.maxPct } : null,
+        metric: toMetric(r.metrics),
+      }));
     },
   };
 }
