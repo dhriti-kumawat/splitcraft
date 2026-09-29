@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.events]
 verify_jwt = false
+
+# Where Supabase Auth sends people after login, sign-up and password reset.
+# Pushed with `npx supabase config push`; only the keys declared here change.
+[auth]
+site_url = "https://splitcraft-app.vercel.app"
+additional_redirect_urls = ["https://splitcraft-app.vercel.app/**", "http://localhost:5173/**"]
