@@ -131,6 +131,25 @@ describe('duplicate_experiment', () => {
   });
 });
 
+describe('test page', () => {
+  it('is copied by duplicate, and must be an http(s) URL', async () => {
+    const src = await newExperiment('paged');
+    await as(db, owner, () =>
+      q(`update experiments set preview_url = 'https://p.dev/trips/oslo' where id = $1`, [src]),
+    );
+    const id = await duplicate(owner, src);
+    const [row] = await as(db, owner, () =>
+      q('select preview_url from experiments where id = $1', [id]),
+    );
+    expect(row).toEqual({ preview_url: 'https://p.dev/trips/oslo' });
+    await expect(
+      as(db, owner, () =>
+        q(`update experiments set preview_url = 'javascript:alert(1)' where id = $1`, [src]),
+      ),
+    ).rejects.toThrow(/preview_url_check/);
+  });
+});
+
 describe('archiving', () => {
   it('works for stopped experiments and blocks going live', async () => {
     const id = await newExperiment('arch', 'ended');
