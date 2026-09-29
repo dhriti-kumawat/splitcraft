@@ -1,0 +1,114 @@
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Home } from './Home';
+import { GITHUB_URL } from './links';
+
+describe('home page', () => {
+  it('has one h1 and the sections from the spec in order', () => {
+    render(<Home />);
+    expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
+      'Know what works before you ship it.',
+    ]);
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+      'Works with your stack',
+      'Everything a test needs, from the first line of code to the final call.',
+      'Built for the person who writes the variant.',
+      'Results you can defend in any review.',
+      'Live in an afternoon.',
+      'Run your first test today.',
+      'Product',
+      'Developers',
+      'Get started',
+    ]);
+  });
+
+  it('links nav items to sections that exist', () => {
+    const { container } = render(<Home />);
+    const nav = screen.getByRole('navigation', { name: 'Main' });
+    for (const link of within(nav).getAllByRole('link')) {
+      const href = link.getAttribute('href')!;
+      if (href.startsWith('#')) expect(container.querySelector(href), href).not.toBeNull();
+      else expect(href).toBe(GITHUB_URL);
+    }
+  });
+
+  it('sends Start free and Log in to the dashboard', () => {
+    render(<Home />);
+    for (const a of screen.getAllByRole('link', { name: 'Start free' })) {
+      expect(a.getAttribute('href')).toMatch(/\/signup$/);
+    }
+    expect(screen.getAllByRole('link', { name: 'Log in' })[0]!.getAttribute('href')).toMatch(
+      /\/login$/,
+    );
+  });
+
+  it('keeps the pricing line from the spec', () => {
+    render(<Home />);
+    expect(screen.getAllByText('Free up to 100,000 events a month. No card needed.')).toHaveLength(
+      2,
+    );
+  });
+
+  it('makes no claims the product can’t back (PRODUCT_SPEC §1, DECISIONS #14)', () => {
+    render(<Home />);
+    const text = document.body.textContent!;
+    for (const claim of [
+      'Book a demo',
+      '4.8 KB',
+      '52 segment',
+      'useExperiment',
+      'Segment',
+      'support@splitly.dev',
+      'LCP',
+    ]) {
+      expect(text, claim).not.toContain(claim);
+    }
+    expect(screen.getByText(/A portfolio project by Dhriti Kumawat/)).toBeInTheDocument();
+    expect(
+      screen.getByText('Example numbers on this page come from a demo test, not a customer.'),
+    ).toBeInTheDocument();
+  });
+
+  it('describes the product illustration for screen readers', () => {
+    render(<Home />);
+    expect(
+      screen.getByRole('figure', { name: /variant B is ahead with a 96% chance to beat Control/ }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('code tabs', () => {
+  it('switch with clicks and arrow keys', async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+    const tabs = screen.getByRole('tablist', { name: 'Install examples' });
+    expect(within(tabs).getByRole('tab', { name: 'index.html' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('splitly.trackEvent');
+    await user.click(within(tabs).getByRole('tab', { name: 'app/layout.tsx' }));
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('strategy="beforeInteractive"');
+    await user.keyboard('{ArrowRight}');
+    expect(within(tabs).getByRole('tab', { name: 'GTM' })).toHaveFocus();
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('dataLayer');
+  });
+});
+
+describe('mobile menu', () => {
+  it('opens and closes with an accessible button', async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+    const button = screen.getByRole('button', { name: 'Open menu' });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('navigation', { name: 'Menu' })).not.toBeInTheDocument();
+    await user.click(button);
+    expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    const menu = screen.getByRole('navigation', { name: 'Menu' });
+    await user.click(within(menu).getByRole('link', { name: 'Statistics' }));
+    expect(screen.queryByRole('navigation', { name: 'Menu' })).not.toBeInTheDocument();
+  });
+});
