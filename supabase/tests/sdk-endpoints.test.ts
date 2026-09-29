@@ -70,7 +70,7 @@ beforeAll(async () => {
     );
     const [{ id: bookClick }] = await rows<{ id: string }>(
       `insert into metrics (project_id, name, event_key, source, source_config)
-       values ($1, 'Book click', 'book_click', 'click', '{"selector":".book","firstPerPage":true}') returning id`,
+       values ($1, 'Book click', 'book_click', 'click', '{"selector":".book","firstPerPage":true,"views":true,"timing":true}') returning id`,
       [projectId],
     );
     const [{ id: confirmation }] = await rows<{ id: string }>(
@@ -149,7 +149,9 @@ describe('sdk_config_source + toSdkConfig', () => {
   it('includes only goals that live experiments use', async () => {
     const config = toSdkConfig((await configSource(publicKey))!, publicKey, '/e');
     expect(config.goals).toEqual({
-      clicks: [{ key: 'book_click', selector: '.book', firstPerPage: true }],
+      clicks: [
+        { key: 'book_click', selector: '.book', firstPerPage: true, views: true, timing: true },
+      ],
       pageviews: [{ key: 'purchase_page', url: { op: 'is', value: '/checkout/done' } }],
       custom: [],
     });
