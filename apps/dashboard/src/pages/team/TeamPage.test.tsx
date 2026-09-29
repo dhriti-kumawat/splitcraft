@@ -1,13 +1,13 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DHRITI, fakeAuth } from '../../test/fakeAuth';
+import { ALEX, fakeAuth } from '../../test/fakeAuth';
 import { fakeData, WORKSPACE } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function openTeam(data = fakeData()) {
   const router = renderApp('/team', { data: data.api });
   await screen.findByRole('heading', { level: 1, name: 'Team' });
-  await screen.findByText('dhriti@mytrips.dev');
+  await screen.findByText('alex@mytrips.dev');
   return { router, ...data };
 }
 
@@ -16,7 +16,7 @@ const row = (email: string) => screen.getByText(email).closest('tr')!;
 describe('team', () => {
   it('lists members with roles and marks you', async () => {
     await openTeam();
-    expect(within(row('dhriti@mytrips.dev')).getByText('You')).toBeInTheDocument();
+    expect(within(row('alex@mytrips.dev')).getByText('You')).toBeInTheDocument();
     expect(within(row('max@mytrips.dev')).getByText('max')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Role for ada@mytrips.dev' })).toHaveValue('admin');
   });
@@ -115,7 +115,7 @@ describe('workspace settings', () => {
     await user.type(input, 'Trips Inc');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await vi.waitFor(() => expect(data.workspacesNow()[0]!.name).toBe('Trips Inc'));
-    expect(workspacesNow()[0]!.name).toBe("Dhriti's Workspace");
+    expect(workspacesNow()[0]!.name).toBe('Northwind Travel');
   });
 
   it('deletes the workspace after typing its name', async () => {
@@ -159,17 +159,25 @@ describe('workspace settings', () => {
     ).toBeInTheDocument();
   });
 
-  it('offers to create a workspace when you have none', async () => {
-    renderApp('/projects', { data: fakeData({ workspaces: [] }).api });
-    expect(await screen.findByRole('heading', { name: 'No workspace yet' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create a workspace' })).toBeInTheDocument();
+  it('creates a workspace when you have none', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({ workspaces: [] });
+    renderApp('/projects', { data: data.api });
+    await user.click(await screen.findByRole('button', { name: 'Create workspace' }));
+    expect(
+      screen.getByText('Name the workspace, e.g. your company or a client.'),
+    ).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Workspace name'), 'Acme Inc.');
+    await user.click(screen.getByRole('button', { name: 'Create workspace' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Projects' })).toBeInTheDocument();
+    expect(data.workspacesNow().map((w) => w.name)).toEqual(['Acme Inc.']);
   });
 });
 
 describe('invite page', () => {
   const TOKEN = '11111111-1111-1111-1111-111111111111';
 
-  async function openInvite(data = fakeData(), signedInAs = DHRITI) {
+  async function openInvite(data = fakeData(), signedInAs = ALEX) {
     const auth = fakeAuth({ signedIn: true });
     auth.api.getUser = async () => signedInAs;
     const router = renderApp(`/invite/${TOKEN}`, { data: data.api, api: auth.api });
@@ -180,7 +188,7 @@ describe('invite page', () => {
   it('joins the workspace and opens it', async () => {
     const user = userEvent.setup();
     const data = fakeData();
-    data.seedInvite(TOKEN, { email: DHRITI.email, role: 'admin' });
+    data.seedInvite(TOKEN, { email: ALEX.email, role: 'admin' });
     const { router } = await openInvite(data);
     expect(screen.getByRole('heading', { name: 'Join Agency Clients' })).toBeInTheDocument();
     expect(screen.getByText('admin')).toBeInTheDocument();
@@ -209,7 +217,7 @@ describe('invite page', () => {
 
   it('explains an expired invite', async () => {
     const data = fakeData();
-    data.seedInvite(TOKEN, { email: DHRITI.email, expiresAt: '2020-01-01T00:00:00Z' });
+    data.seedInvite(TOKEN, { email: ALEX.email, expiresAt: '2020-01-01T00:00:00Z' });
     await openInvite(data);
     expect(screen.getByRole('heading', { name: 'This invite has expired' })).toBeInTheDocument();
   });

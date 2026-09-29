@@ -22,18 +22,18 @@ describe('messageFor', () => {
 });
 
 describe('toAuthUser', () => {
-  const base = { id: 'u1', email: 'dhriti@mytrips.dev', user_metadata: {} } as unknown as User;
+  const base = { id: 'u1', email: 'alex@mytrips.dev', user_metadata: {} } as unknown as User;
 
   it('uses the full name from sign-up', () => {
-    expect(toAuthUser({ ...base, user_metadata: { full_name: ' Dhriti Kumawat ' } })).toEqual({
+    expect(toAuthUser({ ...base, user_metadata: { full_name: ' Alex Morgan ' } })).toEqual({
       id: 'u1',
-      email: 'dhriti@mytrips.dev',
-      name: 'Dhriti Kumawat',
+      email: 'alex@mytrips.dev',
+      name: 'Alex Morgan',
     });
   });
 
   it('falls back to the email name', () => {
-    expect(toAuthUser(base)?.name).toBe('dhriti');
+    expect(toAuthUser(base)?.name).toBe('alex');
   });
 
   it('returns null without a user', () => {

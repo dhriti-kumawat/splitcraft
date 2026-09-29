@@ -51,14 +51,14 @@ describe('routing', () => {
 describe('breadcrumb', () => {
   it('shows workspace / page, with the last item as the current page', async () => {
     await renderAt('/projects');
-    expect(breadcrumb()).toEqual(["Dhriti's Workspace", 'Projects']);
+    expect(breadcrumb()).toEqual(['Northwind Travel', 'Projects']);
     const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
     expect(within(nav).getByText('Projects')).toHaveAttribute('aria-current', 'page');
   });
 
   it('includes the project and section on project pages', async () => {
     await renderAt('/p/trip-demo/metrics/new');
-    expect(breadcrumb()).toEqual(["Dhriti's Workspace", 'Trip Demo', 'Metrics', 'New metric']);
+    expect(breadcrumb()).toEqual(['Northwind Travel', 'Trip Demo', 'Metrics', 'New metric']);
     const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
     expect(within(nav).getByRole('link', { name: 'Trip Demo' })).toHaveAttribute(
       'href',
@@ -72,7 +72,7 @@ describe('name breadcrumbs', () => {
     await renderAt('/p/trip-demo/experiments/trust/basics');
     await waitFor(() =>
       expect(breadcrumb()).toEqual([
-        "Dhriti's Workspace",
+        'Northwind Travel',
         'Trip Demo',
         'Experiments',
         'Trust badges under Book button',
@@ -84,7 +84,7 @@ describe('name breadcrumbs', () => {
     await renderAt('/p/trip-demo/audiences/seg-mobile');
     await waitFor(() => expect(breadcrumb().at(-1)).toBe('Mobile first-timers'));
     expect(breadcrumb()).toEqual([
-      "Dhriti's Workspace",
+      'Northwind Travel',
       'Trip Demo',
       'Audiences',
       'Mobile first-timers',
@@ -143,7 +143,7 @@ describe('sidebar', () => {
 
   it('shows the signed-in user', async () => {
     await renderAt('/projects');
-    expect(screen.getByText('Dhriti Kumawat')).toBeInTheDocument();
+    expect(screen.getByText('Alex Morgan')).toBeInTheDocument();
     expect(screen.getByText('owner')).toBeInTheDocument();
   });
 });
@@ -161,7 +161,7 @@ describe('project switcher', () => {
     expect(panel.getAllByRole('link').map((a) => a.textContent)).toEqual([
       'Trip Demomytrips.dev',
       'Checkout Labshoplab.dev',
-      'Portfoliodhriti.dev',
+      'Portfolioalexmorgan.dev',
     ]);
     expect(panel.getByRole('link', { name: /^Trip Demo/ })).toHaveAttribute('aria-current', 'true');
 
