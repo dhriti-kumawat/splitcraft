@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { DataApi } from '../../data/api';
 import { fakeData, WORKSPACE } from '../../test/fakeData';
@@ -97,8 +97,11 @@ describe('new project drawer', () => {
   it('adds and removes allowed domains as chips, rejecting invalid ones', async () => {
     const { user, drawer } = await openDrawer();
     const input = within(drawer).getByLabelText('Also allow on');
-    await user.type(input, 'https://Staging.dhriti.dev/{Enter}localhost:3000,*.vercel.app{Enter}');
-    expect(within(drawer).getByText('staging.dhriti.dev')).toBeInTheDocument();
+    await user.type(
+      input,
+      'https://Staging.alexmorgan.dev/{Enter}localhost:3000,*.vercel.app{Enter}',
+    );
+    expect(within(drawer).getByText('staging.alexmorgan.dev')).toBeInTheDocument();
     expect(within(drawer).getByText('localhost:3000')).toBeInTheDocument();
     expect(within(drawer).getByText('*.vercel.app')).toBeInTheDocument();
 
@@ -121,7 +124,10 @@ describe('new project drawer', () => {
   it('creates the project, then shows the install code and waits for the first ping', async () => {
     const { user, drawer, created, receiveFirstPing } = await openDrawer();
     await user.type(within(drawer).getByLabelText('Project name'), 'Portfolio 2');
-    await user.type(within(drawer).getByLabelText('Main domain'), 'https://www.dhriti.dev/about');
+    await user.type(
+      within(drawer).getByLabelText('Main domain'),
+      'https://www.alexmorgan.dev/about',
+    );
     await user.type(within(drawer).getByLabelText('Also allow on'), 'localhost:3000{Enter}');
     await user.click(within(drawer).getByRole('button', { name: 'Create project' }));
 
@@ -130,7 +136,7 @@ describe('new project drawer', () => {
       {
         workspaceId: WORKSPACE.id,
         name: 'Portfolio 2',
-        mainDomain: 'www.dhriti.dev',
+        mainDomain: 'www.alexmorgan.dev',
         allowedDomains: ['localhost:3000'],
       },
     ]);
@@ -213,7 +219,7 @@ describe('workspaces', () => {
     await openProjects(data);
     expect(screen.getByRole('article', { name: 'Trip Demo' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: "Switch workspace: Dhriti's Workspace" }));
+    await user.click(screen.getByRole('button', { name: 'Switch workspace: Northwind Travel' }));
     await user.click(screen.getByRole('link', { name: 'Agency Clients' }));
     expect(
       await screen.findByRole('button', { name: 'Switch workspace: Agency Clients' }),
@@ -222,9 +228,45 @@ describe('workspaces', () => {
     expect(screen.getByText('member')).toBeInTheDocument();
   });
 
+  it('asks owners to name a workspace that still has a default name', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({ workspaces: [{ ...WORKSPACE, name: "Jo's Workspace" }] });
+    renderApp('/projects', { data: data.api });
+    await screen.findByRole('heading', { name: 'Give your workspace a name' });
+    await user.type(screen.getByLabelText('Workspace name'), 'Northwind Travel');
+    await user.click(screen.getByRole('button', { name: 'Save name' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull(),
+    );
+    expect(data.workspacesNow()[0]!.name).toBe('Northwind Travel');
+  });
+
+  it("doesn't ask non-owners to name the workspace", async () => {
+    renderApp('/projects', {
+      data: fakeData({ workspaces: [{ ...WORKSPACE, name: 'My workspace', role: 'member' }] }).api,
+    });
+    await screen.findByRole('heading', { level: 1, name: 'Projects' });
+    expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull();
+  });
+
   it('explains when the account has no workspace', async () => {
     renderApp('/projects', { data: fakeData({ workspaces: [] }).api });
-    expect(await screen.findByRole('heading', { name: 'No workspace yet' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Set up a workspace to start testing' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Create a workspace' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Join with an invite' })).toBeInTheDocument();
+  });
+
+  it('opens an invite pasted on the no-workspace screen', async () => {
+    const user = userEvent.setup();
+    const router = renderApp('/projects', { data: fakeData({ workspaces: [] }).api });
+    const input = await screen.findByLabelText('Invite link');
+    await user.click(screen.getByRole('button', { name: 'Open invite' }));
+    expect(screen.getByText('Paste the whole invite link your teammate sent.')).toBeInTheDocument();
+    await user.type(input, 'https://app.example/invite/11111111-1111-1111-1111-111111111111');
+    await user.click(screen.getByRole('button', { name: 'Open invite' }));
+    expect(router.state.location.pathname).toBe('/invite/11111111-1111-1111-1111-111111111111');
   });
 
   it('explains when loading fails', async () => {

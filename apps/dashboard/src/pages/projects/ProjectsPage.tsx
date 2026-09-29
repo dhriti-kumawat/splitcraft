@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button';
 import { PlusIcon } from '../../components/icons';
@@ -6,7 +6,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { Pill } from '../../components/Pill';
 import { Sparkline } from '../../components/Sparkline';
 import type { Project, ProjectStats } from '../../data/api';
-import { useOverviewQuery } from '../../data/queries';
+import { useOverviewQuery, useWorkspaceMutations } from '../../data/queries';
 import { initials, useWorkspace } from '../../data/workspace';
 import { TopBarActions } from '../../layout/TopBarActions';
 import { compactNumber } from '../../lib/format';
@@ -22,7 +22,7 @@ const LINE = [
 
 /** Workspace › Projects grid with the New project drawer (10-projects.html). */
 export function ProjectsPage() {
-  const { workspace, projects } = useWorkspace();
+  const { workspace, projects, user } = useWorkspace();
   const overview = useOverviewQuery(workspace.id);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const statsFor = (id: string) => overview.data?.find((s) => s.projectId === id);
@@ -41,6 +41,9 @@ export function ProjectsPage() {
           title="Projects"
           description="One project per product. Each has its own snippet, audiences, goals and experiments."
         />
+        {user.role === 'owner' && isDefaultName(workspace.name) && (
+          <NameWorkspace key={workspace.id} />
+        )}
         <ul className={styles.grid}>
           {projects.map((project, i) => (
             <li key={project.id}>
@@ -61,6 +64,67 @@ export function ProjectsPage() {
 
       {drawerOpen && <NewProjectDrawer onClose={() => setDrawerOpen(false)} />}
     </div>
+  );
+}
+
+/**
+ * Names new accounts used to get ("Jo's Workspace") or get now ("My workspace"). A real
+ * team name reads better in the switcher, invites and breadcrumbs, so ask for one.
+ */
+function isDefaultName(name: string): boolean {
+  return /^my workspace$/i.test(name.trim()) || /['’]s workspace$/i.test(name.trim());
+}
+
+function NameWorkspace() {
+  const { workspace, user } = useWorkspace();
+  const { rename } = useWorkspaceMutations(user.id);
+  const [name, setName] = useState('');
+  const [dismissed, setDismissed] = useState(false);
+  const id = useId();
+  if (dismissed) return null;
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (name.trim()) rename.mutate({ id: workspace.id, name: name.trim() });
+  };
+
+  return (
+    <section className={styles.nameCard} aria-labelledby={`${id}-h`}>
+      <div className={styles.nameText}>
+        <h2 id={`${id}-h`} className={styles.nameTitle}>
+          Give your workspace a name
+        </h2>
+        <p className={styles.nameHint}>
+          Teammates see it in invites and the workspace switcher. Use your company, team or client
+          name.
+        </p>
+      </div>
+      <form className={styles.nameForm} onSubmit={submit}>
+        <label htmlFor={id} className="visually-hidden">
+          Workspace name
+        </label>
+        <input
+          id={id}
+          className={styles.nameInput}
+          value={name}
+          maxLength={100}
+          placeholder="e.g. Acme Inc."
+          autoComplete="organization"
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Button type="submit" disabled={!name.trim() || rename.isPending}>
+          Save name
+        </Button>
+        <button type="button" className={styles.later} onClick={() => setDismissed(true)}>
+          Later
+        </button>
+      </form>
+      {rename.isError && (
+        <p role="alert" className={styles.nameError}>
+          Couldn't save: {rename.error.message}
+        </p>
+      )}
+    </section>
   );
 }
 
