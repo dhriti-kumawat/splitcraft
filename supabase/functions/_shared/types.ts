@@ -63,6 +63,19 @@ export interface SdkProjectConfig {
     }>;
     pageviews: Array<{ key: string; url: UrlRule }>;
     custom: Array<{ key: string; code: string; pages?: UrlRule[] }>;
+    datalayer: Array<{
+      key: string;
+      event: string;
+      filters?: Array<{ path: string; op: StringOp; value?: string | string[] }>;
+      valuePath?: string;
+    }>;
+    transactions: Array<{
+      key: string;
+      event: string;
+      valuePath: string;
+      idPath: string;
+      currencyPath?: string;
+    }>;
   };
   country?: string;
   /** Only the switches that are off. */
@@ -80,3 +93,17 @@ export interface IncomingEvent {
   url: string;
   visitorId: string;
 }
+
+/** String operators the SDK understands (packages/sdk/src/targeting/types.ts). */
+export const STRING_OPS = [
+  'is',
+  'is_not',
+  'contains',
+  'not_contains',
+  'starts_with',
+  'ends_with',
+  'regex',
+  'exists',
+  'not_exists',
+] as const;
+export type StringOp = (typeof STRING_OPS)[number];

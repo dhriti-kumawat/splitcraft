@@ -154,6 +154,8 @@ describe('sdk_config_source + toSdkConfig', () => {
       ],
       pageviews: [{ key: 'purchase_page', url: { op: 'is', value: '/checkout/done' } }],
       custom: [],
+      datalayer: [],
+      transactions: [],
     });
     expect(JSON.stringify(config)).not.toContain('secret-internal-button');
   });

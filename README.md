@@ -151,7 +151,7 @@ docs                product spec, decisions, build plan
 
 Things the designs or spec describe that are not built yet:
 
-- dataLayer, transaction, browsing and Web Vitals metrics (the SDK doesn't collect them).
+- Browsing and Web Vitals metrics (the SDK doesn't collect them yet).
 - The visitor's country in the config.
 - "Pick on page" and a Chrome preview extension (planned as v1.1).
 

@@ -20,11 +20,14 @@ import {
   createQueue,
   createTracker,
   trackClicks,
+  trackDataLayer,
   trackPageviews,
   trackViews,
   runCustomTrackers,
   type ClickGoal,
   type CustomGoal,
+  type DataLayerGoal,
+  type TransactionGoal,
   type PageviewGoal,
   type TrackedEvent,
 } from './tracking';
@@ -52,7 +55,13 @@ export interface ProjectConfig {
   projectKey: string;
   eventsUrl: string;
   experiments: ExperimentConfig[];
-  goals?: { clicks?: ClickGoal[]; pageviews?: PageviewGoal[]; custom?: CustomGoal[] };
+  goals?: {
+    clicks?: ClickGoal[];
+    pageviews?: PageviewGoal[];
+    custom?: CustomGoal[];
+    datalayer?: DataLayerGoal[];
+    transactions?: TransactionGoal[];
+  };
   /** Visitor country from the edge (ISO 3166-1 alpha-2), if known. */
   country?: string;
   /**
@@ -104,6 +113,11 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
       tracker.trackEvent(key, value === undefined ? undefined : { value }),
     ),
     trackViews(clickGoals, (key) => tracker.trackEvent(key)),
+    trackDataLayer(
+      config.goals?.datalayer ?? [],
+      config.goals?.transactions ?? [],
+      tracker.trackEvent,
+    ),
     trackPageviews(config.goals?.pageviews ?? [], (key) => tracker.trackEvent(key)),
     runCustomTrackers(config.goals?.custom ?? [], {
       waitForElement,
