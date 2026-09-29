@@ -1,3 +1,5 @@
+import type { StoredTargeting } from '../lib/targeting';
+
 export type Role = 'owner' | 'admin' | 'member';
 
 export interface Workspace {
@@ -36,6 +38,46 @@ export interface NewProject {
   allowedDomains: string[];
 }
 
+export type ExperimentStatus = 'draft' | 'live' | 'paused' | 'ended';
+
+export interface Variant {
+  id: string;
+  key: string;
+  name: string;
+  weight: number;
+  js: string;
+  css: string;
+  version: number;
+}
+
+export interface Experiment {
+  id: string;
+  projectId: string;
+  key: string;
+  name: string;
+  hypothesis: string;
+  status: ExperimentStatus;
+  trafficPct: number;
+  targeting: StoredTargeting;
+  primaryMetricId: string | null;
+  primaryMetricName: string | null;
+  plannedSample: number | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  createdAt: string;
+  /** Ordered by key, like the SDK config. */
+  variants: Variant[];
+}
+
+export interface VariantStats {
+  experimentId: string;
+  variantKey: string;
+  visitors: number;
+  conversions: number;
+  /** Visitors first exposed in the last 7 days. */
+  visitors7d: number;
+}
+
 /** Monthly event allowance per plan. Only the free plan exists in v1. */
 export const EVENT_LIMIT: Record<Workspace['plan'], number | null> = {
   free: 100_000,
@@ -50,4 +92,10 @@ export interface DataApi {
   projectOverview(workspaceId: string): Promise<ProjectStats[]>;
   eventsThisMonth(workspaceId: string): Promise<number>;
   createProject(project: NewProject): Promise<Project>;
+  listExperiments(projectId: string): Promise<Experiment[]>;
+  experimentStats(projectId: string): Promise<VariantStats[]>;
+  /** Time of the project's most recent event, or null if it never sent one. */
+  lastEventAt(projectId: string): Promise<string | null>;
+  /** Creates a draft with Control and B at 50/50. */
+  createExperiment(projectId: string, name: string): Promise<Experiment>;
 }

@@ -8,6 +8,9 @@ export const keys = {
   project: (projectId: string) => ['project', projectId] as const,
   overview: (workspaceId: string) => ['overview', workspaceId] as const,
   events: (workspaceId: string) => ['eventsThisMonth', workspaceId] as const,
+  experiments: (projectId: string) => ['experiments', projectId] as const,
+  experimentStats: (projectId: string) => ['experimentStats', projectId] as const,
+  lastEvent: (projectId: string) => ['lastEvent', projectId] as const,
 };
 
 export function useWorkspacesQuery(userId: string) {
@@ -63,5 +66,38 @@ export function useCreateProject() {
       void client.invalidateQueries({ queryKey: keys.projects(project.workspaceId) });
       void client.invalidateQueries({ queryKey: keys.overview(project.workspaceId) });
     },
+  });
+}
+
+export function useExperimentsQuery(projectId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.experiments(projectId),
+    queryFn: () => api.listExperiments(projectId),
+  });
+}
+
+export function useExperimentStatsQuery(projectId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.experimentStats(projectId),
+    queryFn: () => api.experimentStats(projectId),
+  });
+}
+
+export function useLastEventQuery(projectId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.lastEvent(projectId),
+    queryFn: () => api.lastEventAt(projectId),
+  });
+}
+
+export function useCreateExperiment(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => api.createExperiment(projectId, name),
+    onSuccess: () => void client.invalidateQueries({ queryKey: keys.experiments(projectId) }),
   });
 }
