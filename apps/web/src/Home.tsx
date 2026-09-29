@@ -161,7 +161,7 @@ function ProductShot() {
           <span className={styles.dot} />
           <span className={styles.dot} />
           <span className={styles.url}>
-            app.splitcraft.app/trip-demo/experiments/sticky-book-bar
+            splitcraft-app.vercel.app/trip-demo/experiments/sticky-book-bar
           </span>
         </div>
         <div className={styles.app}>
@@ -368,7 +368,7 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
         <span className={styles.c}>{'<!-- 1. Paste once in <head> -->'}</span>
         {'\n'}
         <span className={styles.k}>{'<script'}</span> <span className={styles.f}>src</span>=
-        <span className={styles.s}>"https://splitcraft.app/sdk/v1.js"</span>
+        <span className={styles.s}>"https://splitcraft.vercel.app/sdk/v1.js"</span>
         {'\n        '}
         <span className={styles.f}>data-project</span>=<span className={styles.s}>"prj_…"</span>{' '}
         <span className={styles.k}>{'async></script>'}</span>
@@ -398,7 +398,7 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
         <span className={styles.k}>{'<Script'}</span>
         {'\n  '}
         <span className={styles.f}>src</span>=
-        <span className={styles.s}>"https://splitcraft.app/sdk/v1.js"</span>
+        <span className={styles.s}>"https://splitcraft.vercel.app/sdk/v1.js"</span>
         {'\n  '}
         <span className={styles.f}>data-project</span>=<span className={styles.s}>"prj_…"</span>
         {'\n  '}
@@ -417,7 +417,7 @@ const SNIPPETS: Array<{ id: string; label: string; code: ReactNode }> = [
         <span className={styles.c}>{'<!-- Tags › New › Custom HTML, trigger: All Pages -->'}</span>
         {'\n'}
         <span className={styles.k}>{'<script'}</span> <span className={styles.f}>src</span>=
-        <span className={styles.s}>"https://splitcraft.app/sdk/v1.js"</span>
+        <span className={styles.s}>"https://splitcraft.vercel.app/sdk/v1.js"</span>
         {'\n        '}
         <span className={styles.f}>data-project</span>=<span className={styles.s}>"prj_…"</span>{' '}
         <span className={styles.k}>{'async></script>'}</span>

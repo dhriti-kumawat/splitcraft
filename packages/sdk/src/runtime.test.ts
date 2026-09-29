@@ -272,9 +272,9 @@ describe('boot', () => {
     const fetchMock = vi.fn(() => Promise.resolve(new Response(JSON.stringify(config([exp()])))));
     vi.stubGlobal('fetch', fetchMock);
     runtime = (await boot(
-      script({ src: 'https://splitcraft.app/sdk/v1.js', 'data-project': 'prj_1' }),
+      script({ src: 'https://splitcraft.vercel.app/sdk/v1.js', 'data-project': 'prj_1' }),
     ))!;
-    expect(fetchMock).toHaveBeenCalledWith('https://splitcraft.app/v1/config/prj_1.json', {
+    expect(fetchMock).toHaveBeenCalledWith('https://splitcraft.vercel.app/v1/config/prj_1.json', {
       credentials: 'omit',
     });
     await settle();
@@ -285,7 +285,7 @@ describe('boot', () => {
     let resolveFetch: (r: Response) => void = () => {};
     vi.stubGlobal('fetch', () => new Promise<Response>((r) => (resolveFetch = r)));
     const booting = boot(
-      script({ src: 'https://splitcraft.app/sdk/v1.js', 'data-project': 'prj_1' }),
+      script({ src: 'https://splitcraft.vercel.app/sdk/v1.js', 'data-project': 'prj_1' }),
     );
     expect(document.getElementById('splitcraft-antiflicker')).not.toBeNull();
     resolveFetch(new Response(JSON.stringify(config([exp()]))));
@@ -298,7 +298,7 @@ describe('boot', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.stubGlobal('fetch', () => Promise.resolve(new Response('', { status: 404 })));
     const rt = await boot(
-      script({ src: 'https://splitcraft.app/sdk/v1.js', 'data-project': 'prj_1' }),
+      script({ src: 'https://splitcraft.vercel.app/sdk/v1.js', 'data-project': 'prj_1' }),
     );
     expect(rt).toBeNull();
     expect(document.getElementById('splitcraft-antiflicker')).toBeNull();

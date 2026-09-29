@@ -8,9 +8,9 @@ afterEach(() => {
 
 describe('loadQaPanel', () => {
   it('adds a script tag and resolves once the bundle registers', async () => {
-    const promise = loadQaPanel('https://splitcraft.app/sdk/v1-qa.js');
+    const promise = loadQaPanel('https://splitcraft.vercel.app/sdk/v1-qa.js');
     const script = document.head.querySelector('script')!;
-    expect(script.src).toBe('https://splitcraft.app/sdk/v1-qa.js');
+    expect(script.src).toBe('https://splitcraft.vercel.app/sdk/v1-qa.js');
     const panel = { mount: vi.fn() };
     window.splitcraftQa = panel;
     script.dispatchEvent(new Event('load'));

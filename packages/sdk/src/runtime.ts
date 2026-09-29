@@ -173,7 +173,7 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
 
 /**
  * Bootstrap for the CDN script tag:
- * `<script src="https://splitcraft.app/sdk/v1.js" data-project="prj_xxx" async>`.
+ * `<script src="https://splitcraft.vercel.app/sdk/v1.js" data-project="prj_xxx" async>`.
  * Hides the page at once, then fetches the config and starts.
  */
 export function boot(script: HTMLScriptElement): Promise<Runtime | null> {

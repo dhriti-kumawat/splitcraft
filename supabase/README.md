@@ -28,7 +28,7 @@ Then install the snippet with the config URL:
 
 ```html
 <script
-  src="https://splitcraft.app/sdk/v1.js"
+  src="https://splitcraft.vercel.app/sdk/v1.js"
   data-project="prj_…"
   data-config="https://<your-project-ref>.supabase.co/functions/v1/config/prj_….json"
   async
