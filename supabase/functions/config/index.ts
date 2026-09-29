@@ -2,6 +2,7 @@
 // Public and cacheable: it only contains what live experiments need.
 import { functionsUrl, supabase } from '../_shared/client.ts';
 import { toSdkConfig } from '../_shared/config.ts';
+import { clientIp, lookupCountry, usesCountry } from '../_shared/country.ts';
 import { empty, json } from '../_shared/http.ts';
 import type { ConfigSource } from '../_shared/types.ts';
 
@@ -22,8 +23,13 @@ Deno.serve(async (req) => {
   if (!data) return json({ error: 'unknown project' }, 404);
 
   const config = toSdkConfig(data as ConfigSource, key, `${functionsUrl}/events`);
-  return json(config, 200, {
-    // Short cache so launches and pauses reach visitors within a minute.
-    'cache-control': 'public, max-age=60',
+  // Country only when a live experiment targets by it (segments are resolved into the
+  // targeting by now); then the response is per visitor.
+  const perVisitor = usesCountry(config.experiments);
+  const country = perVisitor ? await lookupCountry(clientIp(req.headers)) : undefined;
+  return json(country ? { ...config, country } : config, 200, {
+    // Short cache so launches and pauses reach visitors within a minute. With a country
+    // in it, only the visitor's own browser may cache it.
+    'cache-control': `${perVisitor ? 'private' : 'public'}, max-age=60`,
   });
 });
