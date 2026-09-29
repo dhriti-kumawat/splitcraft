@@ -16,3 +16,4 @@ export {
   type PageviewGoal,
 } from './goals';
 export { pushDataLayer } from './dataLayer';
+export { trackDataLayer, type DataLayerGoal, type TransactionGoal } from './dataLayerGoals';
