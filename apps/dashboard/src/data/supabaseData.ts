@@ -7,6 +7,7 @@ import type {
   ExperimentStatus,
   Metric,
   Project,
+  Segment,
   Variant,
   Workspace,
 } from './api';
@@ -134,6 +135,24 @@ export function toMetric(row: MetricRow): Metric {
     measureConfig: row.measure_config ?? {},
   };
 }
+
+interface SegmentRow {
+  id: string;
+  project_id: string;
+  name: string;
+  rules: Segment['rules'];
+  updated_at: string;
+}
+
+const toSegment = (r: SegmentRow): Segment => ({
+  id: r.id,
+  projectId: r.project_id,
+  name: r.name,
+  rules: r.rules ?? { mode: 'all', items: [] },
+  updatedAt: r.updated_at,
+});
+
+const SEGMENT_COLUMNS = 'id, project_id, name, rules, updated_at';
 
 function check<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message);
@@ -338,6 +357,46 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
 
     async deleteVariant(variantId) {
       check(await supabase.from('variants').delete().eq('id', variantId));
+    },
+
+    async listSegments(projectId) {
+      const rows = check(
+        await supabase
+          .from('segments')
+          .select(SEGMENT_COLUMNS)
+          .eq('project_id', projectId)
+          .order('name'),
+      ) as SegmentRow[];
+      return rows.map(toSegment);
+    },
+
+    async createSegment(projectId, name, rules) {
+      return toSegment(
+        check(
+          await supabase
+            .from('segments')
+            .insert({ project_id: projectId, name, rules })
+            .select(SEGMENT_COLUMNS)
+            .single(),
+        ) as SegmentRow,
+      );
+    },
+
+    async updateSegment(segmentId, patch) {
+      return toSegment(
+        check(
+          await supabase
+            .from('segments')
+            .update({ ...patch, updated_at: new Date().toISOString() })
+            .eq('id', segmentId)
+            .select(SEGMENT_COLUMNS)
+            .single(),
+        ) as SegmentRow,
+      );
+    },
+
+    async deleteSegment(segmentId) {
+      check(await supabase.from('segments').delete().eq('id', segmentId));
     },
 
     async listMetrics(projectId) {
