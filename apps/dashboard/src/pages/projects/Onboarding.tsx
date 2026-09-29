@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { Experiment } from '../../data/api';
-import { useExperimentsByProject } from '../../data/queries';
+import { useCreateDemoProject, useExperimentsByProject } from '../../data/queries';
 import { useWorkspace } from '../../data/workspace';
 import { variantsReady } from '../../lib/launch';
 import styles from './Onboarding.module.css';
@@ -32,11 +32,18 @@ interface Step {
 export function Onboarding({ onNewProject }: { onNewProject(): void }) {
   const { workspace, projects } = useWorkspace();
   const [hidden, setHidden] = useState(() => readHidden(workspace.id));
+  const demo = useCreateDemoProject(workspace.id);
+  const navigate = useNavigate();
+  const hasDemo = projects.some((p) => p.demo);
   const byProject = useExperimentsByProject(projects.map((p) => p.id));
-  const experiments: Experiment[] = projects.flatMap((p) => byProject[p.id]?.experiments ?? []);
+  const experiments: Experiment[] = projects
+    .filter((p) => !p.demo)
+    .flatMap((p) => byProject[p.id]?.experiments ?? []);
   const loading = projects.some((p) => !byProject[p.id]?.experiments);
 
-  const project = projects.find((p) => p.installedAt) ?? projects[0];
+  // Steps count your own projects; the demo project is only for looking around.
+  const own = projects.filter((p) => !p.demo);
+  const project = own.find((p) => p.installedAt) ?? own[0];
   const base = project ? `/p/${project.id}` : '';
   const ready = experiments.find((e) => e.primaryMetricId && variantsReady(e));
   const first = ready ?? experiments[0];
@@ -44,14 +51,14 @@ export function Onboarding({ onNewProject }: { onNewProject(): void }) {
     {
       title: 'Create a project',
       text: 'One per site or app. It gets its own snippet.',
-      done: projects.length > 0,
+      done: own.length > 0,
       to: '',
       action: 'New project',
     },
     {
       title: 'Install the snippet',
       text: 'Paste one script tag into your site’s <head>. It ticks off on the first page view.',
-      done: projects.some((p) => p.installedAt),
+      done: own.some((p) => p.installedAt),
       to: `${base}/install`,
       action: 'Install',
     },
@@ -106,6 +113,32 @@ export function Onboarding({ onNewProject }: { onNewProject(): void }) {
           Hide
         </button>
       </div>
+      {!hasDemo && doneCount < 2 && (
+        <div className={styles.demo}>
+          <span>
+            <b>Just looking?</b> See a finished test first: a demo project with two weeks of
+            simulated visitors and results.
+          </span>
+          <button
+            type="button"
+            className={styles.demoButton}
+            disabled={demo.isPending}
+            onClick={() =>
+              demo.mutate(undefined, {
+                onSuccess: ({ projectId, experimentId }) =>
+                  navigate(`/p/${projectId}/experiments/${experimentId}/results`),
+              })
+            }
+          >
+            {demo.isPending ? 'Creating demo…' : 'Try with demo data'}
+          </button>
+          {demo.isError && (
+            <span role="alert" className={styles.demoError}>
+              Couldn't create the demo: {demo.error.message}
+            </span>
+          )}
+        </div>
+      )}
       <div
         className={styles.bar}
         role="progressbar"

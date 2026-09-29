@@ -33,6 +33,7 @@ const project = (p: Partial<Project> & Pick<Project, 'id' | 'name' | 'mainDomain
   installedAt: '2026-09-01T10:00:00Z',
   createdAt: '2026-09-01T09:00:00Z',
   settings: { antiFlicker: true, spa: true, ga4: true, previewAnywhere: false },
+  demo: false,
   ...p,
 });
 
@@ -529,6 +530,20 @@ export function fakeData(
     sessionSample: async () => opts.sessionSample ?? SESSION_SAMPLE,
     workspaceActivity: async (_ws, limit) => (opts.activity ?? ACTIVITY).slice(0, limit),
     eventsThisMonth: async () => 48_210,
+    async createDemoProject(workspaceId) {
+      const demo = project({
+        id: 'demo',
+        name: 'Demo: Trip Shop',
+        mainDomain: 'demo.splitcraft.dev',
+        workspaceId,
+        demo: true,
+      });
+      projects.push(demo);
+      const sticky = experiments.find((e) => e.id === 'sticky') ?? EXPERIMENTS[0]!;
+      experiments.push({ ...sticky, id: 'demo-sticky', projectId: 'demo' });
+      goals['demo-sticky'] = (goals.sticky ?? []).map((g) => ({ ...g }));
+      return { projectId: 'demo', experimentId: 'demo-sticky' };
+    },
     async createProject(input) {
       created.push(input);
       const p = project({
@@ -590,8 +605,9 @@ export function fakeData(
       }
     },
     listVariantVersions: async (id) => versions[id] ?? [],
-    experimentResults: async (id) => opts.results?.[id] ?? RESULTS[id] ?? [],
-    experimentDaily: async (id) => DAILY[id] ?? [],
+    // The demo project's experiment reuses the Sticky example's numbers.
+    experimentResults: async (id) => opts.results?.[id] ?? RESULTS[id.replace(/^demo-/, '')] ?? [],
+    experimentDaily: async (id) => DAILY[id.replace(/^demo-/, '')] ?? [],
     async addVariant(experimentId, variant) {
       const e = experiments.find((x) => x.id === experimentId)!;
       e.variants.push({

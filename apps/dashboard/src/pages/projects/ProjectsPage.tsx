@@ -258,7 +258,9 @@ function ProjectCard({
           </Link>
           <span className={`${styles.domain} mono`}>{project.mainDomain}</span>
         </span>
-        {installed ? (
+        {project.demo ? (
+          <Pill tone="ended">Demo</Pill>
+        ) : installed ? (
           <Pill tone="live">Snippet live</Pill>
         ) : (
           <Pill tone="paused">Not installed</Pill>
