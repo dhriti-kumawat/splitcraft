@@ -101,6 +101,19 @@ export function useInstallStatus(projectId: string | undefined, intervalMs = 400
   });
 }
 
+export function useCreateDemoProject(workspaceId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.createDemoProject(workspaceId),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.projects(workspaceId) });
+      void client.invalidateQueries({ queryKey: keys.overview(workspaceId) });
+      void client.invalidateQueries({ queryKey: keys.activity(workspaceId, 5) });
+    },
+  });
+}
+
 export function useCreateProject() {
   const api = useData();
   const client = useQueryClient();

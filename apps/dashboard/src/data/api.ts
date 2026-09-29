@@ -55,6 +55,8 @@ export interface Project {
   installedAt: string | null;
   createdAt: string;
   settings: ProjectSettings;
+  /** Sample project from "Try with demo data"; its events don't count toward the allowance. */
+  demo: boolean;
 }
 
 /** SDK switches per project (10-projects.html). All on by default. */
@@ -311,6 +313,8 @@ export interface DataApi {
   sessionSample(projectId: string): Promise<SessionSample>;
   eventsThisMonth(workspaceId: string): Promise<number>;
   createProject(project: NewProject): Promise<Project>;
+  /** "Try with demo data": a sample project with simulated results. */
+  createDemoProject(workspaceId: string): Promise<{ projectId: string; experimentId: string }>;
   updateProject(
     projectId: string,
     patch: Partial<Pick<Project, 'name' | 'mainDomain' | 'allowedDomains' | 'settings'>>,

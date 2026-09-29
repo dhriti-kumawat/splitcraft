@@ -59,3 +59,27 @@ describe('onboarding checklist', () => {
     expect(screen.queryByRole('region', { name: 'Get your first test live' })).toBeNull();
   });
 });
+
+describe('demo data', () => {
+  it('creates a demo project and opens its results', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({ projects: [], experiments: [] });
+    renderApp('/projects', { data: data.api });
+    const card = await checklist();
+    await user.click(within(card).getByRole('button', { name: 'Try with demo data' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Sticky Book Now bar' }),
+    ).toBeInTheDocument();
+    expect(data.projectsNow()).toEqual([expect.objectContaining({ id: 'demo', demo: true })]);
+  });
+
+  it("doesn't count the demo toward the checklist, and marks its card", async () => {
+    const data = fakeData({ projects: [], experiments: [] });
+    await data.api.createDemoProject('ws_1');
+    await open(data);
+    const card = await checklist();
+    expect(within(card).getByText('0 of 5 done · about 10 minutes')).toBeInTheDocument();
+    expect(within(card).queryByRole('button', { name: 'Try with demo data' })).toBeNull();
+    expect(screen.getByRole('article', { name: 'Demo: Trip Shop' })).toHaveTextContent('Demo');
+  });
+});

@@ -29,10 +29,11 @@ interface ProjectRow {
   installed_at: string | null;
   created_at: string;
   settings: Partial<ProjectSettings> | null;
+  demo?: boolean | null;
 }
 
 const PROJECT_COLUMNS =
-  'id, workspace_id, name, main_domain, allowed_domains, public_key, installed_at, created_at, settings';
+  'id, workspace_id, name, main_domain, allowed_domains, public_key, installed_at, created_at, settings, demo';
 
 export function toProject(row: ProjectRow): Project {
   return {
@@ -50,6 +51,7 @@ export function toProject(row: ProjectRow): Project {
       ga4: row.settings?.ga4 !== false,
       previewAnywhere: row.settings?.previewAnywhere === true,
     },
+    demo: row.demo === true,
   };
 }
 
@@ -438,6 +440,13 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
           .single(),
       ) as ProjectRow;
       return toProject(row);
+    },
+
+    async createDemoProject(workspaceId) {
+      const rows = check(
+        await supabase.rpc('create_demo_project', { p_workspace: workspaceId }),
+      ) as Array<{ demo_project_id: string; demo_experiment_id: string }>;
+      return { projectId: rows[0]!.demo_project_id, experimentId: rows[0]!.demo_experiment_id };
     },
 
     async updateProject(projectId, patch) {
