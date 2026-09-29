@@ -25,6 +25,7 @@ export function toSdkConfig(
 
   const clicks: SdkProjectConfig['goals']['clicks'] = [];
   const pageviews: SdkProjectConfig['goals']['pageviews'] = [];
+  const custom: SdkProjectConfig['goals']['custom'] = [];
   for (const m of used) {
     const cfg = m.sourceConfig;
     if (m.source === 'click' && typeof cfg.selector === 'string' && cfg.selector) {
@@ -35,8 +36,11 @@ export function toSdkConfig(
       });
     } else if (m.source === 'pageview' && isUrlRule(cfg.url)) {
       pageviews.push({ key: m.eventKey, url: cfg.url });
+    } else if (m.source === 'custom_js' && typeof cfg.code === 'string' && cfg.code.trim()) {
+      const pages = Array.isArray(cfg.pages) ? cfg.pages.filter(isUrlRule) : [];
+      custom.push({ key: m.eventKey, code: cfg.code, ...(pages.length && { pages }) });
     }
-    // custom_js, datalayer and transaction metrics are not tracked by the SDK yet.
+    // datalayer and transaction metrics are not tracked by the SDK yet.
   }
 
   return {
@@ -55,7 +59,7 @@ export function toSdkConfig(
       })),
       targeting: toSdkTargeting(e.targeting ?? {}, source.segments),
     })),
-    goals: { clicks, pageviews },
+    goals: { clicks, pageviews, custom },
     ...(country && { country }),
   };
 }

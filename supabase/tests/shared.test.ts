@@ -175,7 +175,29 @@ describe('toSdkConfig goals', () => {
     expect(build(metric('click', { selector: '' })).clicks).toEqual([]);
   });
 
+  it('includes custom JS trackers with their pages', () => {
+    expect(
+      build(
+        metric('custom_js', {
+          code: 'splitly.trackEvent("goal_key")',
+          pages: [{ op: 'matches', value: '/trips/*' }, { op: 'bad' }],
+        }),
+      ).custom,
+    ).toEqual([
+      {
+        key: 'goal_key',
+        code: 'splitly.trackEvent("goal_key")',
+        pages: [{ op: 'matches', value: '/trips/*' }],
+      },
+    ]);
+    expect(build(metric('custom_js', { code: '  ' })).custom).toEqual([]);
+  });
+
   it('leaves out goal sources the SDK does not track yet', () => {
-    expect(build(metric('custom_js', { code: 'x' }))).toEqual({ clicks: [], pageviews: [] });
+    expect(build(metric('datalayer', { event: 'purchase' }))).toEqual({
+      clicks: [],
+      pageviews: [],
+      custom: [],
+    });
   });
 });

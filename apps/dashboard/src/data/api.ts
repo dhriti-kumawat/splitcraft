@@ -163,6 +163,9 @@ export interface DataApi {
   ): Promise<void>;
   deleteVariant(variantId: string): Promise<void>;
   listMetrics(projectId: string): Promise<Metric[]>;
+  createMetric(metric: Omit<Metric, 'id'>): Promise<Metric>;
+  updateMetric(metricId: string, patch: Partial<Omit<Metric, 'id' | 'projectId'>>): Promise<Metric>;
+  deleteMetric(metricId: string): Promise<void>;
   listSegments(projectId: string): Promise<Segment[]>;
   createSegment(projectId: string, name: string, rules: ConditionGroup): Promise<Segment>;
   updateSegment(

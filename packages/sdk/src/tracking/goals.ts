@@ -59,3 +59,30 @@ function closest(el: Element, selector: string): Element | null {
     return null;
   }
 }
+
+export interface CustomGoal {
+  key: string;
+  /** Tracker code; calls splitly.trackEvent(key, props) when the action happens. */
+  code: string;
+  /** Pages to run on (ORed). None means every page. */
+  pages?: UrlRule[];
+}
+
+/**
+ * Run custom JS trackers once per page (and after each SPA navigation) on their pages,
+ * with the splitly helpers. Errors are caught so a broken tracker can't break the site.
+ */
+export function runCustomTrackers(goals: CustomGoal[], api: Record<string, unknown>): () => void {
+  const run = (url: string): void => {
+    for (const goal of goals) {
+      if (goal.pages?.length && !goal.pages.some((rule) => matchUrl(url, rule))) continue;
+      try {
+        new Function('splitly', goal.code)(api);
+      } catch (err) {
+        console.error(`[splitly] tracker ${goal.key}:`, err);
+      }
+    }
+  };
+  run(location.href);
+  return onRouteChange(run);
+}

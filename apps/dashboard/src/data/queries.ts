@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ConditionGroup } from '../lib/targeting';
-import type { Experiment, ExperimentPatch, NewProject, VariantPatch } from './api';
+import type { Experiment, ExperimentPatch, Metric, NewProject, VariantPatch } from './api';
 import { useData } from './context';
 
 export const keys = {
@@ -237,5 +237,28 @@ export function useSegmentMutations(projectId: string) {
       onSuccess: refresh,
     }),
     remove: useMutation({ mutationFn: (id: string) => api.deleteSegment(id), onSuccess: refresh }),
+  };
+}
+
+export function useMetricMutations(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => void client.invalidateQueries({ queryKey: keys.metrics(projectId) });
+  return {
+    create: useMutation({
+      mutationFn: (m: Omit<Metric, 'id'>) => api.createMetric(m),
+      onSuccess: refresh,
+    }),
+    update: useMutation({
+      mutationFn: ({
+        id,
+        patch,
+      }: {
+        id: string;
+        patch: Partial<Omit<Metric, 'id' | 'projectId'>>;
+      }) => api.updateMetric(id, patch),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => api.deleteMetric(id), onSuccess: refresh }),
   };
 }

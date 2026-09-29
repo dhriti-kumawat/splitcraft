@@ -267,6 +267,7 @@ export function fakeData(
   }));
   const patches: Array<{ id: string; patch: unknown }> = [];
   const variantPatches: Array<{ id: string; patch: unknown }> = [];
+  let metrics = METRICS.map((m) => ({ ...m }));
   let segments = (opts.segments ?? SEGMENTS).map((x) => ({ ...x }));
   const versions: Record<
     string,
@@ -375,7 +376,24 @@ export function fakeData(
     async deleteSegment(id) {
       segments = segments.filter((x) => x.id !== id);
     },
-    listMetrics: async (projectId) => METRICS.filter((m) => m.projectId === projectId),
+    listMetrics: async (projectId) =>
+      metrics.filter((m) => m.projectId === projectId).map((m) => ({ ...m })),
+    async createMetric(m) {
+      if (metrics.some((x) => x.projectId === m.projectId && x.eventKey === m.eventKey)) {
+        throw new Error(`The event key "${m.eventKey}" is already used by another metric.`);
+      }
+      const created = { ...m, id: `m-new-${metrics.length}` };
+      metrics.push(created);
+      return { ...created };
+    },
+    async updateMetric(id, patch) {
+      const m = metrics.find((x) => x.id === id)!;
+      Object.assign(m, patch);
+      return { ...m };
+    },
+    async deleteMetric(id) {
+      metrics = metrics.filter((x) => x.id !== id);
+    },
     experimentGoals: async (id) => GOALS[id] ?? [],
     async createExperiment(projectId, name) {
       createdExperiments.push(name);
@@ -398,6 +416,7 @@ export function fakeData(
     patches,
     variantPatches,
     segmentsNow: () => segments,
+    metricsNow: () => metrics,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;

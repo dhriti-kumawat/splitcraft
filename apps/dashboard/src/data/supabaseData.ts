@@ -154,6 +154,18 @@ const toSegment = (r: SegmentRow): Segment => ({
 
 const SEGMENT_COLUMNS = 'id, project_id, name, rules, updated_at';
 
+const metricColumns = (m: Partial<Omit<Metric, 'id'>>) => {
+  const row: Record<string, unknown> = {};
+  if (m.projectId !== undefined) row.project_id = m.projectId;
+  if (m.name !== undefined) row.name = m.name;
+  if (m.eventKey !== undefined) row.event_key = m.eventKey;
+  if (m.source !== undefined) row.source = m.source;
+  if (m.sourceConfig !== undefined) row.source_config = m.sourceConfig;
+  if (m.measure !== undefined) row.measure = m.measure;
+  if (m.measureConfig !== undefined) row.measure_config = m.measureConfig;
+  return row;
+};
+
 function check<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message);
   return result.data as T;
@@ -357,6 +369,33 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
 
     async deleteVariant(variantId) {
       check(await supabase.from('variants').delete().eq('id', variantId));
+    },
+
+    async createMetric(metric) {
+      const { data, error } = await supabase
+        .from('metrics')
+        .insert(metricColumns(metric))
+        .select(METRIC_COLUMNS)
+        .single();
+      if (error?.code === '23505')
+        throw new Error(`The event key "${metric.eventKey}" is already used by another metric.`);
+      return toMetric(check({ data, error }) as MetricRow);
+    },
+
+    async updateMetric(metricId, patch) {
+      const { data, error } = await supabase
+        .from('metrics')
+        .update(metricColumns(patch))
+        .eq('id', metricId)
+        .select(METRIC_COLUMNS)
+        .single();
+      if (error?.code === '23505')
+        throw new Error(`The event key "${patch.eventKey}" is already used by another metric.`);
+      return toMetric(check({ data, error }) as MetricRow);
+    },
+
+    async deleteMetric(metricId) {
+      check(await supabase.from('metrics').delete().eq('id', metricId));
     },
 
     async listSegments(projectId) {
