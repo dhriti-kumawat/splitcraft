@@ -173,6 +173,7 @@ export function sessionPing(
   state: VisitorState,
   userAgent: string,
   screenWidth: number,
+  country?: string,
 ): Record<string, unknown> {
   const s = state.s;
   return {
@@ -182,5 +183,6 @@ export function sessionPing(
     n: s?.n ?? 1,
     ...(Object.keys(state.u.f).length && { uf: state.u.f }),
     ...(Object.keys(state.u.l).length && { ul: state.u.l }),
+    ...(country && { c: country }),
   };
 }

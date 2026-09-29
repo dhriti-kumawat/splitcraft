@@ -322,6 +322,19 @@ describe('boot', () => {
 });
 
 describe('session ping', () => {
+  it('includes the country when the config has one', async () => {
+    localStorage.clear();
+    runtime = start({
+      projectKey: 'prj_test',
+      eventsUrl: 'https://e.test',
+      experiments: [],
+      country: 'IN',
+    });
+    await settle();
+    const [ping] = (await allSentEvents()).filter((e) => e.type === 'ping');
+    expect(ping).toMatchObject({ props: { c: 'IN' } });
+  });
+
   it('sends one ping per session with what reach estimates need', async () => {
     localStorage.clear();
     history.replaceState({}, '', '/trips/norway?utm_source=news&utm_medium=email');
