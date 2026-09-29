@@ -119,3 +119,67 @@ describe('segment rules shape', () => {
     expect(toGroups({ mode: 'all', items: [] })).toEqual([]);
   });
 });
+
+describe('saved triggers and page sets', () => {
+  it('switches between segments, triggers and page sets', async () => {
+    const user = userEvent.setup();
+    const { router } = await open();
+    const tabs = screen.getByRole('navigation', { name: 'Audience types' });
+    await user.click(within(tabs).getByRole('link', { name: 'Triggers' }));
+    expect(router.state.location.pathname).toBe('/p/trip-demo/audiences/triggers');
+    expect(await screen.findByRole('link', { name: 'Engaged mobile visit' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '+ New trigger' })).toBeInTheDocument();
+    await user.click(within(tabs).getByRole('link', { name: 'Page sets' }));
+    expect(
+      await screen.findByRole('link', { name: 'Trip and deal pages3 URL rules' }),
+    ).toBeInTheDocument();
+  });
+
+  it('edits a saved trigger', async () => {
+    const user = userEvent.setup();
+    const data = fakeData();
+    renderApp('/p/trip-demo/audiences/triggers/trg-engaged', { data: data.api });
+    const name = await screen.findByLabelText('Trigger name');
+    await user.clear(name);
+    await user.type(name, 'Engaged visit');
+    await user.click(screen.getByRole('button', { name: 'Save trigger' }));
+    expect(
+      await screen.findByText('Saved. Experiments that already use it keep their own copy.'),
+    ).toBeInTheDocument();
+    expect(data.savedNow().triggers[0]!.name).toBe('Engaged visit');
+  });
+
+  it('creates a page set', async () => {
+    const user = userEvent.setup();
+    const data = fakeData();
+    const router = renderApp('/p/trip-demo/audiences/page-sets/new', { data: data.api });
+    await user.type(await screen.findByLabelText('Page set name'), 'Checkout');
+    await user.click(screen.getByRole('button', { name: 'Create page set' }));
+    expect(screen.getByText('1 rule needs a value.')).toBeInTheDocument();
+    await user.type(screen.getByRole('textbox', { name: 'Page rule 1 value' }), '/checkout');
+    await user.click(screen.getByRole('button', { name: 'Create page set' }));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toBe('/p/trip-demo/audiences/page-sets/page_sets-2'),
+    );
+    expect(data.savedNow().page_sets[1]).toMatchObject({
+      name: 'Checkout',
+      rules: { include: [{ op: 'matches', value: '/checkout' }] },
+    });
+  });
+
+  it('inserts a saved audience into a segment as a copy', async () => {
+    const user = userEvent.setup();
+    const { segmentsNow } = await open('/p/trip-demo/audiences/seg-mobile');
+    const before = segmentsNow().find((s) => s.id === 'seg-mobile')!.rules.items.length;
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Insert saved audience' }),
+      'High-intent returners',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save segment' }));
+    await vi.waitFor(() =>
+      expect(segmentsNow().find((s) => s.id === 'seg-mobile')!.rules.items.length).toBeGreaterThan(
+        before,
+      ),
+    );
+  });
+});

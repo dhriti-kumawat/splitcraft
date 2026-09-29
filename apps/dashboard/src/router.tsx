@@ -8,7 +8,7 @@ import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
 import { AppShell } from './layout/AppShell';
-import { ExperimentName, MetricName, SegmentName } from './layout/CrumbNames';
+import { ExperimentName, MetricName, SavedName, SegmentName } from './layout/CrumbNames';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProjectRoute } from './pages/ProjectRoute';
@@ -122,6 +122,38 @@ export const routes: RouteObject[] = [
                   Component: (await import('./pages/audiences/AudiencesPage')).AudiencesPage,
                 }),
               },
+              ...(['triggers', 'page-sets'] as const).flatMap((tab) => [
+                {
+                  path: tab,
+                  lazy: async () => ({
+                    Component: (await import('./pages/audiences/AudiencesPage')).AudiencesPage,
+                  }),
+                  handle: crumb(tab === 'triggers' ? 'Triggers' : 'Page sets'),
+                },
+                {
+                  path: `${tab}/:savedId`,
+                  lazy: async () => ({
+                    Component: (await import('./pages/audiences/AudiencesPage')).AudiencesPage,
+                  }),
+                  handle: {
+                    crumbs: ({ params }) => [
+                      {
+                        label: tab === 'triggers' ? 'Triggers' : 'Page sets',
+                        to: `/p/${params.projectId}/audiences/${tab}`,
+                      },
+                      {
+                        label: (
+                          <SavedName
+                            kind={tab === 'triggers' ? 'triggers' : 'page_sets'}
+                            projectId={params.projectId!}
+                            id={params.savedId!}
+                          />
+                        ),
+                      },
+                    ],
+                  } satisfies RouteHandle,
+                },
+              ]),
               {
                 path: ':segmentId',
                 lazy: async () => ({
