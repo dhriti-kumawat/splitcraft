@@ -5,7 +5,8 @@
   "workspaces": [
     "packages/*",
     "apps/*",
-    "supabase"
+    "supabase",
+    "tools/*"
   ],
   "engines": {
     "node": ">=20"
