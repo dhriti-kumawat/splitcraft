@@ -7,10 +7,16 @@ import { Dialog } from '../../components/Dialog';
 import dialogStyles from '../../components/Dialog.module.css';
 import { PageHeader } from '../../components/PageHeader';
 import type { Segment } from '../../data/api';
-import { useExperimentsQuery, useSegmentMutations, useSegmentsQuery } from '../../data/queries';
+import {
+  useExperimentsQuery,
+  useSegmentMutations,
+  useSegmentsQuery,
+  useSessionSampleQuery,
+} from '../../data/queries';
 import { useCurrentProject } from '../../data/workspace';
 import { TopBarActions } from '../../layout/TopBarActions';
 import { describeGroups, groupsProblemCount } from '../../lib/conditions';
+import { evaluateGroup, formatRange, share } from '../../lib/reach';
 import { fromGroups, toGroups } from '../../lib/segments';
 import type { ConditionGroup } from '../../lib/targeting';
 import styles from './AudiencesPage.module.css';
@@ -108,6 +114,10 @@ function SegmentEditor({
   usedBy: string[];
 }) {
   const { create, update, remove } = useSegmentMutations(projectId);
+  const sample = useSessionSampleQuery(projectId);
+  const estimate = sample.data
+    ? (g: ConditionGroup) => share(sample.data.sample, (s) => evaluateGroup(g, s))
+    : undefined;
   const navigate = useNavigate();
   const [name, setName] = useState(segment?.name ?? '');
   const [groups, setGroups] = useState<ConditionGroup[]>(() =>
@@ -156,6 +166,12 @@ function SegmentEditor({
         <span className={styles.summaryText} aria-live="polite">
           {describeGroups(groups)}
         </span>
+        {estimate && groups.some((g) => g.items.length) && (
+          <span className={styles.reachLine}>
+            Matches {formatRange(estimate(fromGroups(groups.filter((g) => g.items.length)))!)} of
+            the last 30 days' sessions
+          </span>
+        )}
       </div>
       <div className={styles.nameRow}>
         <div className={styles.field}>
@@ -179,7 +195,7 @@ function SegmentEditor({
           )}
         </div>
       </div>
-      <ConditionBuilder groups={groups} onChange={setGroups} noun="Segment" />
+      <ConditionBuilder groups={groups} onChange={setGroups} noun="Segment" estimate={estimate} />
       <div className={styles.actions}>
         <Button
           onClick={save}

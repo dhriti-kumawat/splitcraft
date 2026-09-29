@@ -301,3 +301,12 @@
     flex: 1 1 100%;
   }
 }
+
+.reach {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13px;
+}

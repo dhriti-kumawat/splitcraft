@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StoredTargeting } from '../lib/targeting';
 import type {
+  SessionPing,
   ActivityItem,
   DataApi,
   Invite,
@@ -359,6 +360,17 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         subject: r.subject,
         at: r.at,
       }));
+    },
+
+    async sessionSample(projectId) {
+      const rows = check(
+        await supabase.rpc('project_session_sample', { p_project: projectId, p_limit: 2000 }),
+      ) as Array<{ url: string; props: SessionPing['props']; sessions: number; days: number }>;
+      return {
+        sessions: rows[0]?.sessions ?? 0,
+        days: rows[0]?.days ?? 0,
+        sample: rows.map((r) => ({ url: r.url, props: r.props })),
+      };
     },
 
     async projectOverview(workspaceId) {

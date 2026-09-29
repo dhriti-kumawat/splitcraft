@@ -1,4 +1,5 @@
 import type {
+  SessionSample,
   ActivityItem,
   DailyArm,
   DataApi,
@@ -244,6 +245,24 @@ export const GOALS: Record<string, ExperimentGoal[]> = {
   ],
 };
 
+/**
+ * 20 sampled sessions over 30 days (6,000 sessions, 200 a day): 12 mobile, 3 tablet,
+ * 5 desktop; a mix of sources; landing on /trips/*, / and /deals/*.
+ */
+export const SESSION_SAMPLE: SessionSample = {
+  sessions: 6000,
+  days: 30,
+  sample: Array.from({ length: 20 }, (_, i) => ({
+    url: `https://mytrips.dev${i % 2 ? '/trips/norway' : i % 5 === 0 ? '/deals/summer' : '/'}`,
+    props: {
+      d: i < 12 ? ('mobile' as const) : i < 15 ? ('tablet' as const) : ('desktop' as const),
+      w: i < 12 ? 390 : i < 15 ? 820 : 1440,
+      s: (['direct', 'organic', 'paid', 'email'] as const)[i % 4]!,
+      n: i % 3 === 0 ? 1 : 3,
+    },
+  })),
+};
+
 export const SEGMENTS: Segment[] = [
   {
     id: 'seg-returners',
@@ -359,6 +378,7 @@ export function fakeData(
     results?: Record<string, MetricArm[]>;
     people?: Person[];
     activity?: ActivityItem[];
+    sessionSample?: SessionSample;
   } = {},
 ) {
   const projects = (opts.projects ?? PROJECTS).map((p) => ({
@@ -463,6 +483,7 @@ export function fakeData(
       return p && { ...p };
     },
     projectOverview: async () => STATS,
+    sessionSample: async () => opts.sessionSample ?? SESSION_SAMPLE,
     workspaceActivity: async (_ws, limit) => (opts.activity ?? ACTIVITY).slice(0, limit),
     eventsThisMonth: async () => 48_210,
     async createProject(input) {

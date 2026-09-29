@@ -13,6 +13,7 @@ import {
   type ConditionType,
 } from '../lib/conditions';
 import type { Condition, ConditionGroup } from '../lib/targeting';
+import { formatRange, type Range } from '../lib/reach';
 import styles from './ConditionBuilder.module.css';
 
 type Item = Condition | ConditionGroup;
@@ -28,6 +29,8 @@ interface Props {
   multipleGroups?: boolean;
   /** Default mode for a new top-level group. */
   defaultMode?: ConditionGroup['mode'];
+  /** Share of recent sessions each group matches (reach estimates), if known. */
+  estimate?: (group: ConditionGroup) => Range | null;
 }
 
 /**
@@ -40,6 +43,7 @@ export function ConditionBuilder({
   noun,
   multipleGroups = true,
   defaultMode = 'all',
+  estimate,
 }: Props) {
   const setGroup = (i: number, g: ConditionGroup) =>
     onChange(groups.map((x, j) => (j === i ? g : x)));
@@ -56,6 +60,7 @@ export function ConditionBuilder({
             path={`${noun} group ${i + 1}`}
             onChange={(next) => setGroup(i, next)}
             onRemove={multipleGroups || groups.length > 1 ? () => removeGroup(i) : undefined}
+            estimate={estimate}
           />
         </Fragment>
       ))}
@@ -82,13 +87,16 @@ function Group({
   onChange,
   onRemove,
   nested,
+  estimate,
 }: {
   group: ConditionGroup;
   path: string;
   onChange(g: ConditionGroup): void;
   onRemove?(): void;
   nested?: boolean;
+  estimate?: Props['estimate'];
 }) {
+  const match = group.items.length ? estimate?.(group) : null;
   const setItem = (i: number, item: Item) =>
     onChange({ ...group, items: group.items.map((x, j) => (j === i ? item : x)) });
   const removeItem = (i: number) =>
@@ -123,6 +131,14 @@ function Group({
                 ? 'At least one must match'
                 : 'Excludes anyone who matches'}
           </span>
+          {match && (
+            <span
+              className={styles.match}
+              title="Share of the last 30 days' sessions this group matches. A range means some conditions need the live page to check."
+            >
+              {formatRange(match)} match
+            </span>
+          )}
         </div>
         <div className={styles.groupActions}>
           <button type="button" className={styles.small} onClick={() => add(FIELDS[0]!.create())}>
@@ -156,6 +172,7 @@ function Group({
             path={`${path}, nested group ${i + 1}`}
             onChange={(g) => setItem(i, g)}
             onRemove={() => removeItem(i)}
+            estimate={estimate}
           />
         ) : (
           <Row

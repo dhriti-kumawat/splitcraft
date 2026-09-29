@@ -102,6 +102,11 @@
   border: 1px solid var(--line);
 }
 
+.reachLine {
+  font: 500 12px var(--font-mono);
+  color: var(--accent);
+}
+
 .summaryText {
   font-size: 15px;
   line-height: 1.5;
