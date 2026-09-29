@@ -48,6 +48,7 @@ export function toProject(row: ProjectRow): Project {
       antiFlicker: row.settings?.antiFlicker !== false,
       spa: row.settings?.spa !== false,
       ga4: row.settings?.ga4 !== false,
+      previewAnywhere: row.settings?.previewAnywhere === true,
     },
   };
 }

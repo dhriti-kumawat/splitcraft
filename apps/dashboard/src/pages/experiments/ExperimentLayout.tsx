@@ -117,6 +117,11 @@ function Actions({ experiment, project }: ExperimentContext) {
         <a
           className={styles.linkButton}
           href={previewUrl(experiment, project)}
+          title={
+            project.settings.previewAnywhere
+              ? 'Page without the snippet? Click your Splitcraft preview bookmark once it opens.'
+              : undefined
+          }
           target="_blank"
           rel="noreferrer"
           onClick={() => {

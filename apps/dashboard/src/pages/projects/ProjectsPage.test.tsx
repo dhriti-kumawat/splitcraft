@@ -339,3 +339,19 @@ describe('SDK switches', () => {
     );
   });
 });
+
+describe('preview bookmark', () => {
+  it('appears when previews on pages without the snippet are switched on', async () => {
+    const user = userEvent.setup();
+    renderApp('/p/trip-demo/install');
+    const toggle = await screen.findByRole('switch', {
+      name: 'Preview on pages without the snippet',
+    });
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+    expect(screen.queryByText('Splitcraft preview')).not.toBeInTheDocument();
+    await user.click(toggle);
+    const link = await screen.findByText('Splitcraft preview');
+    expect(link.getAttribute('href')).toMatch(/^javascript:/);
+    expect(screen.getByRole('button', { name: 'Copy bookmark code' })).toBeInTheDocument();
+  });
+});
