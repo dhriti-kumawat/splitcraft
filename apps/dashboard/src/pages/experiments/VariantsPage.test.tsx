@@ -21,10 +21,10 @@ describe('variants list', () => {
       .getAllByRole('button')
       .filter((b) => b.closest('li'));
     expect(buttons.map((b) => b.textContent)).toEqual([
-      'B0 lines JS · 0 lines CSS',
       'ControlOriginal page, no code',
+      'B0 lines JS · 0 lines CSS',
     ]);
-    expect(buttons[0]).toHaveAttribute('aria-current', 'true');
+    expect(buttons[1]).toHaveAttribute('aria-current', 'true');
   });
 
   it('explains Control has no code', async () => {

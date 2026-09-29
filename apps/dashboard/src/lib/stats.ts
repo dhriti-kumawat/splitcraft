@@ -217,3 +217,34 @@ export function sampleSizePerVariant(
     (p2 - p1) ** 2;
   return Math.ceil(n);
 }
+
+export interface MeanArm {
+  n: number;
+  mean: number;
+  /** Population variance of the per-visitor value. */
+  variance: number;
+}
+
+/**
+ * Compare per-visitor means (events, revenue…) with Welch's normal approximation.
+ * `chanceToWin` is P(variant mean > control mean) under that approximation.
+ */
+export function compareMeans(control: MeanArm, variant: MeanArm, confidence = 0.95): Comparison {
+  const diff = variant.mean - control.mean;
+  const se = Math.sqrt(
+    control.variance / Math.max(control.n, 1) + variant.variance / Math.max(variant.n, 1),
+  );
+  const zc = normalQuantile(1 - (1 - confidence) / 2);
+  const z = se > 0 ? diff / se : 0;
+  const base = control.mean;
+  return {
+    controlRate: control.mean,
+    variantRate: variant.mean,
+    uplift: base !== 0 ? diff / base : 0,
+    upliftLow: base !== 0 ? (diff - zc * se) / base : 0,
+    upliftHigh: base !== 0 ? (diff + zc * se) / base : 0,
+    z,
+    pValue: 2 * (1 - normalCdf(Math.abs(z))),
+    chanceToWin: se > 0 ? normalCdf(z) : diff > 0 ? 1 : diff < 0 ? 0 : 0.5,
+  };
+}

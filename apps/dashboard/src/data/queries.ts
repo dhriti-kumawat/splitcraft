@@ -25,6 +25,8 @@ export const keys = {
   goals: (experimentId: string) => ['goals', experimentId] as const,
   versions: (variantId: string) => ['versions', variantId] as const,
   segments: (projectId: string) => ['segments', projectId] as const,
+  results: (experimentId: string) => ['results', experimentId] as const,
+  daily: (experimentId: string) => ['daily', experimentId] as const,
 };
 
 export function useWorkspacesQuery(userId: string) {
@@ -293,4 +295,20 @@ export function useGoalMutations(experimentId: string) {
       onSuccess: refresh,
     }),
   };
+}
+
+export function useResultsQuery(experimentId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.results(experimentId),
+    queryFn: () => api.experimentResults(experimentId),
+  });
+}
+
+export function useDailyQuery(experimentId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.daily(experimentId),
+    queryFn: () => api.experimentDaily(experimentId),
+  });
 }

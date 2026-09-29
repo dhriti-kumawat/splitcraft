@@ -1,16 +1,11 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
-import { AudiencesPage } from './pages/audiences/AudiencesPage';
 import { AuthPage } from './pages/auth/AuthPage';
-import { MetricEditor } from './pages/metrics/MetricEditor';
 import { MetricsPage } from './pages/metrics/MetricsPage';
 import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
-import { GoalsPage } from './pages/experiments/GoalsPage';
-import { TargetingPage } from './pages/experiments/TargetingPage';
-import { VariantsPage } from './pages/experiments/VariantsPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -20,6 +15,9 @@ import { InstallPage } from './pages/projects/InstallPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 
 const crumb = (label: string, to?: string): RouteHandle => ({ crumbs: () => [{ label, to }] });
+
+// Heavier screens (Monaco, Recharts, the condition builder) load on first visit, so the
+// dashboard's first load stays small.
 
 // Screen → route map from design/README.md.
 export const routes: RouteObject[] = [
@@ -67,10 +65,31 @@ export const routes: RouteObject[] = [
                 children: [
                   { index: true, element: <Navigate to="basics" replace /> },
                   { path: 'basics', element: <BasicsPage /> },
-                  { path: 'variants', element: <VariantsPage /> },
-                  { path: 'targeting', element: <TargetingPage /> },
-                  { path: 'goals', element: <GoalsPage /> },
-                  { path: 'results', element: <Placeholder title="Results" step="feat/results" /> },
+                  {
+                    path: 'variants',
+                    lazy: async () => ({
+                      Component: (await import('./pages/experiments/VariantsPage')).VariantsPage,
+                    }),
+                  },
+                  {
+                    path: 'targeting',
+                    lazy: async () => ({
+                      Component: (await import('./pages/experiments/TargetingPage')).TargetingPage,
+                    }),
+                  },
+                  {
+                    path: 'goals',
+                    lazy: async () => ({
+                      Component: (await import('./pages/experiments/GoalsPage')).GoalsPage,
+                    }),
+                  },
+                  {
+                    path: 'results',
+                    // Recharts is large; load it only when someone opens results.
+                    lazy: async () => ({
+                      Component: (await import('./pages/experiments/ResultsPage')).ResultsPage,
+                    }),
+                  },
                 ],
               },
             ],
@@ -79,8 +98,19 @@ export const routes: RouteObject[] = [
             path: 'audiences',
             handle: crumb('Audiences'),
             children: [
-              { index: true, element: <AudiencesPage /> },
-              { path: ':segmentId', element: <AudiencesPage />, handle: crumb('Segment') },
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('./pages/audiences/AudiencesPage')).AudiencesPage,
+                }),
+              },
+              {
+                path: ':segmentId',
+                lazy: async () => ({
+                  Component: (await import('./pages/audiences/AudiencesPage')).AudiencesPage,
+                }),
+                handle: crumb('Segment'),
+              },
             ],
           },
           {
@@ -88,8 +118,20 @@ export const routes: RouteObject[] = [
             handle: crumb('Metrics'),
             children: [
               { index: true, element: <MetricsPage /> },
-              { path: 'new', element: <MetricEditor />, handle: crumb('New metric') },
-              { path: ':metricId', element: <MetricEditor />, handle: crumb('Metric') },
+              {
+                path: 'new',
+                lazy: async () => ({
+                  Component: (await import('./pages/metrics/MetricEditor')).MetricEditor,
+                }),
+                handle: crumb('New metric'),
+              },
+              {
+                path: ':metricId',
+                lazy: async () => ({
+                  Component: (await import('./pages/metrics/MetricEditor')).MetricEditor,
+                }),
+                handle: crumb('Metric'),
+              },
             ],
           },
           {

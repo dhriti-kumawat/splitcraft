@@ -122,8 +122,8 @@ describe('basics', () => {
     await user.tab();
     await vi.waitFor(() =>
       expect(variantPatches).toEqual([
-        { id: 'trust-b', patch: { weight: 70 } },
         { id: 'trust-c', patch: { weight: 30 } },
+        { id: 'trust-b', patch: { weight: 70 } },
       ]),
     );
   });

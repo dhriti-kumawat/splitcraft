@@ -9,6 +9,7 @@ import {
 } from '../../data/queries';
 import { controlKey } from '../../lib/experiments';
 import { syntaxError } from '../../lib/launch';
+import { MAX_VARIANTS } from '../../lib/chartColors';
 import { TEMPLATES } from '../../lib/templates';
 import { useExperiment } from './experimentContext';
 import styles from './VariantsPage.module.css';
@@ -93,7 +94,9 @@ export function VariantsPage() {
         <button
           type="button"
           className={styles.add}
-          disabled={!isDraftExp || experiment.variants.length >= 6 || edits.add.isPending}
+          disabled={
+            !isDraftExp || experiment.variants.length >= MAX_VARIANTS || edits.add.isPending
+          }
           onClick={() => edits.add.mutate(undefined)}
           title={isDraftExp ? undefined : 'Variants can only be added before launch'}
         >

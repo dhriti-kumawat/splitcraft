@@ -211,8 +211,8 @@
   background: var(--code-bg);
   color: var(--code-text);
   font: 400 12px/1.7 var(--font-mono);
-  white-space: pre;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .checks {

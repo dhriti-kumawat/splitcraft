@@ -28,7 +28,7 @@ describe('audiences', () => {
     const { segmentsNow } = await open('/p/trip-demo/audiences/seg-returners');
     expect(
       screen.getByText(
-        'Returning visitors and viewed pages matches pattern /trips/* at least 3 times in 7 days.',
+        'Returning visitors and viewed pages matching /trips/* at least 3 times in 7 days.',
       ),
     ).toBeInTheDocument();
     const save = screen.getByRole('button', { name: 'Save segment' });
