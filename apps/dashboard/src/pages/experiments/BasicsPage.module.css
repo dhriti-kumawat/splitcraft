@@ -1,0 +1,286 @@
+.layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.main {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.aside {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.editLink {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: 9px 12px;
+  font: 400 14px/1.5 var(--font-ui);
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 107, 87, 0.14);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.saved {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.error {
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lbl {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.factValue {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.trafficRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.small {
+  width: 76px;
+  height: 34px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: 0 8px;
+  font: 600 14px var(--font-mono);
+  text-align: right;
+}
+
+.small:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 107, 87, 0.14);
+}
+
+.small[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.splitBar {
+  display: flex;
+  height: 34px;
+  border-radius: 7px;
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.splitBar > div {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.weights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.weight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.goalRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.goalRow .mono {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 86px;
+  justify-content: center;
+}
+
+.primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.secondary {
+  background: var(--line-soft);
+  color: var(--text-2);
+}
+
+.guardrail {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.planInputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.result {
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--ground);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bigNumber {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.resultText {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.warnText {
+  color: var(--warn);
+}
+
+.checklist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.checklist li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.todo {
+  color: var(--warn);
+}
+
+.blocked {
+  color: var(--danger-text);
+}

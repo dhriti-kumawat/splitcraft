@@ -2,6 +2,8 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
 import { AuthPage } from './pages/auth/AuthPage';
+import { BasicsPage } from './pages/experiments/BasicsPage';
+import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
@@ -53,9 +55,23 @@ export const routes: RouteObject[] = [
                 element: <ExperimentsPage />,
               },
               {
-                path: ':expId/*',
-                element: <Placeholder title="Experiment" step="feat/experiment-basics" />,
+                path: ':expId',
+                element: <ExperimentLayout />,
                 handle: crumb('Experiment'),
+                children: [
+                  { index: true, element: <Navigate to="basics" replace /> },
+                  { path: 'basics', element: <BasicsPage /> },
+                  {
+                    path: 'variants',
+                    element: <Placeholder title="Variants & code" step="feat/variant-editor" />,
+                  },
+                  {
+                    path: 'targeting',
+                    element: <Placeholder title="Targeting" step="feat/targeting" />,
+                  },
+                  { path: 'goals', element: <Placeholder title="Goals" step="feat/goals" /> },
+                  { path: 'results', element: <Placeholder title="Results" step="feat/results" /> },
+                ],
               },
             ],
           },

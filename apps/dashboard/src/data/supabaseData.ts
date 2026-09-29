@@ -1,6 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StoredTargeting } from '../lib/targeting';
-import type { DataApi, Experiment, ExperimentStatus, Project, Variant, Workspace } from './api';
+import type {
+  DataApi,
+  Experiment,
+  ExperimentPatch,
+  ExperimentStatus,
+  Metric,
+  Project,
+  Variant,
+  Workspace,
+} from './api';
 
 interface ProjectRow {
   id: string;
@@ -40,6 +49,7 @@ interface ExperimentRow {
   targeting: StoredTargeting | null;
   primary_metric_id: string | null;
   planned_sample: number | null;
+  plan: Experiment['plan'] | null;
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
@@ -63,6 +73,7 @@ export function toExperiment(row: ExperimentRow): Experiment {
     primaryMetricId: row.primary_metric_id,
     primaryMetricName: row.primary_metric?.name ?? null,
     plannedSample: row.planned_sample,
+    plan: row.plan ?? {},
     startedAt: row.started_at,
     endedAt: row.ended_at,
     createdAt: row.created_at,
@@ -82,6 +93,46 @@ export function experimentKey(name: string): string {
     .replace(/^-+|-+$/g, '')
     .slice(0, 56);
   return /^[a-z0-9]/.test(key) ? key : `exp-${key || Date.now().toString(36)}`;
+}
+
+const PATCH_COLUMNS: Record<keyof ExperimentPatch, string> = {
+  name: 'name',
+  hypothesis: 'hypothesis',
+  status: 'status',
+  trafficPct: 'traffic_pct',
+  targeting: 'targeting',
+  primaryMetricId: 'primary_metric_id',
+  plannedSample: 'planned_sample',
+  plan: 'plan',
+  startedAt: 'started_at',
+  endedAt: 'ended_at',
+};
+
+interface MetricRow {
+  id: string;
+  project_id: string;
+  name: string;
+  event_key: string;
+  source: Metric['source'];
+  source_config: Record<string, unknown>;
+  measure: Metric['measure'];
+  measure_config: Record<string, unknown>;
+}
+
+const METRIC_COLUMNS =
+  'id, project_id, name, event_key, source, source_config, measure, measure_config';
+
+export function toMetric(row: MetricRow): Metric {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    name: row.name,
+    eventKey: row.event_key,
+    source: row.source,
+    sourceConfig: row.source_config ?? {},
+    measure: row.measure,
+    measureConfig: row.measure_config ?? {},
+  };
 }
 
 function check<T>(result: { data: T | null; error: { message: string } | null }): T {
@@ -231,6 +282,62 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         return toExperiment(row);
       }
       throw new Error('Could not find a free experiment key. Try a different name.');
+    },
+
+    async getExperiment(experimentId) {
+      const row = check(
+        await supabase
+          .from('experiments')
+          .select(EXPERIMENT_COLUMNS)
+          .eq('id', experimentId)
+          .maybeSingle(),
+      ) as unknown as ExperimentRow | null;
+      return row && toExperiment(row);
+    },
+
+    async updateExperiment(experimentId, patch) {
+      const update: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(patch)) {
+        update[PATCH_COLUMNS[key as keyof ExperimentPatch]] = value;
+      }
+      const row = check(
+        await supabase
+          .from('experiments')
+          .update(update)
+          .eq('id', experimentId)
+          .select(EXPERIMENT_COLUMNS)
+          .single(),
+      ) as unknown as ExperimentRow;
+      return toExperiment(row);
+    },
+
+    async updateVariant(variantId, patch) {
+      check(await supabase.from('variants').update(patch).eq('id', variantId));
+    },
+
+    async listMetrics(projectId) {
+      const rows = check(
+        await supabase
+          .from('metrics')
+          .select(METRIC_COLUMNS)
+          .eq('project_id', projectId)
+          .order('name'),
+      ) as MetricRow[];
+      return rows.map(toMetric);
+    },
+
+    async experimentGoals(experimentId) {
+      const rows = check(
+        await supabase
+          .from('experiment_metrics')
+          .select(`role, limit, metrics (${METRIC_COLUMNS})`)
+          .eq('experiment_id', experimentId),
+      ) as unknown as Array<{
+        role: 'secondary' | 'guardrail';
+        limit: Record<string, unknown> | null;
+        metrics: MetricRow;
+      }>;
+      return rows.map((r) => ({ role: r.role, limit: r.limit, metric: toMetric(r.metrics) }));
     },
   };
 }

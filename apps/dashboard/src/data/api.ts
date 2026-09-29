@@ -62,6 +62,8 @@ export interface Experiment {
   primaryMetricId: string | null;
   primaryMetricName: string | null;
   plannedSample: number | null;
+  /** Sample-size planner inputs, as fractions. */
+  plan: { baseline?: number; mde?: number };
   startedAt: string | null;
   endedAt: string | null;
   createdAt: string;
@@ -76,6 +78,41 @@ export interface VariantStats {
   conversions: number;
   /** Visitors first exposed in the last 7 days. */
   visitors7d: number;
+}
+
+export type ExperimentPatch = Partial<
+  Pick<
+    Experiment,
+    | 'name'
+    | 'hypothesis'
+    | 'status'
+    | 'trafficPct'
+    | 'targeting'
+    | 'primaryMetricId'
+    | 'plannedSample'
+    | 'plan'
+    | 'startedAt'
+    | 'endedAt'
+  >
+>;
+
+export type VariantPatch = Partial<Pick<Variant, 'name' | 'weight' | 'js' | 'css'>>;
+
+export interface Metric {
+  id: string;
+  projectId: string;
+  name: string;
+  eventKey: string;
+  source: 'click' | 'pageview' | 'custom_js' | 'datalayer' | 'transaction';
+  sourceConfig: Record<string, unknown>;
+  measure: 'unique' | 'total' | 'sum' | 'value_per_conversion';
+  measureConfig: Record<string, unknown>;
+}
+
+export interface ExperimentGoal {
+  metric: Metric;
+  role: 'secondary' | 'guardrail';
+  limit: Record<string, unknown> | null;
 }
 
 /** Monthly event allowance per plan. Only the free plan exists in v1. */
@@ -98,4 +135,10 @@ export interface DataApi {
   lastEventAt(projectId: string): Promise<string | null>;
   /** Creates a draft with Control and B at 50/50. */
   createExperiment(projectId: string, name: string): Promise<Experiment>;
+  getExperiment(experimentId: string): Promise<Experiment | null>;
+  updateExperiment(experimentId: string, patch: ExperimentPatch): Promise<Experiment>;
+  updateVariant(variantId: string, patch: VariantPatch): Promise<void>;
+  listMetrics(projectId: string): Promise<Metric[]>;
+  /** Secondary goals and guardrails (the primary goal is on the experiment). */
+  experimentGoals(experimentId: string): Promise<ExperimentGoal[]>;
 }
