@@ -4,7 +4,7 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 
 ## Stack
 - Monorepo with npm workspaces
-- `packages/sdk` — TypeScript, Vite library mode, Vitest. Target < 5 KB gzipped, no runtime dependencies.
+- `packages/sdk` — TypeScript, Vite library mode, Vitest. Main bundle < 7 KB gzipped (QA panel is a separate file, < 3 KB), no runtime dependencies. `npm run size -w packages/sdk` checks it.
 - `apps/dashboard` — React + Vite + TypeScript, React Router, Monaco editor for variant code, Recharts for results.
 - `apps/web` — marketing site (home page).
 - Backend — Supabase (Postgres, Auth, Row Level Security). No custom server in v1.
