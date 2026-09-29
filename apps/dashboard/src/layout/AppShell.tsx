@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CommandPalette } from '../components/CommandPalette';
 import { Outlet, useLocation } from 'react-router';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -12,6 +13,18 @@ export function AppShell() {
   const { pathname } = useLocation();
   const [openedAt, setOpenedAt] = useState(pathname);
   if (navOpen && openedAt !== pathname) setNavOpen(false);
+
+  const [searchOpen, setSearchOpen] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => {
     if (!navOpen) return;
@@ -35,6 +48,7 @@ export function AppShell() {
         <TopBar
           actionsRef={setActions}
           navOpen={navOpen}
+          onOpenSearch={() => setSearchOpen(true)}
           onOpenNav={() => {
             setOpenedAt(pathname);
             setNavOpen(true);
@@ -46,6 +60,7 @@ export function AppShell() {
           </main>
         </TopBarSlot.Provider>
       </div>
+      {searchOpen && <CommandPalette onClose={() => setSearchOpen(false)} />}
     </div>
   );
 }

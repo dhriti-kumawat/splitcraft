@@ -1,5 +1,5 @@
 import { Link, useMatches } from 'react-router';
-import { MenuIcon } from '../components/icons';
+import { MenuIcon, SearchIcon } from '../components/icons';
 import { useCurrentProject, useWorkspace } from '../data/workspace';
 import type { Crumb, RouteHandle } from './crumbs';
 import styles from './TopBar.module.css';
@@ -12,10 +12,12 @@ export function TopBar({
   actionsRef,
   navOpen,
   onOpenNav,
+  onOpenSearch,
 }: {
   actionsRef: (el: HTMLDivElement | null) => void;
   navOpen: boolean;
   onOpenNav(): void;
+  onOpenSearch(): void;
 }) {
   const { workspace } = useWorkspace();
   const project = useCurrentProject();
@@ -59,7 +61,24 @@ export function TopBar({
           </ol>
         </nav>
       </div>
-      <div className={styles.actions} ref={actionsRef} />
+      <div className={styles.tools}>
+        <button
+          type="button"
+          className={styles.search}
+          aria-label="Search"
+          aria-keyshortcuts={isMac() ? 'Meta+K' : 'Control+K'}
+          onClick={onOpenSearch}
+        >
+          <SearchIcon />
+          <span className={styles.searchText}>Search projects, tests…</span>
+          <kbd className={styles.kbd}>{isMac() ? '⌘K' : 'Ctrl K'}</kbd>
+        </button>
+        <div className={styles.actions} ref={actionsRef} />
+      </div>
     </header>
   );
+}
+
+function isMac(): boolean {
+  return typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 }
