@@ -26,6 +26,7 @@ export const keys = {
   experiments: (projectId: string) => ['experiments', projectId] as const,
   experimentStats: (projectId: string) => ['experimentStats', projectId] as const,
   lastEvent: (projectId: string) => ['lastEvent', projectId] as const,
+  sessionSample: (projectId: string) => ['sessionSample', projectId] as const,
   experiment: (experimentId: string) => ['experiment', experimentId] as const,
   metrics: (projectId: string) => ['metrics', projectId] as const,
   goals: (experimentId: string) => ['goals', experimentId] as const,
@@ -66,6 +67,15 @@ export function useActivityQuery(workspaceId: string, limit: number) {
   return useQuery({
     queryKey: keys.activity(workspaceId, limit),
     queryFn: () => api.workspaceActivity(workspaceId, limit),
+  });
+}
+
+export function useSessionSampleQuery(projectId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.sessionSample(projectId),
+    queryFn: () => api.sessionSample(projectId),
+    staleTime: 5 * 60_000,
   });
 }
 

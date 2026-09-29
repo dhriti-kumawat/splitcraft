@@ -43,7 +43,7 @@ export function parseBatch(body: string): ParsedBatch {
 export function cleanEvent(raw: unknown): IncomingEvent | null {
   if (!isObject(raw)) return null;
   const { type, visitorId, url } = raw;
-  if (type !== 'exposure' && type !== 'goal') return null;
+  if (type !== 'exposure' && type !== 'goal' && type !== 'ping') return null;
   if (typeof visitorId !== 'string' || !VISITOR_ID.test(visitorId)) return null;
   if (typeof url !== 'string' || url.length > 2048 || !/^https?:\/\//.test(url)) return null;
 
@@ -54,6 +54,10 @@ export function cleanEvent(raw: unknown): IncomingEvent | null {
     if (typeof raw.variantKey !== 'string' || !VARIANT_KEY.test(raw.variantKey)) return null;
     event.experimentKey = raw.experimentKey;
     event.variantKey = raw.variantKey;
+  } else if (type === 'ping') {
+    // Session ping: only small, known traits (see project_session_sample).
+    if (!isObject(raw.props) || JSON.stringify(raw.props).length > MAX_PROPS_BYTES) return null;
+    event.props = raw.props;
   } else {
     if (typeof raw.key !== 'string' || !EVENT_KEY.test(raw.key)) return null;
     event.key = raw.key;

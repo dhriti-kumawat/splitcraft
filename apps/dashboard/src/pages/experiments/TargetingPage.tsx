@@ -4,12 +4,13 @@ import { Button } from '../../components/Button';
 import { ConditionBuilder } from '../../components/ConditionBuilder';
 import { PageRulesEditor } from '../../components/PageRulesEditor';
 import { InsertSavedSelect, SaveAsDialog } from '../../components/SavedPicker';
-import type { SavedKind } from '../../data/api';
+import type { SavedKind, Segment } from '../../data/api';
 import {
   useExperimentStatsQuery,
   useSavedMutations,
   useSavedQuery,
   useSegmentsQuery,
+  useSessionSampleQuery,
   useUpdateExperiment,
 } from '../../data/queries';
 import { describeGroups, groupsProblemCount } from '../../lib/conditions';
@@ -22,6 +23,7 @@ import {
 } from '../../lib/pageRules';
 import { fromGroups, toGroups } from '../../lib/segments';
 import { summarize } from '../../lib/experiments';
+import { evaluateGroup, evaluateTargeting, formatRange, share } from '../../lib/reach';
 import type { ConditionGroup, Frequency, StoredTargeting } from '../../lib/targeting';
 import { testUrl } from '../../lib/urlTest';
 import { useExperiment } from './experimentContext';
@@ -34,6 +36,7 @@ export function TargetingPage() {
   const { experiment, project } = useExperiment();
   const update = useUpdateExperiment(experiment);
   const segments = useSegmentsQuery(project.id);
+  const sample = useSessionSampleQuery(project.id);
   const pageSets = useSavedQuery('page_sets', project.id);
   const triggers = useSavedQuery('triggers', project.id);
   const saveTrigger = useSavedMutations('triggers', project.id);
@@ -229,7 +232,14 @@ export function TargetingPage() {
               }
             />
           </div>
-          <ConditionBuilder groups={how} onChange={setHow} noun="Trigger" />
+          <ConditionBuilder
+            groups={how}
+            onChange={setHow}
+            noun="Trigger"
+            estimate={
+              sample.data ? (g) => share(sample.data.sample, (s) => evaluateGroup(g, s)) : undefined
+            }
+          />
           {how.some((g) => g.items.length) && groupsProblemCount(how) === 0 && (
             <button type="button" className={styles.saveAs} onClick={() => setSavingAs('triggers')}>
               Save these conditions as a trigger
@@ -314,6 +324,14 @@ export function TargetingPage() {
             Who will see this
           </span>
           <span className={styles.who}>{whoSentence(next, segmentName)}</span>
+          <ReachEstimate
+            projectId={project.id}
+            targeting={next}
+            segments={segments.data ?? []}
+            trafficPct={experiment.trafficPct}
+            plannedSample={experiment.plannedSample}
+            arms={experiment.variants.length}
+          />
           {summary && experiment.status !== 'draft' && (
             <span className={styles.sub}>
               <span className={styles.big}>
@@ -335,6 +353,76 @@ export function TargetingPage() {
           </span>
         </section>
       </aside>
+    </div>
+  );
+}
+
+/**
+ * Reach from a sample of the last 30 days' sessions (lib/reach.ts). A range means some
+ * rules need the live page to check (cookies, dataLayer, page history, elements).
+ */
+function ReachEstimate({
+  projectId,
+  targeting,
+  segments,
+  trafficPct,
+  plannedSample,
+  arms,
+}: {
+  projectId: string;
+  targeting: StoredTargeting;
+  segments: Segment[];
+  trafficPct: number;
+  plannedSample: number | null;
+  arms: number;
+}) {
+  const sample = useSessionSampleQuery(projectId);
+  if (sample.isPending) return null;
+  if (sample.isError) return <span className={styles.sub}>Couldn't estimate reach.</span>;
+  const { sessions, days } = sample.data;
+  const rules = Object.fromEntries(segments.map((s) => [s.id, s.rules]));
+  const reach = share(sample.data.sample, (s) => evaluateTargeting(targeting, rules, s));
+  if (!reach || !sessions) {
+    return (
+      <span className={styles.sub}>
+        Reach appears once the snippet has seen some visits. It samples the last 30 days.
+      </span>
+    );
+  }
+  const perDay = (x: number) => (x * sessions * (trafficPct / 100)) / days;
+  const lowDay = Math.round(perDay(reach.low));
+  const highDay = Math.round(perDay(reach.high));
+  const daysFor = (n: number) => Math.ceil(((plannedSample ?? 0) * arms) / n);
+  return (
+    <div className={styles.reach} aria-label="Reach estimate">
+      <span>
+        <span className={styles.big}>{formatRange(reach)}</span> of sessions ·{' '}
+        {lowDay === highDay
+          ? `≈ ${number.format(lowDay)}`
+          : `≈ ${number.format(lowDay)}–${number.format(highDay)}`}{' '}
+        visitors a day
+      </span>
+      {reach.high > reach.low && (
+        <span className={styles.sub}>
+          Some rules need the live page (cookies, dataLayer, page history or elements), so this is a
+          range.
+        </span>
+      )}
+      {plannedSample !== null && (
+        <span className={styles.sub}>
+          {highDay === 0
+            ? 'No recent session matches. Widen a rule.'
+            : `At this reach, the planned sample (${number.format(plannedSample)} per variant) takes about ${
+                lowDay === highDay || lowDay === 0
+                  ? daysFor(highDay)
+                  : `${daysFor(highDay)}–${daysFor(lowDay)}`
+              } days.`}
+        </span>
+      )}
+      <span className={styles.sub}>
+        From {number.format(sample.data.sample.length)} of {number.format(sessions)} sessions in the
+        last {days} {days === 1 ? 'day' : 'days'}. Pages are judged by where each session started.
+      </span>
     </div>
   );
 }

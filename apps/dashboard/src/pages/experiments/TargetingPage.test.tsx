@@ -151,6 +151,34 @@ describe('URL tester', () => {
   });
 });
 
+describe('reach estimate', () => {
+  it('estimates reach and each trigger group from recent sessions', async () => {
+    const user = userEvent.setup();
+    await open();
+    const reach = await screen.findByLabelText('Reach estimate');
+    expect(reach).toHaveTextContent('100% of sessions · ≈ 200 visitors a day');
+    expect(reach).toHaveTextContent('From 20 of 6,000 sessions in the last 30 days.');
+
+    await user.click(screen.getByRole('button', { name: '+ Add group' }));
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Trigger group 1, condition 1 field' }),
+      'Device type',
+    );
+    const group = screen.getByRole('group', { name: 'Trigger group 1' });
+    expect(within(group).getByText(/% match/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Reach estimate')).toHaveTextContent(/of sessions/);
+  });
+
+  it('explains when there is no traffic yet', async () => {
+    await open('trust', fakeData({ sessionSample: { sessions: 0, days: 0, sample: [] } }));
+    expect(
+      await screen.findByText(
+        'Reach appears once the snippet has seen some visits. It samples the last 30 days.',
+      ),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('saved targeting', () => {
   it('uses a saved page set and inserts a saved trigger as copies', async () => {
     const user = userEvent.setup();

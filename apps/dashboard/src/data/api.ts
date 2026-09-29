@@ -1,4 +1,11 @@
-import type { ConditionGroup, StoredTargeting, WhereRules } from '../lib/targeting';
+import type {
+  ConditionGroup,
+  DeviceType,
+  SourceType,
+  StoredTargeting,
+  UtmParam,
+  WhereRules,
+} from '../lib/targeting';
 
 export type Role = 'owner' | 'admin' | 'member';
 
@@ -76,6 +83,28 @@ export interface ActivityItem {
   subjectId: string;
   subject: string;
   at: string;
+}
+
+/** One session's SDK ping: the traits reach estimates can check (see lib/reach.ts). */
+export interface SessionPing {
+  /** The page the session started on. */
+  url: string;
+  props: {
+    d: DeviceType;
+    w: number;
+    s: SourceType;
+    n: number;
+    uf?: Partial<Record<UtmParam, string>>;
+    ul?: Partial<Record<UtmParam, string>>;
+    c?: string;
+  };
+}
+
+/** A random sample of the last 30 days' sessions, and how many there were over how many days. */
+export interface SessionSample {
+  sessions: number;
+  days: number;
+  sample: SessionPing[];
 }
 
 export interface NewProject {
@@ -250,6 +279,7 @@ export interface DataApi {
   getProject(projectId: string): Promise<Project | null>;
   projectOverview(workspaceId: string): Promise<ProjectStats[]>;
   workspaceActivity(workspaceId: string, limit: number): Promise<ActivityItem[]>;
+  sessionSample(projectId: string): Promise<SessionSample>;
   eventsThisMonth(workspaceId: string): Promise<number>;
   createProject(project: NewProject): Promise<Project>;
   updateProject(

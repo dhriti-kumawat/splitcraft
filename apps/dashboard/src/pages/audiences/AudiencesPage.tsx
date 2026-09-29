@@ -15,6 +15,7 @@ import {
   useSavedQuery,
   useSegmentMutations,
   useSegmentsQuery,
+  useSessionSampleQuery,
 } from '../../data/queries';
 import { useCurrentProject } from '../../data/workspace';
 import { TopBarActions } from '../../layout/TopBarActions';
@@ -26,6 +27,7 @@ import {
   toWhere,
   type PageRules,
 } from '../../lib/pageRules';
+import { evaluateGroup, formatRange, share } from '../../lib/reach';
 import { fromGroups, toGroups } from '../../lib/segments';
 import type { ConditionGroup } from '../../lib/targeting';
 import targetingStyles from '../experiments/TargetingPage.module.css';
@@ -207,6 +209,10 @@ function SegmentEditor({
   others: Segment[];
 }) {
   const { create, update, remove } = useSegmentMutations(projectId);
+  const sample = useSessionSampleQuery(projectId);
+  const estimate = sample.data
+    ? (g: ConditionGroup) => share(sample.data.sample, (s) => evaluateGroup(g, s))
+    : undefined;
   const navigate = useNavigate();
   const [name, setName] = useState(segment?.name ?? '');
   const [groups, setGroups] = useState<ConditionGroup[]>(() =>
@@ -255,6 +261,12 @@ function SegmentEditor({
         <span className={styles.summaryText} aria-live="polite">
           {describeGroups(groups)}
         </span>
+        {estimate && groups.some((g) => g.items.length) && (
+          <span className={styles.reachLine}>
+            Matches {formatRange(estimate(fromGroups(groups.filter((g) => g.items.length)))!)} of
+            the last 30 days' sessions
+          </span>
+        )}
       </div>
       <div className={styles.nameRow}>
         <div className={styles.field}>
@@ -278,7 +290,7 @@ function SegmentEditor({
           )}
         </div>
       </div>
-      <ConditionBuilder groups={groups} onChange={setGroups} noun="Segment" />
+      <ConditionBuilder groups={groups} onChange={setGroups} noun="Segment" estimate={estimate} />
       <InsertSavedSelect
         label="Insert saved audience"
         className={styles.insert}

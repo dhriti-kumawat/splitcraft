@@ -5,6 +5,8 @@ export interface Tracker {
   /** Record that the visitor saw a variant. Sent once per page per experiment. */
   exposure(experimentKey: string, variantKey: string): boolean;
   trackEvent(key: string, props?: { value?: number; [k: string]: unknown }): void;
+  /** Session ping for reach estimates; not a goal, not sent to dataLayer. */
+  ping(props: Record<string, unknown>): void;
 }
 
 export function createTracker(queue: EventQueue, visitorId: string): Tracker {
@@ -19,6 +21,10 @@ export function createTracker(queue: EventQueue, visitorId: string): Tracker {
       queue.push({ type: 'exposure', experimentKey, variantKey, ...base() });
       pushDataLayer({ event: 'splitcraft_exposure', splitcraft: { experimentKey, variantKey } });
       return true;
+    },
+
+    ping(props) {
+      queue.push({ type: 'ping', props, ...base() });
     },
 
     trackEvent(key, props = {}) {
