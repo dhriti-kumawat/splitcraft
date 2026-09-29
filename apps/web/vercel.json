@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "cd ../.. && npm ci",
+  "buildCommand": "cd ../.. && npm run build -w packages/sdk && npm run size -w packages/sdk && npm run build -w apps/web && mkdir -p apps/web/dist/sdk && cp packages/sdk/dist/splitly.iife.js apps/web/dist/sdk/v1.js && cp packages/sdk/dist/splitly-qa.iife.js apps/web/dist/sdk/splitly-qa.iife.js",
+  "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/sdk/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=300, must-revalidate" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}
