@@ -57,7 +57,7 @@ describe('editor', () => {
     expect(screen.getByText(/Unsaved changes/)).toBeInTheDocument();
     expect(screen.getByText('· unsaved').closest('button')).toHaveAttribute('aria-current', 'true');
 
-    type('B JS', 'splitly.injectStyles(".x{}")');
+    type('B JS', 'splitcraft.injectStyles(".x{}")');
     expect(await screen.findByText('No errors')).toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'b.css' }));
@@ -67,7 +67,10 @@ describe('editor', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText(/Saved \d\d:\d\d/)).toBeInTheDocument();
     expect(variantPatches).toEqual([
-      { id: 'trust-b', patch: { js: 'splitly.injectStyles(".x{}")', css: '.x { color: red; }' } },
+      {
+        id: 'trust-b',
+        patch: { js: 'splitcraft.injectStyles(".x{}")', css: '.x { color: red; }' },
+      },
     ]);
     expect(screen.getByRole('button', { name: /^B1 lines JS · 1 lines CSS/ })).toBeInTheDocument();
   });
@@ -87,7 +90,7 @@ describe('editor', () => {
     await user.click(screen.getByRole('button', { name: 'Template' }));
     await user.click(screen.getByRole('button', { name: 'Trust row' }));
     expect((editor('B JS') as HTMLTextAreaElement).value).toContain(
-      "splitly.trackEvent('trust_badges_seen')",
+      "splitcraft.trackEvent('trust_badges_seen')",
     );
     expect(screen.getByRole('button', { name: 'Template' })).toHaveFocus();
   });

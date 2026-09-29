@@ -1,6 +1,6 @@
 import type { QaExperiment, QaSource } from './types';
 
-export const QA_HOST_ID = 'splitly-qa';
+export const QA_HOST_ID = 'splitcraft-qa';
 
 // Matches design/screens/17-qa-mode-mobile.html. `:host { all: initial }` stops the
 // site's inherited styles (font, colour, line-height) leaking into the shadow root.
@@ -46,7 +46,7 @@ export function mountQaPanel(source: QaSource): () => void {
   const root = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = CSS;
-  const section = el('section', { 'aria-label': 'Splitly QA panel' });
+  const section = el('section', { 'aria-label': 'Splitcraft QA panel' });
   root.append(style, section);
 
   let switcherOpen = false;
@@ -57,7 +57,7 @@ export function mountQaPanel(source: QaSource): () => void {
 
     const brand = el('span', { class: 'brand' });
     brand.innerHTML = LOGO;
-    brand.append('Splitly QA');
+    brand.append('Splitcraft QA');
     const head = el(
       'div',
       { class: 'head' },

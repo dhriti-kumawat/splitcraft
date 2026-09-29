@@ -1,5 +1,5 @@
 {
-  "name": "@splitly/backend",
+  "name": "@splitcraft/backend",
   "version": "0.0.0",
   "private": true,
   "type": "module",

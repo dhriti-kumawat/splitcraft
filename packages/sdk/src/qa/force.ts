@@ -1,5 +1,5 @@
-export const FORCE_PARAM = 'splitly_force';
-const STORAGE_KEY = 'splitly_force';
+export const FORCE_PARAM = 'splitcraft_force';
+const STORAGE_KEY = 'splitcraft_force';
 
 /** experimentKey → variantKey */
 export type ForcedVariants = Record<string, string>;
@@ -17,7 +17,7 @@ export function parseForce(raw: string | null): ForcedVariants {
 }
 
 /**
- * Forced variants from `?splitly_force=`. They are remembered for the tab
+ * Forced variants from `?splitcraft_force=`. They are remembered for the tab
  * session, so QA mode survives SPA navigation and reloads that drop the param.
  */
 export function getForcedVariants(search = location.search): ForcedVariants {
@@ -51,7 +51,7 @@ export function clearForcedVariants(): void {
   }
 }
 
-/** `href` with `splitly_force` set to `forced`, or removed when `forced` is empty. */
+/** `href` with `splitcraft_force` set to `forced`, or removed when `forced` is empty. */
 export function withForce(href: string, forced: ForcedVariants): string {
   const url = new URL(href);
   const value = Object.entries(forced)

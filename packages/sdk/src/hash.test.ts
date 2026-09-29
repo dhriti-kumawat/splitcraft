@@ -6,7 +6,7 @@ describe('hash32', () => {
   });
 
   it('returns an unsigned 32-bit integer', () => {
-    for (const s of ['', 'a', 'splitly', 'x'.repeat(1000), 'ünïcödé']) {
+    for (const s of ['', 'a', 'splitcraft', 'x'.repeat(1000), 'ünïcödé']) {
       const h = hash32(s);
       expect(Number.isInteger(h)).toBe(true);
       expect(h).toBeGreaterThanOrEqual(0);

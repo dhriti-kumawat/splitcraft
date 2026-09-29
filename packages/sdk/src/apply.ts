@@ -13,14 +13,14 @@ export interface ApplyResult {
   error?: unknown;
 }
 
-/** Helpers variant code can call as `splitly.*`. The runtime adds `trackEvent`. */
+/** Helpers variant code can call as `splitcraft.*`. The runtime adds `trackEvent`. */
 const helpers = { waitForElement, onceInView, onRouteChange, injectStyles };
 
 /** experimentKey → URL the variant JS last ran on. */
 const appliedOn = new Map<string, string>();
 
 export function styleId(experimentKey: string): string {
-  return `splitly-exp-${experimentKey}`;
+  return `splitcraft-exp-${experimentKey}`;
 }
 
 /**
@@ -36,10 +36,10 @@ export function applyVariant(v: VariantCode, extra: Record<string, unknown> = {}
   if (v.css) injectStyles(v.css, styleId(v.experimentKey));
   if (!v.js) return { applied: true };
   try {
-    new Function('splitly', v.js)({ ...helpers, ...extra });
+    new Function('splitcraft', v.js)({ ...helpers, ...extra });
     return { applied: true };
   } catch (error) {
-    console.error(`[splitly] ${v.experimentKey}/${v.variantKey}:`, error);
+    console.error(`[splitcraft] ${v.experimentKey}/${v.variantKey}:`, error);
     return { applied: true, error };
   }
 }

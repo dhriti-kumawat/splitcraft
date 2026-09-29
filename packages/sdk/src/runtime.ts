@@ -56,7 +56,7 @@ export interface ProjectConfig {
 }
 
 export interface StartOptions {
-  /** URL of splitly-qa.iife.js, loaded only when variants are forced. */
+  /** URL of splitcraft-qa.iife.js, loaded only when variants are forced. */
   qaPanelUrl?: string;
   /** Reveal function from an anti-flicker hide started before the config loaded. */
   reveal?: () => void;
@@ -173,7 +173,7 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
 
 /**
  * Bootstrap for the CDN script tag:
- * `<script src="https://cdn.splitly.dev/v1.js" data-project="prj_xxx" async>`.
+ * `<script src="https://splitcraft.app/sdk/v1.js" data-project="prj_xxx" async>`.
  * Hides the page at once, then fetches the config and starts.
  */
 export function boot(script: HTMLScriptElement): Promise<Runtime | null> {
@@ -183,7 +183,7 @@ export function boot(script: HTMLScriptElement): Promise<Runtime | null> {
   const base = new URL(script.src, location.href);
   const configUrl =
     script.getAttribute('data-config') ?? new URL(`/v1/config/${project}.json`, base).href;
-  const qaPanelUrl = new URL('splitly-qa.iife.js', base).href;
+  const qaPanelUrl = new URL('splitcraft-qa.iife.js', base).href;
   return fetch(configUrl, { credentials: 'omit' })
     .then((res) => {
       if (!res.ok) throw new Error(`config ${res.status}`);
@@ -192,7 +192,7 @@ export function boot(script: HTMLScriptElement): Promise<Runtime | null> {
     .then((config) => start(config, { qaPanelUrl, reveal }))
     .catch((err: unknown) => {
       reveal();
-      console.error('[splitly] Could not start:', err);
+      console.error('[splitcraft] Could not start:', err);
       return null;
     });
 }

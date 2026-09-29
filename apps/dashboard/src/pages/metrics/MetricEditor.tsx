@@ -31,9 +31,9 @@ const PARAM_SOURCE: Record<string, Metric['source']> = {
 };
 
 const TRACKER_TEMPLATE = (key: string) => `// Fires when a visitor does the thing you want to count.
-splitly.waitForElement('.your-element', (el) => {
+splitcraft.waitForElement('.your-element', (el) => {
   el.addEventListener('change', () => {
-    splitly.trackEvent('${key || 'your_event'}', {
+    splitcraft.trackEvent('${key || 'your_event'}', {
       // value: 49.5,   // optional: a number to sum or average
     });
   });
@@ -534,7 +534,7 @@ function Form({
           {source === 'click' && (
             <section className={styles.section} aria-labelledby="code-h">
               <span className={styles.lbl} id="code-h">
-                Code Splitly runs · read-only
+                Code Splitcraft runs · read-only
               </span>
               <pre className={styles.pre}>{clickCode(selector.trim(), firstPerPage, key)}</pre>
             </section>

@@ -191,12 +191,12 @@ describe('evaluateGroup', () => {
   });
 
   it('stops evaluating once the result is known', () => {
-    const spy = { type: 'custom_js', code: 'globalThis.__splitlyCalls++; return true' } as const;
-    (globalThis as Record<string, unknown>).__splitlyCalls = 0;
+    const spy = { type: 'custom_js', code: 'globalThis.__splitcraftCalls++; return true' } as const;
+    (globalThis as Record<string, unknown>).__splitcraftCalls = 0;
     evaluateGroup({ mode: 'any', items: [yes, spy] }, ctx);
     evaluateGroup({ mode: 'all', items: [no, spy] }, ctx);
-    expect((globalThis as Record<string, unknown>).__splitlyCalls).toBe(0);
-    delete (globalThis as Record<string, unknown>).__splitlyCalls;
+    expect((globalThis as Record<string, unknown>).__splitcraftCalls).toBe(0);
+    delete (globalThis as Record<string, unknown>).__splitcraftCalls;
   });
 });
 

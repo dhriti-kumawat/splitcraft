@@ -58,7 +58,7 @@ describe('home page', () => {
       '52 segment',
       'useExperiment',
       'Segment',
-      'support@splitly.dev',
+      'support@splitcraft.app',
       'LCP',
     ]) {
       expect(text, claim).not.toContain(claim);
@@ -86,7 +86,7 @@ describe('code tabs', () => {
       'aria-selected',
       'true',
     );
-    expect(screen.getByRole('tabpanel')).toHaveTextContent('splitly.trackEvent');
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('splitcraft.trackEvent');
     await user.click(within(tabs).getByRole('tab', { name: 'app/layout.tsx' }));
     expect(screen.getByRole('tabpanel')).toHaveTextContent('strategy="beforeInteractive"');
     await user.keyboard('{ArrowRight}');

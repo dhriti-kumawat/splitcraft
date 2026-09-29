@@ -38,7 +38,7 @@ export function injectStyles(css: string, id?: string): () => void {
   const existing = id ? document.getElementById(id) : null;
   const style = existing instanceof HTMLStyleElement ? existing : document.createElement('style');
   if (id) style.id = id;
-  style.setAttribute('data-splitly', '');
+  style.setAttribute('data-splitcraft', '');
   style.textContent = css;
   if (!style.isConnected) (document.head ?? document.documentElement).appendChild(style);
   return () => style.remove();
@@ -48,6 +48,6 @@ function safeCall(fn: () => void): void {
   try {
     fn();
   } catch (err) {
-    console.error('[splitly]', err);
+    console.error('[splitcraft]', err);
   }
 }

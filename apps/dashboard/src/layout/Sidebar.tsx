@@ -55,7 +55,7 @@ export function Sidebar() {
     <aside className={styles.sidebar} aria-label="Sidebar">
       <NavLink to="/projects" className={styles.brand}>
         <Logo />
-        Splitly
+        Splitcraft
       </NavLink>
 
       <Switcher

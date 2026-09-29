@@ -84,9 +84,9 @@ describe('loadState / saveState', () => {
   });
 
   it('starts fresh on corrupted data', () => {
-    localStorage.setItem('splitly_state', '{broken');
+    localStorage.setItem('splitcraft_state', '{broken');
     expect(loadState()).toEqual({ h: [], x: {}, u: { f: {}, l: {} } });
-    localStorage.setItem('splitly_state', '{"h":"nope"}');
+    localStorage.setItem('splitcraft_state', '{"h":"nope"}');
     expect(loadState().h).toEqual([]);
   });
 });

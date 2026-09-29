@@ -186,8 +186,8 @@ describe('invite page', () => {
     expect(screen.getByText('admin')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Join Agency Clients' }));
     await vi.waitFor(() => expect(router.state.location.pathname).toBe('/projects'));
-    expect(localStorage.getItem('splitly_workspace')).toBe('ws_joined');
-    localStorage.removeItem('splitly_workspace');
+    expect(localStorage.getItem('splitcraft_workspace')).toBe('ws_joined');
+    localStorage.removeItem('splitcraft_workspace');
   });
 
   it('explains an invite for another email', async () => {

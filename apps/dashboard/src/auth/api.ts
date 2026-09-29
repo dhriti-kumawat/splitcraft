@@ -30,6 +30,6 @@ export const MESSAGES = {
   rateLimited: 'Too many attempts. Wait a minute and try again.',
   providerOff: (provider: string) => `${provider} sign-in isn't set up yet. Use email for now.`,
   sso: "Single sign-on isn't available yet. Use email or another option.",
-  offline: "Can't reach Splitly. Check your connection and try again.",
+  offline: "Can't reach Splitcraft. Check your connection and try again.",
   unknown: 'Something went wrong. Try again.',
 } as const;

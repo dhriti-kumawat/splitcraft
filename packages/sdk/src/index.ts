@@ -8,7 +8,7 @@ import {
 
 export const VERSION = '0.0.0';
 
-// Public API. In the CDN build these become `window.splitly.*`.
+// Public API. In the CDN build these become `window.splitcraft.*`.
 export { injectStyles, onceInView, onRouteChange, waitForElement } from './helpers';
 export type { ExperimentConfig, ProjectConfig, StartOptions, VariantConfig } from './runtime';
 export type { Targeting } from './targeting';

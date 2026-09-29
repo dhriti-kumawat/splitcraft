@@ -6,7 +6,7 @@ import { useProjectsQuery, useWorkspacesQuery } from './queries';
 import { WorkspaceContext } from './workspace';
 import styles from './WorkspaceProvider.module.css';
 
-const STORAGE_KEY = 'splitly_workspace';
+const STORAGE_KEY = 'splitcraft_workspace';
 
 function readStored(): string | null {
   try {

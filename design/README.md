@@ -1,6 +1,6 @@
 # Design reference
 
-These files are the exported source of the Splitly design canvas ("Splitly Dashboard").
+These files are the exported source of the Splitcraft design canvas ("Splitcraft Dashboard").
 Each one is a single screen at its real size. **Match them when building the app.**
 
 ## How to read them
@@ -32,7 +32,7 @@ Each one is a single screen at its real size. **Match them when building the app
 | 14-exp-step3-targeting.html | Step 3: WHO / WHERE / HOW / WHEN + reach + URL tester | `…/targeting` | 1440 × 900 |
 | 15-exp-step4-goals.html | Step 4: primary goal, secondary goals table, guardrails, add-goal picker | `…/goals` | 1440 × 900 |
 | 16-exp-step5-results.html | Step 5: verdict banner, KPIs, variant table, cumulative chart | `…/results` | 1440 × 900 |
-| 17-qa-mode-mobile.html | QA panel the SDK injects on the customer site | SDK UI (`?splitly_force=`) | 390 × 844 |
+| 17-qa-mode-mobile.html | QA panel the SDK injects on the customer site | SDK UI (`?splitcraft_force=`) | 390 × 844 |
 | 20-segment-builder.html | Project › Audiences: segment builder (nested ALL/ANY/NONE groups) | `/p/:id/audiences/:segmentId` | 1440 × 900 |
 | 21-metric-click-tracker.html | Project › Metrics: click tracker via CSS selector | `/p/:id/metrics/new?source=click` | 1440 × 900 |
 | 22-metric-custom-js-tracker.html | Project › Metrics: custom JS tracker with code editor | `/p/:id/metrics/new?source=custom-js` | 1440 × 900 |

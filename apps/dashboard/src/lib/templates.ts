@@ -11,20 +11,20 @@ export const TEMPLATES: Template[] = [
   {
     id: 'blank',
     name: 'Blank',
-    js: `// Runs once per page for visitors in this variant.\n// splitly.* helpers are listed on the right.\n`,
+    js: `// Runs once per page for visitors in this variant.\n// splitcraft.* helpers are listed on the right.\n`,
     css: '',
   },
   {
     id: 'text',
     name: 'Change text',
-    js: `splitly.waitForElement('h1', (el) => {\n  el.textContent = 'Your new headline';\n});\n`,
+    js: `splitcraft.waitForElement('h1', (el) => {\n  el.textContent = 'Your new headline';\n});\n`,
     css: '',
   },
   {
     id: 'trust',
     name: 'Trust row',
     js: `// Trust badges under the Book button
-splitly.waitForElement('.book-now-btn', (btn) => {
+splitcraft.waitForElement('.book-now-btn', (btn) => {
   const row = document.createElement('ul');
   row.className = 'spl-trust';
   row.innerHTML = \`
@@ -33,8 +33,8 @@ splitly.waitForElement('.book-now-btn', (btn) => {
     <li>Pay in 3 instalments</li>\`;
   btn.insertAdjacentElement('afterend', row);
 
-  splitly.onceInView(row, () => {
-    splitly.trackEvent('trust_badges_seen');
+  splitcraft.onceInView(row, () => {
+    splitcraft.trackEvent('trust_badges_seen');
   });
 });
 `,
@@ -59,7 +59,7 @@ splitly.waitForElement('.book-now-btn', (btn) => {
     id: 'sticky',
     name: 'Sticky bar',
     js: `// Keeps the call to action in view on small screens
-splitly.waitForElement('.book-now-btn', (btn) => {
+splitcraft.waitForElement('.book-now-btn', (btn) => {
   const bar = document.createElement('div');
   bar.className = 'spl-sticky';
   bar.appendChild(btn.cloneNode(true));
@@ -90,8 +90,8 @@ splitly.waitForElement('.book-now-btn', (btn) => {
 ];
 
 /** Type definitions so the editor autocompletes the variant helpers. */
-export const SPLITLY_DTS = `
-declare const splitly: {
+export const SPLITCRAFT_DTS = `
+declare const splitcraft: {
   /** Runs fn with the first element matching selector, once it exists (default wait 10 s). */
   waitForElement(selector: string, fn: (el: Element) => void, opts?: { timeout?: number }): void;
   /** Runs fn once, the first time el is visible. */

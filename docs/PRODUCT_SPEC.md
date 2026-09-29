@@ -1,10 +1,10 @@
-# Splitly — product spec
+# Splitcraft — product spec
 
-Everything decided while designing Splitly. Screens live in `design/screens/`
+Everything decided while designing Splitcraft. Screens live in `design/screens/`
 (see `design/README.md` for the map). When this spec and a screen disagree, the screen wins
 on look, this spec wins on behaviour.
 
-## 1. What Splitly is
+## 1. What Splitcraft is
 
 A small A/B testing platform, built as a portfolio project by a CRO developer to prove
 how tools like Optimizely and AB Tasty work inside. Code-first: variants are written in
@@ -15,7 +15,7 @@ JS/CSS, not built in a visual editor.
 **Honesty rules for the product and the site**
 - No fake customer logos, testimonials or customer results.
 - Numbers shown in the UI come from real calculations (or clearly marked demo data).
-- Present Splitly as "built to understand experimentation platforms", not as an
+- Present Splitcraft as "built to understand experimentation platforms", not as an
   Optimizely replacement for production clients.
 
 ## 2. Information architecture
@@ -44,7 +44,7 @@ Workspace (Dhriti's Workspace)
    summaries of targeting and goals, sample-size card, pre-launch checklist.
 2. **Variants & code**: Control (no code) + variants. Each variant has `variant.js` and
    `variant.css` in a Monaco editor, a template picker, built-in helpers list, save,
-   version history, syntax check, "Preview on site" (opens the site with `?splitly_force=`).
+   version history, syntax check, "Preview on site" (opens the site with `?splitcraft_force=`).
 3. **Targeting**: WHO / WHERE / HOW / WHEN (see §4).
 4. **Goals**: one primary goal (locks at launch), any number of secondary goals,
    guardrails with auto-pause.
@@ -96,7 +96,7 @@ A metric = **event source** + **how to measure**.
 |---|---|---|
 | Click · selector | CSS selector list (comma = any) | Delegated listener on `document` so SPA re-renders work. Options: every click / first per page, keyboard Enter, elements added later. "Pick on page" picker. Selector health checks (warn on `:nth-child`, generated classes). |
 | Pageview · URL | URL rule | Matched in the browser in v1, counted from launch (not retroactive; see DECISIONS #19) |
-| Custom JS | Event key + tracker code that calls `splitly.trackEvent(key, props)` | Runs on chosen pages at DOM ready, sandboxed in try/catch. Checks: syntax, key present in code, selector exists, bad values (NaN). Live event log in preview. |
+| Custom JS | Event key + tracker code that calls `splitcraft.trackEvent(key, props)` | Runs on chosen pages at DOM ready, sandboxed in try/catch. Checks: syntax, key present in code, selector exists, bad values (NaN). Live event log in preview. |
 | dataLayer | Event name + property filters | |
 | Transaction | Purchase event: value, currency, items, `transaction_id` for dedupe | |
 | Browsing (auto) | Bounce, exit, pages per session, revisit, time on site | |
@@ -134,7 +134,7 @@ A metric = **event source** + **how to measure**.
 
 ## 7. SDK (packages/sdk)
 
-- Loaded by `<script src="https://cdn.splitly.dev/v1.js" data-project="prj_xxx" async>`,
+- Loaded by `<script src="https://splitcraft.app/sdk/v1.js" data-project="prj_xxx" async>`,
   or npm + `useExperiment(key)` React hook.
 - < 7 KB gzipped (QA panel loaded separately, < 3 KB), no runtime dependencies.
 - Flow: read/create visitor id cookie → fetch project config → evaluate targeting →
@@ -143,16 +143,16 @@ A metric = **event source** + **how to measure**.
 - Bucketing: FNV-1a or MurmurHash3 of `visitorId + experimentKey` → 0–9999 → traffic
   allocation. Same visitor, same variant, every visit.
 - SPA: re-evaluate and re-apply on route changes (History API patch + popstate).
-- QA: `?splitly_force=expKey:variant` forces a variant and shows the QA panel
+- QA: `?splitcraft_force=expKey:variant` forces a variant and shows the QA panel
   (see `17-qa-mode-mobile.html`): active experiments, how each was assigned
   (forced / bucketed), events sent, switch variant, reset, hide.
 - Public API:
   ```ts
-  splitly.trackEvent(key: string, props?: { value?: number; [k: string]: unknown }): void
-  splitly.waitForElement(selector: string, fn: (el: Element) => void, opts?: { timeout?: number }): void
-  splitly.onceInView(el: Element, fn: () => void): void
-  splitly.onRouteChange(fn: (url: string) => void): () => void
-  splitly.injectStyles(css: string, id?: string): () => void
+  splitcraft.trackEvent(key: string, props?: { value?: number; [k: string]: unknown }): void
+  splitcraft.waitForElement(selector: string, fn: (el: Element) => void, opts?: { timeout?: number }): void
+  splitcraft.onceInView(el: Element, fn: () => void): void
+  splitcraft.onRouteChange(fn: (url: string) => void): () => void
+  splitcraft.injectStyles(css: string, id?: string): () => void
   ```
 
 ## 8. Auth (apps/dashboard)

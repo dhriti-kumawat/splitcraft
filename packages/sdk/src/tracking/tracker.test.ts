@@ -46,7 +46,10 @@ describe('exposure', () => {
     const t = createTracker(fakeQueue().queue, 'v_1');
     t.exposure('checkout-cta', 'b');
     expect(dataLayer()).toEqual([
-      { event: 'splitly_exposure', splitly: { experimentKey: 'checkout-cta', variantKey: 'b' } },
+      {
+        event: 'splitcraft_exposure',
+        splitcraft: { experimentKey: 'checkout-cta', variantKey: 'b' },
+      },
     ]);
   });
 
@@ -68,7 +71,7 @@ describe('trackEvent', () => {
       props: { currency: 'GBP' },
     });
     expect(dataLayer()).toEqual([
-      { event: 'splitly_event', splitly: { key: 'purchase', value: 49.5 } },
+      { event: 'splitcraft_event', splitcraft: { key: 'purchase', value: 49.5 } },
     ]);
   });
 

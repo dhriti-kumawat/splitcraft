@@ -201,12 +201,12 @@ describe('launching', () => {
     const preview = screen.getByRole('link', { name: 'Preview on site' });
     expect(preview).toHaveAttribute(
       'href',
-      `https://${PROJECTS[0]!.mainDomain}/?splitly_force=trust%3Ab`,
+      `https://${PROJECTS[0]!.mainDomain}/?splitcraft_force=trust%3Ab`,
     );
     expect(preview).toHaveAttribute('target', '_blank');
     preview.addEventListener('click', (e) => e.preventDefault());
     await user.click(preview);
-    localStorage.removeItem('splitly_qa_trust');
+    localStorage.removeItem('splitcraft_qa_trust');
   });
 
   it('pauses, resumes and ends after confirmation', async () => {

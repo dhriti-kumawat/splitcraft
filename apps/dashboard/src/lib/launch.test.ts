@@ -20,7 +20,7 @@ describe('variantsReady', () => {
   it('needs code in every variant and no syntax errors', () => {
     expect(variantsReady(draft)).toBe(false);
     expect(variantsReady(withCode('', '.x{}'))).toBe(true);
-    expect(variantsReady(withCode('splitly.injectStyles(".x{}")'))).toBe(true);
+    expect(variantsReady(withCode('splitcraft.injectStyles(".x{}")'))).toBe(true);
     expect(variantsReady(withCode('if ('))).toBe(false);
   });
 });
@@ -44,9 +44,9 @@ describe('launchChecks', () => {
 
 describe('previewUrl', () => {
   it('forces the first variant on the main domain', () => {
-    expect(previewUrl(draft, project)).toBe('https://mytrips.dev/?splitly_force=trust%3Ab');
+    expect(previewUrl(draft, project)).toBe('https://mytrips.dev/?splitcraft_force=trust%3Ab');
     expect(previewUrl(draft, { ...project, mainDomain: 'localhost:5173' }, 'control')).toBe(
-      'http://localhost:5173/?splitly_force=trust%3Acontrol',
+      'http://localhost:5173/?splitcraft_force=trust%3Acontrol',
     );
   });
 });

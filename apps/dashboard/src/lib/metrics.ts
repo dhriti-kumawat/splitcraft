@@ -102,22 +102,22 @@ export function trackerChecks(
       ? { ok: true, text: `Event key ${eventKey} found in the code` }
       : {
           ok: false,
-          text: `The code never mentions ${eventKey || 'the event key'}; call splitly.trackEvent('${eventKey || 'your_key'}').`,
+          text: `The code never mentions ${eventKey || 'the event key'}; call splitcraft.trackEvent('${eventKey || 'your_key'}').`,
         },
-    /splitly\.trackEvent\s*\(/.test(code)
-      ? { ok: true, text: 'Calls splitly.trackEvent' }
-      : { ok: false, text: 'Call splitly.trackEvent(key, props) when the action happens.' },
+    /splitcraft\.trackEvent\s*\(/.test(code)
+      ? { ok: true, text: 'Calls splitcraft.trackEvent' }
+      : { ok: false, text: 'Call splitcraft.trackEvent(key, props) when the action happens.' },
   ];
 }
 
-/** The listener Splitly runs for a click metric, shown read-only. */
+/** The listener Splitcraft runs for a click metric, shown read-only. */
 export function clickCode(selector: string, firstPerPage: boolean, key: string): string {
   return [
     '// one listener, works for SPA re-renders',
     "document.addEventListener('click', (e) => {",
     `  if (e.target.closest(${JSON.stringify(selector || '…')})) {`,
     firstPerPage ? '    // counted once per page' : '    // every click counts',
-    `    splitly.trackEvent(${JSON.stringify(key || '…')});`,
+    `    splitcraft.trackEvent(${JSON.stringify(key || '…')});`,
     '  }',
     '}, true);',
   ].join('\n');
@@ -133,5 +133,5 @@ export function metricDetail(m: Metric): string {
     const url = cfg.url as { op?: string; value?: string } | undefined;
     return `URL ${url?.op ?? ''} ${url?.value ?? ''} · ${how} · ${better}`;
   }
-  return `splitly.trackEvent('${m.eventKey}') · ${how} · ${better}`;
+  return `splitcraft.trackEvent('${m.eventKey}') · ${how} · ${better}`;
 }
