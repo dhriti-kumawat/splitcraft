@@ -1,5 +1,7 @@
 import type {
   SessionSample,
+  Saved,
+  SavedKind,
   ActivityItem,
   DailyArm,
   DataApi,
@@ -263,6 +265,38 @@ export const SESSION_SAMPLE: SessionSample = {
   })),
 };
 
+export const TRIGGERS: Saved<'triggers'>[] = [
+  {
+    id: 'trg-engaged',
+    projectId: 'trip-demo',
+    name: 'Engaged mobile visit',
+    updatedAt: daysAgo(2),
+    rules: {
+      mode: 'all',
+      items: [
+        { type: 'screen_width', op: 'gte', value: 360 },
+        { type: 'pages_viewed_session', op: 'gte', value: 2 },
+      ],
+    },
+  },
+];
+
+export const PAGE_SETS: Saved<'page_sets'>[] = [
+  {
+    id: 'ps-trips',
+    projectId: 'trip-demo',
+    name: 'Trip and deal pages',
+    updatedAt: daysAgo(4),
+    rules: {
+      include: [
+        { op: 'matches', value: '/trips/*' },
+        { op: 'regex', value: '^/deals/(summer|monsoon)' },
+      ],
+      exclude: [{ op: 'contains', value: '/archive' }],
+    },
+  },
+];
+
 export const SEGMENTS: Segment[] = [
   {
     id: 'seg-returners',
@@ -379,6 +413,8 @@ export function fakeData(
     people?: Person[];
     activity?: ActivityItem[];
     sessionSample?: SessionSample;
+    triggers?: Saved<'triggers'>[];
+    pageSets?: Saved<'page_sets'>[];
   } = {},
 ) {
   const projects = (opts.projects ?? PROJECTS).map((p) => ({
@@ -400,6 +436,10 @@ export function fakeData(
     Object.entries(GOALS).map(([k, v]) => [k, v.map((g) => ({ ...g }))]),
   );
   let segments = (opts.segments ?? SEGMENTS).map((x) => ({ ...x }));
+  const saved: { triggers: Saved<'triggers'>[]; page_sets: Saved<'page_sets'>[] } = {
+    triggers: (opts.triggers ?? TRIGGERS).map((x) => ({ ...x })),
+    page_sets: (opts.pageSets ?? PAGE_SETS).map((x) => ({ ...x })),
+  };
   const versions: Record<
     string,
     Array<{ id: string; js: string; css: string; note: string; createdAt: string }>
@@ -587,6 +627,32 @@ export function fakeData(
     async deleteSegment(id) {
       segments = segments.filter((x) => x.id !== id);
     },
+    listSaved: async (kind, projectId) =>
+      saved[kind].filter((x) => x.projectId === projectId).map((x) => ({ ...x })) as never,
+    async createSaved(kind, projectId, name, rules) {
+      const item = {
+        id: `${kind}-${saved[kind].length + 1}`,
+        projectId,
+        name,
+        rules,
+        updatedAt: daysAgo(0),
+      };
+      (saved[kind] as unknown[]).push(item);
+      return { ...item } as never;
+    },
+    async updateSaved(kind, id, patch) {
+      const item = (saved[kind] as Array<{ id: string; name: string; rules: unknown }>).find(
+        (x) => x.id === id,
+      )!;
+      if (patch.name !== undefined) item.name = patch.name;
+      if (patch.rules !== undefined) item.rules = patch.rules;
+      return { ...item } as never;
+    },
+    async deleteSaved(kind, id) {
+      (saved as Record<SavedKind, Array<{ id: string }>>)[kind] = saved[kind].filter(
+        (x) => x.id !== id,
+      ) as never;
+    },
     listMetrics: async (projectId) =>
       metrics.filter((m) => m.projectId === projectId).map((m) => ({ ...m })),
     async createMetric(m) {
@@ -667,6 +733,7 @@ export function fakeData(
     patches,
     variantPatches,
     segmentsNow: () => segments,
+    savedNow: () => saved,
     metricsNow: () => metrics,
     projectsNow: () => projects,
     experimentsNow: () => experiments,

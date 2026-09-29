@@ -34,9 +34,9 @@ describe('reach conditions', () => {
       evaluateCondition({ type: 'pages_viewed_session', op: 'gte', value: 2 }, ping()),
     ).toBeNull();
     expect(evaluateCondition({ type: 'country', op: 'is', value: 'IN' }, ping())).toBeNull();
-    expect(
-      evaluateCondition({ type: 'country', op: 'is', value: 'IN' }, ping({ c: 'IN' })),
-    ).toBe(true);
+    expect(evaluateCondition({ type: 'country', op: 'is', value: 'IN' }, ping({ c: 'IN' }))).toBe(
+      true,
+    );
   });
 });
 

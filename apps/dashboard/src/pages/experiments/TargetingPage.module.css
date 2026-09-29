@@ -200,7 +200,23 @@
 
 .buttons {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
+}
+
+.saveAs {
+  align-self: flex-start;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: 600 13px var(--font-ui);
+  cursor: pointer;
+}
+
+.saveAs:hover {
+  text-decoration: underline;
 }
 
 .link {
@@ -296,9 +312,21 @@
 }
 
 @media (max-width: 719px) {
-  .mono {
+  .rule {
+    flex-wrap: wrap;
+  }
+
+  .rule .mono {
     min-width: 0;
-    flex: 1 1 100%;
+    flex: 1 1 140px;
+  }
+
+  .head {
+    flex-wrap: wrap;
+  }
+
+  .buttons {
+    justify-content: flex-start;
   }
 }
 

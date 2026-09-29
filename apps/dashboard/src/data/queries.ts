@@ -9,6 +9,8 @@ import type {
   Metric,
   NewProject,
   Role,
+  SavedKind,
+  SavedRules,
   VariantPatch,
   VariantStats,
 } from './api';
@@ -30,6 +32,7 @@ export const keys = {
   goals: (experimentId: string) => ['goals', experimentId] as const,
   versions: (variantId: string) => ['versions', variantId] as const,
   segments: (projectId: string) => ['segments', projectId] as const,
+  saved: (kind: SavedKind, projectId: string) => ['saved', kind, projectId] as const,
   results: (experimentId: string) => ['results', experimentId] as const,
   daily: (experimentId: string) => ['daily', experimentId] as const,
   people: (workspaceId: string) => ['people', workspaceId] as const,
@@ -330,6 +333,37 @@ export function useSegmentMutations(projectId: string) {
       onSuccess: refresh,
     }),
     remove: useMutation({ mutationFn: (id: string) => api.deleteSegment(id), onSuccess: refresh }),
+  };
+}
+
+export function useSavedQuery<K extends SavedKind>(kind: K, projectId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.saved(kind, projectId),
+    queryFn: () => api.listSaved(kind, projectId),
+  });
+}
+
+/** Create, rename / edit and delete saved triggers or page sets. */
+export function useSavedMutations<K extends SavedKind>(kind: K, projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => void client.invalidateQueries({ queryKey: keys.saved(kind, projectId) });
+  return {
+    create: useMutation({
+      mutationFn: ({ name, rules }: { name: string; rules: SavedRules[K] }) =>
+        api.createSaved(kind, projectId, name, rules),
+      onSuccess: refresh,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, name, rules }: { id: string; name?: string; rules?: SavedRules[K] }) =>
+        api.updateSaved(kind, id, { name, rules }),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) => api.deleteSaved(kind, id),
+      onSuccess: refresh,
+    }),
   };
 }
 
