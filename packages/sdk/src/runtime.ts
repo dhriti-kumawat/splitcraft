@@ -20,6 +20,7 @@ import {
   createTracker,
   trackClicks,
   trackPageviews,
+  trackViews,
   runCustomTrackers,
   type ClickGoal,
   type CustomGoal,
@@ -90,7 +91,10 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
   );
   const clickGoals = config.goals?.clicks ?? [];
   const stops = [
-    trackClicks(clickGoals, (key) => tracker.trackEvent(key)),
+    trackClicks(clickGoals, (key, value) =>
+      tracker.trackEvent(key, value === undefined ? undefined : { value }),
+    ),
+    trackViews(clickGoals, (key) => tracker.trackEvent(key)),
     trackPageviews(config.goals?.pageviews ?? [], (key) => tracker.trackEvent(key)),
     runCustomTrackers(config.goals?.custom ?? [], {
       waitForElement,

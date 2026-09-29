@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { trackClicks, trackPageviews } from './goals';
+import { trackClicks, trackPageviews, trackViews } from './goals';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -149,6 +149,100 @@ describe('runCustomTrackers', () => {
     const stop = runCustomTrackers([{ key: 'bad', code: 'undefinedThing()' }], {});
     expect(log).toHaveBeenCalled();
     log.mockRestore();
+    stop();
+  });
+});
+
+describe('click timing', () => {
+  it("sends seconds since page load with each page's first click only", () => {
+    document.body.innerHTML = '<button class="book"></button>';
+    vi.spyOn(performance, 'now').mockReturnValue(2345);
+    const track = vi.fn();
+    const stop = trackClicks([{ key: 'book', selector: '.book', timing: true }], track);
+    document.querySelector<HTMLButtonElement>('.book')!.click();
+    document.querySelector<HTMLButtonElement>('.book')!.click();
+    expect(track.mock.calls).toEqual([['book', 2.3], ['book']]);
+    stop();
+    vi.restoreAllMocks();
+  });
+});
+
+describe('trackViews', () => {
+  let observed: Element[];
+  let fire: (el: Element) => void;
+
+  beforeEach(() => {
+    observed = [];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(private readonly cb: IntersectionObserverCallback) {
+          fire = (el) =>
+            this.cb(
+              [{ isIntersecting: true, target: el } as unknown as IntersectionObserverEntry],
+              this as unknown as IntersectionObserver,
+            );
+        }
+        observe(el: Element) {
+          observed.push(el);
+        }
+        disconnect() {
+          observed = [];
+        }
+      },
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('sends <key>:view once per page when a matching element is seen', () => {
+    document.body.innerHTML = '<div class="banner"></div><div class="banner"></div>';
+    const track = vi.fn();
+    const stop = trackViews([{ key: 'banner', selector: '.banner', views: true }], track);
+    expect(observed).toHaveLength(2);
+    fire(observed[0]!);
+    fire(observed[1]!);
+    expect(track.mock.calls).toEqual([['banner:view']]);
+    stop();
+  });
+
+  it('ignores goals without views', () => {
+    document.body.innerHTML = '<div class="banner"></div>';
+    const track = vi.fn();
+    const stop = trackViews([{ key: 'banner', selector: '.banner' }], track);
+    expect(observed).toHaveLength(0);
+    stop();
+  });
+
+  it('watches elements added later', async () => {
+    vi.useFakeTimers();
+    const track = vi.fn();
+    const stop = trackViews([{ key: 'late', selector: '.late', views: true }], track);
+    document.body.innerHTML = '<div class="late"></div>';
+    await vi.advanceTimersByTimeAsync(250);
+    expect(observed).toHaveLength(1);
+    fire(observed[0]!);
+    expect(track).toHaveBeenCalledWith('late:view');
+    stop();
+  });
+
+  it('counts a view again after an SPA navigation', () => {
+    document.body.innerHTML = '<div class="banner"></div>';
+    const track = vi.fn();
+    const stop = trackViews([{ key: 'banner', selector: '.banner', views: true }], track);
+    fire(observed[0]!);
+    history.pushState({}, '', '/next');
+    fire(observed[0]!);
+    expect(track).toHaveBeenCalledTimes(2);
+    stop();
+  });
+
+  it("doesn't break on an invalid selector", () => {
+    const stop = trackViews([{ key: 'bad', selector: '[[', views: true }], vi.fn());
+    expect(observed).toHaveLength(0);
     stop();
   });
 });

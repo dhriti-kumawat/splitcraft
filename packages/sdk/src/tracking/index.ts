@@ -10,6 +10,7 @@ export {
   runCustomTrackers,
   trackClicks,
   trackPageviews,
+  trackViews,
   type ClickGoal,
   type CustomGoal,
   type PageviewGoal,
