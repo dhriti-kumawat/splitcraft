@@ -4,6 +4,7 @@ import {
   matchesWithoutElements,
   matchFrequency,
   matchWhereUrl,
+  waitForDataLayer,
   type Targeting,
 } from './index';
 
@@ -193,5 +194,44 @@ describe('evaluateTargeting', () => {
     };
     await expect(evaluateTargeting(t, makeContext())).resolves.toBe(false);
     expect(observers.size).toBe(0);
+  });
+});
+
+describe('waitForDataLayer', () => {
+  const t: Targeting = {
+    how: [
+      {
+        mode: 'all',
+        items: [
+          {
+            mode: 'any',
+            items: [{ type: 'data_layer', key: 'pageType', op: 'is', value: 'trip' }],
+          },
+        ],
+      },
+    ],
+  };
+
+  it('resolves once the keys the rules use are in the dataLayer', async () => {
+    vi.useFakeTimers();
+    const dl: unknown[] = [];
+    let done = false;
+    void waitForDataLayer(t, 2000, () => dl).then(() => (done = true));
+    await vi.advanceTimersByTimeAsync(200);
+    expect(done).toBe(false);
+    dl.push({ pageType: 'trip' });
+    await vi.advanceTimersByTimeAsync(60);
+    expect(done).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it('gives up after the wait, and never waits without dataLayer rules', async () => {
+    vi.useFakeTimers();
+    let done = false;
+    void waitForDataLayer(t, 300, () => []).then(() => (done = true));
+    await vi.advanceTimersByTimeAsync(350);
+    expect(done).toBe(true);
+    vi.useRealTimers();
+    await expect(waitForDataLayer({}, 5000, () => [])).resolves.toBeUndefined();
   });
 });
