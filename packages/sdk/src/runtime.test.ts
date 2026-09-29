@@ -158,6 +158,16 @@ describe('start', () => {
     expect(goals.map((g) => g.key)).toEqual(['trust_badges_seen']);
   });
 
+  it('runs custom JS trackers from the config', async () => {
+    runtime = start(
+      config([], {
+        goals: { custom: [{ key: 'add_on', code: 'splitly.trackEvent("add_on", { value: 5 })' }] },
+      }),
+    );
+    const goals = (await sentEvents()).filter((e) => e.type === 'goal');
+    expect(goals.map((g) => [g.key, g.value])).toEqual([['add_on', 5]]);
+  });
+
   it('tracks click goals and trackEvent calls', async () => {
     document.body.innerHTML = '<button class="book">Book now</button>';
     runtime = start(config([], { goals: { clicks: [{ key: 'book_click', selector: '.book' }] } }));

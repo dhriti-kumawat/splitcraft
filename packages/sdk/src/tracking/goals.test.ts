@@ -118,3 +118,37 @@ describe('trackPageviews', () => {
     stop();
   });
 });
+
+describe('runCustomTrackers', () => {
+  it('runs tracker code with the helpers on matching pages only, once per page', async () => {
+    const { runCustomTrackers } = await import('./goals');
+    const trackEvent = vi.fn();
+    history.replaceState({}, '', '/trips/norway');
+    const stop = runCustomTrackers(
+      [
+        {
+          key: 'add_on',
+          code: 'splitly.trackEvent("add_on", { value: 12 })',
+          pages: [{ op: 'matches', value: '/trips/*' }],
+        },
+        { key: 'everywhere', code: 'splitly.trackEvent("everywhere")' },
+      ],
+      { trackEvent },
+    );
+    expect(trackEvent.mock.calls).toEqual([['add_on', { value: 12 }], ['everywhere']]);
+
+    history.pushState({}, '', '/about');
+    expect(trackEvent.mock.calls[trackEvent.mock.calls.length - 1]).toEqual(['everywhere']);
+    expect(trackEvent).toHaveBeenCalledTimes(3);
+    stop();
+  });
+
+  it('catches errors in tracker code', async () => {
+    const { runCustomTrackers } = await import('./goals');
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const stop = runCustomTrackers([{ key: 'bad', code: 'undefinedThing()' }], {});
+    expect(log).toHaveBeenCalled();
+    log.mockRestore();
+    stop();
+  });
+});

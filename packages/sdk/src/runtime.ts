@@ -12,6 +12,7 @@ import {
 import { clearForcedVariants, getForcedVariants, withForce } from './qa/force';
 import { loadQaPanel } from './qa/loader';
 import type { QaExperiment, QaSource, QaState } from './qa/types';
+import { injectStyles, onceInView, waitForElement } from './helpers';
 import { onRouteChange } from './router';
 import { evaluateTargeting, type Targeting } from './targeting';
 import {
@@ -19,7 +20,9 @@ import {
   createTracker,
   trackClicks,
   trackPageviews,
+  runCustomTrackers,
   type ClickGoal,
+  type CustomGoal,
   type PageviewGoal,
   type TrackedEvent,
 } from './tracking';
@@ -47,7 +50,7 @@ export interface ProjectConfig {
   projectKey: string;
   eventsUrl: string;
   experiments: ExperimentConfig[];
-  goals?: { clicks?: ClickGoal[]; pageviews?: PageviewGoal[] };
+  goals?: { clicks?: ClickGoal[]; pageviews?: PageviewGoal[]; custom?: CustomGoal[] };
   /** Visitor country from the edge (ISO 3166-1 alpha-2), if known. */
   country?: string;
 }
@@ -89,6 +92,13 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
   const stops = [
     trackClicks(clickGoals, (key) => tracker.trackEvent(key)),
     trackPageviews(config.goals?.pageviews ?? [], (key) => tracker.trackEvent(key)),
+    runCustomTrackers(config.goals?.custom ?? [], {
+      waitForElement,
+      onceInView,
+      onRouteChange,
+      injectStyles,
+      trackEvent: tracker.trackEvent,
+    }),
   ];
 
   const runExperiment = async (exp: ExperimentConfig, st: VisitorState): Promise<void> => {
