@@ -57,6 +57,8 @@ export function NewWorkspaceDialog({
               className={styles.input}
               value={name}
               maxLength={100}
+              placeholder="e.g. Acme Inc."
+              autoComplete="organization"
               onChange={(e) => setName(e.target.value)}
               aria-invalid={submitted && Boolean(error)}
               aria-describedby={submitted && error ? `${id}-e` : undefined}

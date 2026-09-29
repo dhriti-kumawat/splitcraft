@@ -8,10 +8,10 @@ describe('validate', () => {
       email: 'Enter your email address.',
       password: 'Enter your password.',
     });
-    expect(validate('login', { ...empty, email: 'dhriti@site', password: 'x' })).toEqual({
+    expect(validate('login', { ...empty, email: 'alex@site', password: 'x' })).toEqual({
       email: 'This email is missing something. Check for typos.',
     });
-    expect(validate('login', { ...empty, email: ' dhriti@site.dev ', password: 'x' })).toEqual({});
+    expect(validate('login', { ...empty, email: ' alex@site.dev ', password: 'x' })).toEqual({});
   });
 
   it('checks name, password rules and terms for sign-up', () => {
@@ -21,7 +21,7 @@ describe('validate', () => {
       terms: 'Accept the terms to create your workspace.',
     });
     expect(
-      validate('signup', { name: 'Dhriti', email: 'a@b.co', password: 'Tripdemo1', terms: true }),
+      validate('signup', { name: 'Alex', email: 'a@b.co', password: 'Tripdemo1', terms: true }),
     ).toEqual({});
   });
 

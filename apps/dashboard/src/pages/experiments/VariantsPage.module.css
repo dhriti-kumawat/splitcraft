@@ -376,3 +376,15 @@
   line-height: 1.45;
   color: var(--warn);
 }
+
+@media (max-width: 1023px) {
+  .layout {
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .variants,
+  .aside {
+    width: 100%;
+  }
+}

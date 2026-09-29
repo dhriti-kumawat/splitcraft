@@ -21,7 +21,7 @@ JS/CSS, not built in a visual editor.
 ## 2. Information architecture
 
 ```
-Workspace (Dhriti's Workspace)
+Workspace (e.g. Acme Inc.; new accounts get their company name or "My workspace")
 ├── Projects            one project = one site/app, one snippet
 │   └── Project (e.g. Trip Demo · mytrips.dev)
 │       ├── Experiments     list → 5-step flow per experiment

@@ -12,14 +12,17 @@ import { routes } from './router';
 import { fakeAuth } from './test/fakeAuth';
 import { fakeData } from './test/fakeData';
 
-const path = new URLSearchParams(location.search).get('path') ?? '/projects';
+const params = new URLSearchParams(location.search);
+const path = params.get('path') ?? '/projects';
 const signedIn = !/^\/(login|signup|forgot-password)/.test(path);
+// &workspaces=none shows the first-run screen for an account without a workspace.
+const data = fakeData(params.get('workspaces') === 'none' ? { workspaces: [] } : {});
 const router = createMemoryRouter(routes, { initialEntries: [path] });
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={new QueryClient()}>
     <AuthProvider api={fakeAuth({ signedIn }).api}>
-      <DataContext.Provider value={fakeData().api}>
+      <DataContext.Provider value={data.api}>
         <RouterProvider router={router} />
       </DataContext.Provider>
     </AuthProvider>

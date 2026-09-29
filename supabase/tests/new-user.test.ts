@@ -24,24 +24,24 @@ async function signUp(id: string, email: string, meta: Record<string, unknown> |
 }
 
 describe('new user', () => {
-  it('gets a workspace named after their first name, as owner', async () => {
-    const result = await signUp('00000000-0000-0000-0000-000000000001', 'dhriti@example.com', {
-      full_name: 'Dhriti Kumawat',
+  it('gets a workspace named after their company, as owner, not after them', async () => {
+    const result = await signUp('00000000-0000-0000-0000-000000000001', 'jo@acme.co.uk', {
+      full_name: 'Jo Smith',
     });
-    expect(result.workspaces).toEqual([{ name: "Dhriti's Workspace" }]);
+    expect(result.workspaces).toEqual([{ name: 'Acme' }]);
     expect(result.members).toEqual([{ role: 'owner' }]);
   });
 
-  it('falls back to the email name without a full name', async () => {
-    const result = await signUp('00000000-0000-0000-0000-000000000002', 'sam@example.com', null);
-    expect(result.workspaces).toEqual([{ name: "sam's Workspace" }]);
+  it('gets "My workspace" with a personal email address', async () => {
+    const result = await signUp('00000000-0000-0000-0000-000000000002', 'Sam@Gmail.com', null);
+    expect(result.workspaces).toEqual([{ name: 'My workspace' }]);
   });
 
   it('only sees their own new workspace', async () => {
     const result = await signUp('00000000-0000-0000-0000-000000000003', 'alex@example.com', {
       full_name: '  Alex  ',
     });
-    expect(result.workspaces).toEqual([{ name: "Alex's Workspace" }]);
+    expect(result.workspaces).toEqual([{ name: 'Example' }]);
   });
 });
 

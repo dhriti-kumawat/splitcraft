@@ -9,6 +9,64 @@
   overflow-y: auto;
 }
 
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #aeb4ac;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #ffffff;
+  background: var(--ink-3);
+}
+
+@media (max-width: 1023px) {
+  .sidebar {
+    position: fixed;
+    z-index: 50;
+    inset: 0 auto 0 0;
+    width: min(280px, 86vw);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0.2s;
+  }
+
+  .sidebar.open {
+    transform: none;
+    visibility: visible;
+    box-shadow: 0 0 40px rgba(21, 23, 26, 0.35);
+  }
+
+  .close {
+    display: inline-flex;
+  }
+
+  .nav .link {
+    padding: 11px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}
+
 .brand {
   display: flex;
   align-items: center;

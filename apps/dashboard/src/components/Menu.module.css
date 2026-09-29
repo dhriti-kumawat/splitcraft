@@ -59,3 +59,9 @@
   font-weight: 400;
   color: var(--muted);
 }
+
+@media (max-width: 719px) {
+  .menu {
+    max-width: calc(100vw - 32px);
+  }
+}

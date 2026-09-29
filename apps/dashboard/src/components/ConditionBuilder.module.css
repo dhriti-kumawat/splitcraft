@@ -198,3 +198,10 @@
   font-size: 13px;
   color: var(--muted);
 }
+
+@media (max-width: 719px) {
+  .input {
+    min-width: 0;
+    flex: 1 1 140px;
+  }
+}

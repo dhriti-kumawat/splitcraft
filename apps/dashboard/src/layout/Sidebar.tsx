@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate, type NavLinkProps } from 'react-router';
 import { NewWorkspaceDialog } from '../components/NewWorkspaceDialog';
 import { useAuth } from '../auth/context';
 import {
   AudiencesIcon,
+  CloseIcon,
   ExperimentsIcon,
   InstallIcon,
   Logo,
@@ -40,9 +41,16 @@ function Item(props: NavLinkProps) {
   );
 }
 
-/** 240 px dark sidebar from design/README.md "App shell". */
-export function Sidebar() {
+/**
+ * 240 px dark sidebar from design/README.md "App shell". Below 1024 px it is a drawer
+ * that the top bar's menu button opens.
+ */
+export function Sidebar({ open, onClose }: { open: boolean; onClose(): void }) {
   const { user, workspace, workspaces, projects, selectWorkspace } = useWorkspace();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (open) closeRef.current?.focus();
+  }, [open]);
   const events = useEventsThisMonthQuery(workspace.id);
   const limit = EVENT_LIMIT[workspace.plan];
   const { api } = useAuth();
@@ -52,11 +60,26 @@ export function Sidebar() {
   const base = project ? `/p/${project.id}` : '';
 
   return (
-    <aside className={styles.sidebar} aria-label="Sidebar">
-      <NavLink to="/projects" className={styles.brand}>
-        <Logo />
-        Splitcraft
-      </NavLink>
+    <aside
+      id="app-sidebar"
+      className={`${styles.sidebar} ${open ? styles.open : ''}`}
+      aria-label="Sidebar"
+    >
+      <div className={styles.head}>
+        <NavLink to="/projects" className={styles.brand}>
+          <Logo />
+          Splitcraft
+        </NavLink>
+        <button
+          ref={closeRef}
+          type="button"
+          className={styles.close}
+          aria-label="Close navigation"
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </button>
+      </div>
 
       <Switcher
         label="Switch workspace"

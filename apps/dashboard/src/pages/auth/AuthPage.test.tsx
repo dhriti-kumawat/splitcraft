@@ -1,7 +1,7 @@
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MESSAGES } from '../../auth/api';
-import { DHRITI, fakeAuth, PASSWORD } from '../../test/fakeAuth';
+import { ALEX, fakeAuth, PASSWORD } from '../../test/fakeAuth';
 import { renderApp } from '../../test/renderApp';
 
 const field = (name: string | RegExp) => screen.getByLabelText(name);
@@ -34,7 +34,7 @@ describe('login', () => {
   it('flags an email that is missing something', async () => {
     const user = userEvent.setup();
     await openAt('/login');
-    await user.type(field('Email'), 'dhriti@mytrips');
+    await user.type(field('Email'), 'alex@mytrips');
     await user.tab();
     expect(
       screen.getByText('This email is missing something. Check for typos.'),
@@ -44,7 +44,7 @@ describe('login', () => {
   it('shows the spec message for wrong credentials', async () => {
     const user = userEvent.setup();
     await openAt('/login');
-    await user.type(field('Email'), DHRITI.email);
+    await user.type(field('Email'), ALEX.email);
     await user.type(field('Password'), 'wrong-password');
     await user.click(submit('Log in'));
     expect(await screen.findByRole('alert')).toHaveTextContent(MESSAGES.invalidLogin);
@@ -53,15 +53,13 @@ describe('login', () => {
   it('logs in, shows the welcome screen and links to where the user was going', async () => {
     const user = userEvent.setup();
     const { calls } = await openAt('/login?next=%2Fp%2Ftrip-demo%2Fmetrics');
-    await user.type(field('Email'), DHRITI.email);
+    await user.type(field('Email'), ALEX.email);
     await user.type(field('Password'), PASSWORD);
     await user.click(screen.getByLabelText('Keep me logged in for 30 days'));
     await user.click(submit('Log in'));
 
-    expect(
-      await screen.findByRole('heading', { name: 'Welcome back, Dhriti' }),
-    ).toBeInTheDocument();
-    expect(calls).toContain(`signIn:${DHRITI.email}:false`);
+    expect(await screen.findByRole('heading', { name: 'Welcome back, Alex' })).toBeInTheDocument();
+    expect(calls).toContain(`signIn:${ALEX.email}:false`);
     expect(screen.getByRole('link', { name: 'Open dashboard →' })).toHaveAttribute(
       'href',
       '/p/trip-demo/metrics',
@@ -74,7 +72,7 @@ describe('login', () => {
     let finish: () => void = () => {};
     auth.api.signIn = () => new Promise((r) => (finish = () => r({ ok: true })));
     await openAt('/login', auth);
-    await user.type(field('Email'), DHRITI.email);
+    await user.type(field('Email'), ALEX.email);
     await user.type(field('Password'), PASSWORD);
     await user.click(submit('Log in'));
 
@@ -87,7 +85,7 @@ describe('login', () => {
   it('ignores an unsafe next parameter', async () => {
     const user = userEvent.setup();
     await openAt('/login?next=%2F%2Fevil.example');
-    await user.type(field('Email'), DHRITI.email);
+    await user.type(field('Email'), ALEX.email);
     await user.type(field('Password'), PASSWORD);
     await user.click(submit('Log in'));
     expect(await screen.findByRole('link', { name: 'Open dashboard →' })).toHaveAttribute(
@@ -193,11 +191,11 @@ describe('forgot password', () => {
     try {
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       const { calls } = await openAt('/forgot-password');
-      await user.type(field('Email'), DHRITI.email);
+      await user.type(field('Email'), ALEX.email);
       await user.click(submit('Send reset link'));
 
       expect(await screen.findByRole('heading', { name: 'Check your email' })).toBeInTheDocument();
-      expect(screen.getByRole('status')).toHaveTextContent(`reset link to ${DHRITI.email}`);
+      expect(screen.getByRole('status')).toHaveTextContent(`reset link to ${ALEX.email}`);
       const resend = screen.getByRole('button', { name: 'Resend link in 30s' });
       expect(resend).toBeDisabled();
 
@@ -285,12 +283,12 @@ describe('protected pages', () => {
     expect(router.state.location.pathname).toBe('/login');
     expect(router.state.location.search).toBe('?next=%2Fp%2Ftrip-demo%2Fmetrics');
 
-    await user.type(field('Email'), DHRITI.email);
+    await user.type(field('Email'), ALEX.email);
     await user.type(field('Password'), PASSWORD);
     await user.click(submit('Log in'));
     await user.click(await screen.findByRole('link', { name: 'Open dashboard →' }));
     expect(router.state.location.pathname).toBe('/p/trip-demo/metrics');
-    expect(screen.getByText('Dhriti Kumawat')).toBeInTheDocument();
+    expect(screen.getByText('Alex Morgan')).toBeInTheDocument();
   });
 
   it('log out from the sidebar', async () => {

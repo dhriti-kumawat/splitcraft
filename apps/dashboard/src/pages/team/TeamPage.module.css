@@ -205,3 +205,23 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+@media (max-width: 719px) {
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .input {
+    min-width: 0;
+  }
+
+  .form > .field:first-child {
+    flex: 1 1 100%;
+  }
+
+  .section {
+    padding: 18px 16px;
+  }
+}

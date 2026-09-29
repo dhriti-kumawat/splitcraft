@@ -191,3 +191,39 @@
 .warn {
   color: var(--danger-text);
 }
+
+@media (max-width: 1023px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters {
+    align-self: flex-start;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .tableWrap {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 860px;
+  }
+
+  .cards {
+    flex-wrap: wrap;
+  }
+
+  .card {
+    flex: 1 1 240px;
+  }
+}
+
+@media (max-width: 719px) {
+  .search {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}

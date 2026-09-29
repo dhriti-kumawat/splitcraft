@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { Button } from '../components/Button';
-import { NewWorkspaceDialog } from '../components/NewWorkspaceDialog';
 import { useAuth } from '../auth/context';
+import { NoWorkspace } from './NoWorkspace';
 import { useProjectsQuery, useWorkspacesQuery } from './queries';
 import { WorkspaceContext } from './workspace';
 import styles from './WorkspaceProvider.module.css';
@@ -37,7 +36,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return <div className={styles.loading} aria-busy="true" aria-label="Loading workspace" />;
   }
   if (!workspace) {
-    return <NoWorkspace userId={user.id} onCreated={(id) => setSelected(id)} />;
+    return <NoWorkspace onCreated={(id) => setSelected(id)} />;
   }
 
   const selectWorkspace = (id: string) => {
@@ -70,22 +69,5 @@ function Message({ title, children }: { title: string; children: ReactNode }) {
       <h1>{title}</h1>
       <p>{children}</p>
     </main>
-  );
-}
-
-function NoWorkspace({ userId, onCreated }: { userId: string; onCreated(id: string): void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <Message title="No workspace yet">
-        You're not part of any workspace. Create one, or open the invite link a teammate sent you.
-      </Message>
-      <div className={styles.message} style={{ marginTop: -60 }}>
-        <Button onClick={() => setOpen(true)}>Create a workspace</Button>
-      </div>
-      {open && (
-        <NewWorkspaceDialog userId={userId} onCreated={onCreated} onClose={() => setOpen(false)} />
-      )}
-    </>
   );
 }

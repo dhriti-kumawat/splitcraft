@@ -17,7 +17,7 @@ import type {
 
 export const WORKSPACE: Workspace = {
   id: 'ws_1',
-  name: "Dhriti's Workspace",
+  name: 'Northwind Travel',
   plan: 'free',
   role: 'owner',
 };
@@ -45,7 +45,7 @@ export const PROJECTS: Project[] = [
     mainDomain: 'shoplab.dev',
     allowedDomains: ['*.vercel.app'],
   }),
-  project({ id: 'portfolio', name: 'Portfolio', mainDomain: 'dhriti.dev', installedAt: null }),
+  project({ id: 'portfolio', name: 'Portfolio', mainDomain: 'alexmorgan.dev', installedAt: null }),
 ];
 
 export const STATS: ProjectStats[] = [
@@ -296,8 +296,8 @@ export const DAILY: Record<string, DailyArm[]> = {
 export const PEOPLE: Person[] = [
   {
     userId: 'u_1',
-    email: 'dhriti@mytrips.dev',
-    name: 'Dhriti Kumawat',
+    email: 'alex@mytrips.dev',
+    name: 'Alex Morgan',
     role: 'owner',
     joinedAt: '2026-09-01T09:00:00Z',
   },
