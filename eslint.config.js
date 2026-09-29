@@ -32,5 +32,12 @@ export default tseslint.config(
       globals: { ...globals.node },
     },
   },
+  {
+    // Supabase Edge Functions run on Deno.
+    files: ['supabase/functions/**/*.ts'],
+    languageOptions: {
+      globals: { Deno: 'readonly' },
+    },
+  },
   prettier,
 );

@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": ["vitest/globals", "node"],
+    "allowImportingTsExtensions": true
+  },
+  "include": ["tests", "functions/_shared"],
+  // Deno-only (npm: imports, Deno globals); checked by Supabase when deployed.
+  "exclude": ["functions/_shared/client.ts"]
+}

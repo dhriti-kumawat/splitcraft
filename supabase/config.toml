@@ -1,0 +1,10 @@
+# Supabase CLI settings. Anything not set here uses the CLI defaults.
+project_id = "splitly"
+
+# The SDK calls these from customer sites without a Supabase JWT; each endpoint checks
+# the project's public key itself (and the events endpoint also checks the page's domain).
+[functions.config]
+verify_jwt = false
+
+[functions.events]
+verify_jwt = false
