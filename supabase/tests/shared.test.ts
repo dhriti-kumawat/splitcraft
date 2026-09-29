@@ -272,3 +272,34 @@ describe('toSdkConfig: dataLayer and transaction goals', () => {
     ]);
   });
 });
+
+describe('toSdkConfig: browsing and Web Vitals goals', () => {
+  it('lists the kinds used, and nothing when none are', () => {
+    const src = (metrics: ConfigSource['metrics']): ConfigSource => ({
+      experiments: [
+        {
+          key: 'x',
+          name: 'X',
+          trafficPct: 100,
+          targeting: {},
+          metricIds: metrics.map((m) => m.id),
+          variants: [],
+        },
+      ],
+      segments: {},
+      metrics,
+    });
+    const goals = toSdkConfig(
+      src([
+        { id: 'a', eventKey: 'browse.page', source: 'browsing', sourceConfig: { kind: 'pages' } },
+        { id: 'b', eventKey: 'vitals.lcp', source: 'web_vitals', sourceConfig: { vital: 'lcp' } },
+        { id: 'c', eventKey: 'vitals.x', source: 'web_vitals', sourceConfig: { vital: 'fid' } },
+      ]),
+      'prj_x',
+      '/e',
+    ).goals;
+    expect(goals.browsing).toEqual(['pages']);
+    expect(goals.vitals).toEqual(['lcp']);
+    expect(toSdkConfig(src([]), 'prj_x', '/e').goals).not.toHaveProperty('vitals');
+  });
+});
