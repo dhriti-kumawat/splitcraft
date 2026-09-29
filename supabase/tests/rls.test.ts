@@ -70,9 +70,10 @@ describe('workspaces', () => {
 
   it('shows users only the workspaces they belong to', async () => {
     const names = (
-      await as(db, bob, () => rows<{ name: string }>('select name from workspaces'))
+      await as(db, bob, () => rows<{ name: string }>('select name from workspaces order by name'))
     ).map((r) => r.name);
-    expect(names).toEqual(["Bob's Workspace"]);
+    // The workspace Bob created plus the one made for him at sign-up; never Alice's.
+    expect(names).toEqual(["Bob's Workspace", "My's Workspace"]);
   });
 
   it('does not let a non-member rename or delete a workspace', async () => {
@@ -111,11 +112,18 @@ describe('members', () => {
   });
 
   it('does not let a plain member change roles', async () => {
+    // Carol owns her own sign-up workspace; check the one she was invited to.
     await as(db, carol, () =>
-      rows(`update workspace_members set role = 'owner' where user_id = $1`, [CAROL]),
+      rows(`update workspace_members set role = 'owner' where user_id = $1 and workspace_id = $2`, [
+        CAROL,
+        aliceWs,
+      ]),
     );
     const [me] = await as(db, carol, () =>
-      rows('select role from workspace_members where user_id = $1', [CAROL]),
+      rows('select role from workspace_members where user_id = $1 and workspace_id = $2', [
+        CAROL,
+        aliceWs,
+      ]),
     );
     expect(me).toEqual({ role: 'member' });
   });
