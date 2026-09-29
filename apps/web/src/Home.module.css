@@ -536,8 +536,13 @@
 /* ------------------------------------------------------------ sections */
 
 .section {
-  padding-top: 120px;
-  padding-bottom: 120px;
+  padding-top: 96px;
+  padding-bottom: 96px;
+}
+
+/* Two light sections in a row share one gap instead of stacking both paddings. */
+.section + .section {
+  padding-top: 0;
 }
 
 .sectionHead {
@@ -545,7 +550,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 40px;
-  margin-bottom: 56px;
+  margin-bottom: 44px;
 }
 
 .stackCol {
@@ -859,7 +864,7 @@
 /* ------------------------------------------------------------ cta + footer */
 
 .cta {
-  margin-bottom: 120px;
+  margin-bottom: 96px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1617,5 +1622,104 @@
   .ctaActions a {
     flex: none;
     justify-content: center;
+  }
+}
+
+/* Tighter rhythm on phones. */
+@media (max-width: 700px) {
+  .section {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+  .section + .section {
+    padding-top: 0;
+  }
+  .cta {
+    margin-bottom: 48px;
+    padding: 32px 22px;
+    gap: 24px;
+  }
+  .ctaTitle {
+    font-size: 32px;
+  }
+  .ctaText {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .footerInner {
+    padding-top: 40px;
+    padding-bottom: 32px;
+    gap: 32px;
+  }
+  .footerTop {
+    gap: 28px;
+  }
+}
+
+/* ------------------------------------------------------------ footer extras */
+
+.footerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.footerStart,
+.footerDocs {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footerStart {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.footerStart:hover {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.footerDocs {
+  border: 1px solid #3a4044;
+  color: #ffffff;
+}
+
+.footerDocs:hover {
+  border-color: #5b625d;
+  color: #ffffff;
+}
+
+@media (max-width: 700px) {
+  .footerBrand {
+    gap: 12px;
+  }
+  .footerCols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .footerHead {
+    font-size: 13px;
+  }
+  .footerLink {
+    font-size: 13px;
+  }
+  .footerActions a {
+    flex: 1 1 140px;
+    justify-content: center;
+  }
+  .footerBottom {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
   }
 }

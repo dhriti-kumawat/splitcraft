@@ -508,7 +508,7 @@ function Capabilities() {
       className={`${styles.wrap} ${styles.section} ${styles.capabilities}`}
       aria-labelledby="cap-title"
     >
-      <div className={styles.stackCol} style={{ maxWidth: 720, marginBottom: 48 }}>
+      <div className={styles.stackCol} style={{ maxWidth: 720, marginBottom: 40 }}>
         <span className={styles.eyebrow}>And everything around it</span>
         <h2 className={styles.h2} id="cap-title">
           The details that make testing safe.
@@ -776,7 +776,7 @@ function Statistics() {
       className={`${styles.wrap} ${styles.section}`}
       aria-labelledby="stats-title"
     >
-      <div className={styles.stackCol} style={{ maxWidth: 760, marginBottom: 56 }}>
+      <div className={styles.stackCol} style={{ maxWidth: 760, marginBottom: 40 }}>
         <span className={styles.eyebrow}>Statistics</span>
         <h2 className={styles.h2} id="stats-title">
           Results you can defend in any review.
@@ -854,7 +854,7 @@ function HowItWorks() {
       className={`${styles.wrap} ${styles.section} ${styles.how}`}
       aria-labelledby="how-title"
     >
-      <div className={styles.stackCol} style={{ marginBottom: 48 }}>
+      <div className={styles.stackCol} style={{ marginBottom: 40 }}>
         <span className={styles.eyebrow}>How it works</span>
         <h2 className={styles.h2} id="how-title">
           Live in an afternoon.
@@ -945,6 +945,14 @@ function Footer() {
               A portfolio project by Dhriti Kumawat, built to understand how experimentation
               platforms work inside.
             </span>
+            <div className={styles.footerActions}>
+              <a className={styles.footerStart} href={`${DASHBOARD_URL}/signup`}>
+                Start free
+              </a>
+              <a className={styles.footerDocs} href="/docs/">
+                Read the docs
+              </a>
+            </div>
           </div>
           <nav className={styles.footerCols} aria-label="Footer">
             {cols.map((c) => (
@@ -964,7 +972,7 @@ function Footer() {
           </nav>
         </div>
         <div className={styles.footerBottom}>
-          <span>© 2026 Splitcraft</span>
+          <span>© {new Date().getFullYear()} Splitcraft</span>
           <span>Example numbers on this page come from a demo test, not a customer.</span>
         </div>
       </div>
