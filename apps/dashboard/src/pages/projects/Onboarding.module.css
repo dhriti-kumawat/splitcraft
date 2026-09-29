@@ -1,0 +1,154 @@
+.card {
+  margin-bottom: 20px;
+  padding: 20px 22px;
+  border-radius: 14px;
+  border: 1px solid #b9d8cc;
+  background: linear-gradient(180deg, var(--accent-soft), var(--surface) 70%);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.hide {
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-2);
+  font: 600 13px var(--font-ui);
+  cursor: pointer;
+}
+
+.hide:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.bar {
+  height: 6px;
+  margin: 14px 0 16px;
+  border-radius: 3px;
+  background: rgba(15, 107, 87, 0.12);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.current {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+}
+
+.mark {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface);
+  font: 700 12px var(--font-mono);
+  color: var(--muted);
+}
+
+.done .mark {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.current .mark {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.text {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.done .stepTitle {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: rgba(95, 102, 96, 0.4);
+}
+
+.stepText {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.action {
+  composes: button primary from '../../components/Button.module.css';
+  flex-shrink: 0;
+  height: 32px;
+  font-size: 13px;
+}
+
+@media (max-width: 719px) {
+  .current {
+    flex-wrap: wrap;
+  }
+  .action {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar span {
+    transition: none;
+  }
+}

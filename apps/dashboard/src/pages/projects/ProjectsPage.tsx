@@ -17,6 +17,7 @@ import { TopBarActions } from '../../layout/TopBarActions';
 import { percent, summarize, timeAgo } from '../../lib/experiments';
 import { compactNumber } from '../../lib/format';
 import { NewProjectDrawer } from './NewProjectDrawer';
+import { Onboarding } from './Onboarding';
 import styles from './ProjectsPage.module.css';
 
 const TONES = [styles.tone0, styles.tone1, styles.tone2];
@@ -51,6 +52,7 @@ export function ProjectsPage() {
           title="Projects"
           description="One project per product. Each has its own snippet, audiences, goals and experiments."
         />
+        <Onboarding onNewProject={() => setDrawerOpen(true)} />
         {user.role === 'owner' && isDefaultName(workspace.name) && (
           <NameWorkspace key={workspace.id} />
         )}
