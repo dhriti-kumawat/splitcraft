@@ -118,3 +118,29 @@ describe('sampleSizePerVariant', () => {
     expect(sampleSizePerVariant(0.05, 0)).toBe(Infinity);
   });
 });
+
+describe('compareMeans', () => {
+  it('matches a hand-computed Welch comparison', async () => {
+    const { compareMeans } = await import('./stats');
+    // Revenue per visitor: control 10.0 (sd 20, n 1000), variant 11.5 (sd 22, n 1000).
+    const r = compareMeans(
+      { n: 1000, mean: 10, variance: 400 },
+      { n: 1000, mean: 11.5, variance: 484 },
+    );
+    const se = Math.sqrt(400 / 1000 + 484 / 1000);
+    expect(r.uplift).toBeCloseTo(0.15, 6);
+    expect(r.upliftLow).toBeCloseTo((1.5 - 1.959964 * se) / 10, 4);
+    expect(r.z).toBeCloseTo(1.5 / se, 6);
+    expect(r.chanceToWin).toBeGreaterThan(0.94);
+  });
+
+  it('handles zero variance', async () => {
+    const { compareMeans } = await import('./stats');
+    expect(
+      compareMeans({ n: 5, mean: 1, variance: 0 }, { n: 5, mean: 2, variance: 0 }).chanceToWin,
+    ).toBe(1);
+    expect(
+      compareMeans({ n: 5, mean: 1, variance: 0 }, { n: 5, mean: 1, variance: 0 }).chanceToWin,
+    ).toBe(0.5);
+  });
+});
