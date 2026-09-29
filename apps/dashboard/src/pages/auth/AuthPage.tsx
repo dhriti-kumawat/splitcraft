@@ -66,7 +66,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [caps, setCaps] = useState(false);
-  const [formError, setFormError] = useState('');
+  // A failed GitHub or Google login comes back as ?error=… (see RequireAuth).
+  const [formError, setFormError] = useState(() => {
+    const failed = mode === 'login' ? params.get('error') : null;
+    return failed ? MESSAGES.providerFailed(failed) : '';
+  });
   const [result, setResult] = useState<Result | null>(null);
   const [resendIn, setResendIn] = useState(0);
   // Set while a request we started is running, so the signed-in redirect below
