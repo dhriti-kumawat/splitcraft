@@ -25,5 +25,8 @@ Deno.serve(async (req) => {
   }
   if (data === -1) return json({ error: 'unknown project' }, 404);
   if (data === -2) return json({ error: 'origin not allowed for this project' }, 403);
+  if (data === -3) return json({ error: 'monthly event limit reached' }, 429);
+  if (data === -4)
+    return json({ error: 'too many events, slow down' }, 429, { 'retry-after': '60' });
   return empty(204);
 });

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Button } from '../components/Button';
 import { RequireAuth } from '../auth/RequireAuth';
 import { WorkspaceProvider } from '../data/WorkspaceProvider';
+import { fakeData } from '../test/fakeData';
 import { renderApp } from '../test/renderApp';
 import { AppShell } from './AppShell';
 import { TopBarActions } from './TopBarActions';
@@ -97,6 +98,17 @@ describe('sidebar', () => {
     expect(meter).toHaveAttribute('aria-valuenow', '48210');
     expect(meter).toHaveAttribute('aria-valuemax', '100000');
     expect(screen.getByText('48,210')).toBeInTheDocument();
+  });
+
+  it('says when the monthly event limit is reached', async () => {
+    const data = fakeData();
+    data.api.eventsThisMonth = async () => 100_000;
+    renderApp('/projects', { data: data.api });
+    expect(
+      await screen.findByText(
+        /Limit reached\. Experiments are paused and events aren't stored until/,
+      ),
+    ).toBeInTheDocument();
   });
 
   it('shows the signed-in user', async () => {
