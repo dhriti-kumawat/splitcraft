@@ -18,6 +18,8 @@ export interface StoredTargeting {
   where?: Json;
   how?: ConditionGroup[];
   when?: Json;
+  stay?: boolean;
+  waitForDataLayerMs?: number;
 }
 
 /** What `sdk_config_source()` returns. */
@@ -49,6 +51,8 @@ export interface SdkProjectConfig {
       where?: Json;
       how?: ConditionGroup[];
       when?: Json;
+      stay?: boolean;
+      waitForDataLayerMs?: number;
     };
   }>;
   goals: {
