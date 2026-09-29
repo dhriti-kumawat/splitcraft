@@ -1,12 +1,16 @@
+import type { ReactNode } from 'react';
+import type { Params } from 'react-router';
 import type { Project, Workspace } from '../data/api';
 
 export interface CrumbContext {
   workspace: Workspace;
   project?: Project;
+  params: Params;
 }
 
 export interface Crumb {
-  label: string;
+  /** Text, or a component that looks up a name (see CrumbNames). */
+  label: ReactNode;
   to?: string;
 }
 

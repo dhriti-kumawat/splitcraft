@@ -10,7 +10,7 @@ export function TopBar({ actionsRef }: { actionsRef: (el: HTMLDivElement | null)
   const crumbs: Crumb[] = [{ label: workspace.name, to: '/projects' }];
   for (const match of useMatches()) {
     const handle = match.handle as RouteHandle | undefined;
-    if (handle?.crumbs) crumbs.push(...handle.crumbs({ workspace, project }));
+    if (handle?.crumbs) crumbs.push(...handle.crumbs({ workspace, project, params: match.params }));
   }
 
   return (
@@ -20,7 +20,7 @@ export function TopBar({ actionsRef }: { actionsRef: (el: HTMLDivElement | null)
           {crumbs.map((crumb, i) => {
             const last = i === crumbs.length - 1;
             return (
-              <li key={`${i}-${crumb.label}`} className={styles.crumb}>
+              <li key={i} className={styles.crumb}>
                 {last ? (
                   <span className={styles.current} aria-current="page">
                     {crumb.label}
