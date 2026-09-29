@@ -141,7 +141,9 @@ export const routes: RouteObject[] = [
           },
           {
             path: 'settings',
-            element: <Placeholder title="Settings" step="a later step" />,
+            lazy: async () => ({
+              Component: (await import('./pages/projects/SettingsPage')).SettingsPage,
+            }),
             handle: crumb('Settings'),
           },
         ],

@@ -249,6 +249,27 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       return toProject(row);
     },
 
+    async updateProject(projectId, patch) {
+      const row: Record<string, unknown> = {};
+      if (patch.name !== undefined) row.name = patch.name;
+      if (patch.mainDomain !== undefined) row.main_domain = patch.mainDomain;
+      if (patch.allowedDomains !== undefined) row.allowed_domains = patch.allowedDomains;
+      return toProject(
+        check(
+          await supabase
+            .from('projects')
+            .update(row)
+            .eq('id', projectId)
+            .select(PROJECT_COLUMNS)
+            .single(),
+        ) as ProjectRow,
+      );
+    },
+
+    async deleteProject(projectId) {
+      check(await supabase.from('projects').delete().eq('id', projectId));
+    },
+
     async listExperiments(projectId) {
       const rows = check(
         await supabase

@@ -312,3 +312,20 @@ export function useDailyQuery(experimentId: string) {
     queryFn: () => api.experimentDaily(experimentId),
   });
 }
+
+export function useProjectMutations(workspaceId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => {
+    void client.invalidateQueries({ queryKey: keys.projects(workspaceId) });
+    void client.invalidateQueries({ queryKey: keys.overview(workspaceId) });
+  };
+  return {
+    update: useMutation({
+      mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof api.updateProject>[1] }) =>
+        api.updateProject(id, patch),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => api.deleteProject(id), onSuccess: refresh }),
+  };
+}
