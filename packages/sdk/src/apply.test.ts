@@ -31,6 +31,15 @@ describe('applyVariant', () => {
     expect(document.getElementById('from-variant')).not.toBeNull();
   });
 
+  it('passes extra helpers such as trackEvent to variant code', () => {
+    const trackEvent = vi.fn();
+    applyVariant(
+      { experimentKey: 'extra', variantKey: 'b', js: 'splitly.trackEvent("seen", { value: 1 })' },
+      { trackEvent },
+    );
+    expect(trackEvent).toHaveBeenCalledWith('seen', { value: 1 });
+  });
+
   it('runs only once per page', () => {
     (window as unknown as { __runs: number }).__runs = 0;
     const v = { experimentKey: 'once', variantKey: 'b', js: 'window.__runs++' };

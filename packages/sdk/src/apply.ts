@@ -13,8 +13,8 @@ export interface ApplyResult {
   error?: unknown;
 }
 
-/** Helpers variant code can call as `splitly.*`. */
-const variantApi = { waitForElement, onceInView, onRouteChange, injectStyles };
+/** Helpers variant code can call as `splitly.*`. The runtime adds `trackEvent`. */
+const helpers = { waitForElement, onceInView, onRouteChange, injectStyles };
 
 /** experimentKey → URL the variant JS last ran on. */
 const appliedOn = new Map<string, string>();
@@ -28,7 +28,7 @@ export function styleId(experimentKey: string): string {
  * route changes can re-apply it without double-running on the same page.
  * Errors in variant code are caught and returned, never thrown into the site.
  */
-export function applyVariant(v: VariantCode): ApplyResult {
+export function applyVariant(v: VariantCode, extra: Record<string, unknown> = {}): ApplyResult {
   const url = location.href;
   if (appliedOn.get(v.experimentKey) === url) return { applied: false };
   appliedOn.set(v.experimentKey, url);
@@ -36,7 +36,7 @@ export function applyVariant(v: VariantCode): ApplyResult {
   if (v.css) injectStyles(v.css, styleId(v.experimentKey));
   if (!v.js) return { applied: true };
   try {
-    new Function('splitly', v.js)(variantApi);
+    new Function('splitly', v.js)({ ...helpers, ...extra });
     return { applied: true };
   } catch (error) {
     console.error(`[splitly] ${v.experimentKey}/${v.variantKey}:`, error);
