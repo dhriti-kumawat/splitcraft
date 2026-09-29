@@ -53,6 +53,13 @@ describe('exposure', () => {
     ]);
   });
 
+  it("doesn't touch dataLayer when the project turned GA4 off", () => {
+    const t = createTracker(fakeQueue().queue, 'v_1', false);
+    t.exposure('checkout-cta', 'b');
+    t.trackEvent('book');
+    expect((window as unknown as { dataLayer?: unknown[] }).dataLayer).toBeUndefined();
+  });
+
   it('keeps the existing dataLayer entries', () => {
     (window as unknown as { dataLayer: unknown[] }).dataLayer = [{ event: 'gtm.js' }];
     createTracker(fakeQueue().queue, 'v_1').exposure('x', 'b');
