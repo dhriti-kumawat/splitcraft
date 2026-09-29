@@ -275,6 +275,14 @@ export interface MetricArm {
   viewers: number;
 }
 
+/** Primary-goal conversions per segment (device or traffic source) and variant. */
+export interface BreakdownRow {
+  segment: string;
+  variantKey: string;
+  visitors: number;
+  converters: number;
+}
+
 export interface DailyArm {
   day: string;
   variantKey: string;
@@ -309,6 +317,10 @@ export interface DataApi {
   projectOverview(workspaceId: string): Promise<ProjectStats[]>;
   workspaceActivity(workspaceId: string, limit: number): Promise<ActivityItem[]>;
   sessionSample(projectId: string): Promise<SessionSample>;
+  experimentBreakdown(
+    experimentId: string,
+    dimension: 'device' | 'source',
+  ): Promise<BreakdownRow[]>;
   eventsThisMonth(workspaceId: string): Promise<number>;
   createProject(project: NewProject): Promise<Project>;
   updateProject(

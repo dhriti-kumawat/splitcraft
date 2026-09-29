@@ -390,6 +390,21 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       }));
     },
 
+    async experimentBreakdown(experimentId, dimension) {
+      const rows = check(
+        await supabase.rpc('experiment_breakdown', {
+          p_experiment: experimentId,
+          p_dimension: dimension,
+        }),
+      ) as Array<{ segment: string; variant_key: string; visitors: number; converters: number }>;
+      return rows.map((r) => ({
+        segment: r.segment,
+        variantKey: r.variant_key,
+        visitors: r.visitors,
+        converters: r.converters,
+      }));
+    },
+
     async sessionSample(projectId) {
       const rows = check(
         await supabase.rpc('project_session_sample', { p_project: projectId, p_limit: 2000 }),

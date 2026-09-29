@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { fakeData, RESULTS } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
@@ -87,5 +88,24 @@ describe('results', () => {
     const data = fakeData();
     await open('trust', data);
     expect(await screen.findByText('Results appear here after launch.')).toBeInTheDocument();
+  });
+});
+
+describe('breakdown', () => {
+  it('shows the primary goal by device and by traffic source', async () => {
+    const user = userEvent.setup();
+    renderApp('/p/trip-demo/experiments/sticky/results');
+    const section = await screen.findByRole('region', { name: 'Book click by device' });
+    const mobile = await within(section).findByRole('row', { name: /Mobile/ });
+    expect(mobile).toHaveTextContent('4.94%');
+    expect(mobile).toHaveTextContent('5.81%');
+    expect(within(section).getByRole('row', { name: /Unknown/ })).toHaveTextContent(
+      'Too few visitors',
+    );
+    await user.click(within(section).getByRole('button', { name: 'Traffic source' }));
+    expect(
+      await screen.findByRole('region', { name: 'Book click by traffic source' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('row', { name: /Organic search/ })).toBeInTheDocument();
   });
 });

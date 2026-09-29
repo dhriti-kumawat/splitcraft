@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CumulativeChart } from '../../components/CumulativeChart';
+import { Breakdown } from './Breakdown';
 import type { ExperimentGoal, Metric } from '../../data/api';
 import { useDailyQuery, useGoalsQuery, useMetricsQuery, useResultsQuery } from '../../data/queries';
 import { SERIES } from '../../lib/chartColors';
@@ -248,6 +249,8 @@ export function ResultsPage() {
           />
         </section>
       )}
+
+      {unique && <Breakdown experiment={experiment} goalName={primaryMetric.name} />}
 
       {secondary.length > 0 && (
         <section className={styles.section} aria-labelledby="secondary-h">

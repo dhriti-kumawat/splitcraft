@@ -34,6 +34,8 @@ export const keys = {
   segments: (projectId: string) => ['segments', projectId] as const,
   saved: (kind: SavedKind, projectId: string) => ['saved', kind, projectId] as const,
   results: (experimentId: string) => ['results', experimentId] as const,
+  breakdown: (experimentId: string, dimension: string) =>
+    ['breakdown', experimentId, dimension] as const,
   daily: (experimentId: string) => ['daily', experimentId] as const,
   people: (workspaceId: string) => ['people', workspaceId] as const,
   invites: (workspaceId: string) => ['invites', workspaceId] as const,
@@ -67,6 +69,14 @@ export function useActivityQuery(workspaceId: string, limit: number) {
   return useQuery({
     queryKey: keys.activity(workspaceId, limit),
     queryFn: () => api.workspaceActivity(workspaceId, limit),
+  });
+}
+
+export function useBreakdownQuery(experimentId: string, dimension: 'device' | 'source') {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.breakdown(experimentId, dimension),
+    queryFn: () => api.experimentBreakdown(experimentId, dimension),
   });
 }
 
