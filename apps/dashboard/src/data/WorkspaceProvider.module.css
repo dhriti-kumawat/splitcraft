@@ -1,0 +1,20 @@
+.loading {
+  min-height: 100vh;
+  background: var(--ground);
+}
+
+.message {
+  max-width: 560px;
+  margin: 80px auto;
+  padding: 0 16px;
+  line-height: 1.5;
+}
+
+.message h1 {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+
+.message p {
+  color: var(--text-2);
+}

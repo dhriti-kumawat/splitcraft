@@ -207,7 +207,7 @@ describe('forgot password', () => {
       }
       await user.click(screen.getByRole('button', { name: 'Resend link' }));
       expect(calls.filter((c) => c.startsWith('reset:'))).toHaveLength(2);
-      expect(screen.getByRole('button', { name: /Resend link in \d+s/ })).toBeDisabled();
+      expect(await screen.findByRole('button', { name: /Resend link in \d+s/ })).toBeDisabled();
     } finally {
       vi.useRealTimers();
     }

@@ -11,6 +11,8 @@ import {
   TeamIcon,
 } from '../components/icons';
 import { Switcher } from '../components/Switcher';
+import { EVENT_LIMIT } from '../data/api';
+import { useEventsThisMonthQuery } from '../data/queries';
 import { initials, useCurrentProject, useWorkspace } from '../data/workspace';
 import styles from './Sidebar.module.css';
 
@@ -27,11 +29,12 @@ function Item(props: NavLinkProps) {
 
 /** 240 px dark sidebar from design/README.md "App shell". */
 export function Sidebar() {
-  const { user, workspace, projects } = useWorkspace();
+  const { user, workspace, workspaces, projects, selectWorkspace } = useWorkspace();
+  const events = useEventsThisMonthQuery(workspace.id);
+  const limit = EVENT_LIMIT[workspace.plan];
   const { api } = useAuth();
   const navigate = useNavigate();
   const project = useCurrentProject();
-  const usage = workspace.eventsThisMonth / workspace.eventsLimit;
   const base = project ? `/p/${project.id}` : '';
 
   return (
@@ -49,8 +52,15 @@ export function Sidebar() {
           </span>
         }
         title={workspace.name}
-        subtitle={`${workspace.plan === 'free' ? 'Free' : 'Pro'} plan · ${projects.length} projects`}
-        items={[{ id: workspace.id, to: '/projects', label: workspace.name }]}
+        subtitle={`${workspace.plan === 'free' ? 'Free' : 'Pro'} plan · ${projects.length} ${
+          projects.length === 1 ? 'project' : 'projects'
+        }`}
+        items={workspaces.map((w) => ({
+          id: w.id,
+          to: '/projects',
+          label: w.name,
+          onSelect: () => selectWorkspace(w.id),
+        }))}
         currentId={workspace.id}
       />
 
@@ -112,28 +122,34 @@ export function Sidebar() {
         </div>
       )}
 
-      <div className={styles.usage}>
-        <span className={styles.usageLabel} id="events-usage-label">
-          Events this month
-        </span>
-        <span className={`${styles.usageValue} mono`}>
-          {numberFormat.format(workspace.eventsThisMonth)}{' '}
-          <span className={styles.usageLimit}>/ {numberFormat.format(workspace.eventsLimit)}</span>
-        </span>
-        <div
-          className={styles.meter}
-          role="meter"
-          aria-labelledby="events-usage-label"
-          aria-valuemin={0}
-          aria-valuemax={workspace.eventsLimit}
-          aria-valuenow={workspace.eventsThisMonth}
-        >
-          <div
-            className={`${styles.meterFill} ${usage >= 0.9 ? styles.high : ''}`}
-            style={{ width: `${Math.min(100, usage * 100)}%` }}
-          />
+      {events.data !== undefined && (
+        <div className={styles.usage}>
+          <span className={styles.usageLabel} id="events-usage-label">
+            Events this month
+          </span>
+          <span className={`${styles.usageValue} mono`}>
+            {numberFormat.format(events.data)}
+            {limit !== null && (
+              <span className={styles.usageLimit}> / {numberFormat.format(limit)}</span>
+            )}
+          </span>
+          {limit !== null && (
+            <div
+              className={styles.meter}
+              role="meter"
+              aria-labelledby="events-usage-label"
+              aria-valuemin={0}
+              aria-valuemax={limit}
+              aria-valuenow={events.data}
+            >
+              <div
+                className={`${styles.meterFill} ${events.data / limit >= 0.9 ? styles.high : ''}`}
+                style={{ width: `${Math.min(100, (events.data / limit) * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       <div className={styles.user}>
         <span className={styles.avatar} aria-hidden="true">

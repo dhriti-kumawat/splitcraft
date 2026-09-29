@@ -8,7 +8,7 @@ const migrationsDir = new URL('../migrations/', import.meta.url);
  * `auth.uid()`, the `anon` / `authenticated` / `service_role` roles, and Supabase's
  * default grants. Real Supabase provides these; PGlite needs a stand-in.
  */
-const SUPABASE_STUB = `
+export const SUPABASE_STUB = `
 create schema auth;
 create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb);
 create function auth.uid() returns uuid language sql stable as $$
