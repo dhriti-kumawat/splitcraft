@@ -3,6 +3,9 @@ import { cleanup } from '@testing-library/react';
 
 afterEach(() => {
   cleanup();
+  // Tests must not inherit a selected workspace or other stored choices.
+  localStorage.clear();
+  sessionStorage.clear();
 });
 
 // Monaco loads from a CDN in the browser; tests use a plain textarea with the same props.

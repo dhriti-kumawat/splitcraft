@@ -199,3 +199,20 @@
   line-height: 1.4;
   color: var(--highlight);
 }
+
+.newWorkspace {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-top: 1px solid #2e3337;
+  border-radius: 0 0 6px 6px;
+  background: transparent;
+  color: var(--highlight);
+  font: 600 13px var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.newWorkspace:hover {
+  color: #ffffff;
+}

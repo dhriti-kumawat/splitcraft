@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StoredTargeting } from '../lib/targeting';
 import type {
   DataApi,
+  Invite,
   Experiment,
   ExperimentPatch,
   ExperimentStatus,
@@ -169,6 +170,26 @@ const metricColumns = (m: Partial<Omit<Metric, 'id'>>) => {
   return row;
 };
 
+interface InviteRow {
+  id: string;
+  email: string;
+  role: Invite['role'];
+  token: string;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+}
+
+const toInvite = (r: InviteRow): Invite => ({
+  id: r.id,
+  email: r.email,
+  role: r.role,
+  token: r.token,
+  createdAt: r.created_at,
+  expiresAt: r.expires_at,
+  acceptedAt: r.accepted_at,
+});
+
 function check<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message);
   return result.data as T;
@@ -190,6 +211,111 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         .filter((r) => r.workspaces)
         .sort((a, b) => a.workspaces.created_at.localeCompare(b.workspaces.created_at))
         .map((r) => ({ ...r.workspaces, role: r.role }));
+    },
+
+    async createWorkspace(name) {
+      const row = check(
+        await supabase.from('workspaces').insert({ name }).select('id').single(),
+      ) as { id: string };
+      return row.id;
+    },
+
+    async renameWorkspace(workspaceId, name) {
+      check(await supabase.from('workspaces').update({ name }).eq('id', workspaceId));
+    },
+
+    async deleteWorkspace(workspaceId) {
+      check(await supabase.from('workspaces').delete().eq('id', workspaceId));
+    },
+
+    async listPeople(workspaceId) {
+      const rows = check(
+        await supabase.rpc('workspace_people', { p_workspace: workspaceId }),
+      ) as Array<{
+        user_id: string;
+        email: string;
+        full_name: string | null;
+        role: Workspace['role'];
+        joined_at: string;
+      }>;
+      return rows.map((r) => ({
+        userId: r.user_id,
+        email: r.email,
+        name: r.full_name,
+        role: r.role,
+        joinedAt: r.joined_at,
+      }));
+    },
+
+    async setRole(workspaceId, userId, role) {
+      check(
+        await supabase
+          .from('workspace_members')
+          .update({ role })
+          .eq('workspace_id', workspaceId)
+          .eq('user_id', userId),
+      );
+    },
+
+    async removeMember(workspaceId, userId) {
+      check(
+        await supabase
+          .from('workspace_members')
+          .delete()
+          .eq('workspace_id', workspaceId)
+          .eq('user_id', userId),
+      );
+    },
+
+    async listInvites(workspaceId) {
+      const rows = check(
+        await supabase
+          .from('workspace_invites')
+          .select('id, email, role, token, created_at, expires_at, accepted_at')
+          .eq('workspace_id', workspaceId)
+          .is('accepted_at', null)
+          .order('created_at', { ascending: false }),
+      ) as InviteRow[];
+      return rows.map(toInvite);
+    },
+
+    async createInvite(workspaceId, email, role) {
+      const row = check(
+        await supabase
+          .from('workspace_invites')
+          .insert({ workspace_id: workspaceId, email, role })
+          .select('id, email, role, token, created_at, expires_at, accepted_at')
+          .single(),
+      ) as InviteRow;
+      return toInvite(row);
+    },
+
+    async revokeInvite(inviteId) {
+      check(await supabase.from('workspace_invites').delete().eq('id', inviteId));
+    },
+
+    async inviteDetails(token) {
+      const rows = check(await supabase.rpc('invite_details', { p_token: token })) as Array<{
+        workspace_name: string;
+        email: string;
+        role: Invite['role'];
+        expired: boolean;
+        accepted: boolean;
+      }>;
+      const r = rows[0];
+      return r
+        ? {
+            workspaceName: r.workspace_name,
+            email: r.email,
+            role: r.role,
+            expired: r.expired,
+            accepted: r.accepted,
+          }
+        : null;
+    },
+
+    async acceptInvite(token) {
+      return check(await supabase.rpc('accept_invite', { p_token: token })) as string;
     },
 
     async listProjects(workspaceId) {

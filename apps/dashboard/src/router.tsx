@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
 import { AuthPage } from './pages/auth/AuthPage';
+import { InvitePage } from './pages/team/InvitePage';
 import { MetricsPage } from './pages/metrics/MetricsPage';
 import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
@@ -9,7 +10,6 @@ import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { Placeholder } from './pages/Placeholder';
 import { ProjectRoute } from './pages/ProjectRoute';
 import { InstallPage } from './pages/projects/InstallPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
@@ -27,6 +27,14 @@ export const routes: RouteObject[] = [
   { path: 'forgot-password', element: <AuthPage key="forgot" mode="forgot" /> },
   { path: 'reset-password', element: <AuthPage key="reset" mode="reset" /> },
   {
+    path: 'invite/:token',
+    element: (
+      <RequireAuth>
+        <InvitePage />
+      </RequireAuth>
+    ),
+  },
+  {
     element: (
       <RequireAuth>
         <WorkspaceProvider>
@@ -38,8 +46,15 @@ export const routes: RouteObject[] = [
       { path: 'projects', element: <ProjectsPage />, handle: crumb('Projects') },
       {
         path: 'team',
-        element: <Placeholder title="Team" step="a later step" />,
+        lazy: async () => ({ Component: (await import('./pages/team/TeamPage')).TeamPage }),
         handle: crumb('Team'),
+      },
+      {
+        path: 'workspace',
+        lazy: async () => ({
+          Component: (await import('./pages/team/WorkspaceSettingsPage')).WorkspaceSettingsPage,
+        }),
+        handle: crumb('Workspace settings'),
       },
       {
         path: 'p/:projectId',

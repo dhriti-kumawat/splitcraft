@@ -10,6 +10,32 @@ export interface Workspace {
   role: Role;
 }
 
+export interface Person {
+  userId: string;
+  email: string;
+  name: string | null;
+  role: Role;
+  joinedAt: string;
+}
+
+export interface Invite {
+  id: string;
+  email: string;
+  role: Exclude<Role, 'owner'>;
+  token: string;
+  createdAt: string;
+  expiresAt: string;
+  acceptedAt: string | null;
+}
+
+export interface InviteDetails {
+  workspaceName: string;
+  email: string;
+  role: Exclude<Role, 'owner'>;
+  expired: boolean;
+  accepted: boolean;
+}
+
 export interface Project {
   id: string;
   workspaceId: string;
@@ -166,6 +192,19 @@ export const EVENT_LIMIT: Record<Workspace['plan'], number | null> = {
 export interface DataApi {
   listWorkspaces(userId: string): Promise<Workspace[]>;
   listProjects(workspaceId: string): Promise<Project[]>;
+  createWorkspace(name: string): Promise<string>;
+  renameWorkspace(workspaceId: string, name: string): Promise<void>;
+  deleteWorkspace(workspaceId: string): Promise<void>;
+  listPeople(workspaceId: string): Promise<Person[]>;
+  setRole(workspaceId: string, userId: string, role: Role): Promise<void>;
+  /** Remove a member, or leave when it's the signed-in user. */
+  removeMember(workspaceId: string, userId: string): Promise<void>;
+  listInvites(workspaceId: string): Promise<Invite[]>;
+  createInvite(workspaceId: string, email: string, role: Invite['role']): Promise<Invite>;
+  revokeInvite(inviteId: string): Promise<void>;
+  inviteDetails(token: string): Promise<InviteDetails | null>;
+  /** Returns the joined workspace's id. */
+  acceptInvite(token: string): Promise<string>;
   getProject(projectId: string): Promise<Project | null>;
   projectOverview(workspaceId: string): Promise<ProjectStats[]>;
   eventsThisMonth(workspaceId: string): Promise<number>;

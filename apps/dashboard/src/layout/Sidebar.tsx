@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { NavLink, useNavigate, type NavLinkProps } from 'react-router';
+import { NewWorkspaceDialog } from '../components/NewWorkspaceDialog';
 import { useAuth } from '../auth/context';
 import {
   AudiencesIcon,
@@ -44,6 +46,7 @@ export function Sidebar() {
   const events = useEventsThisMonthQuery(workspace.id);
   const limit = EVENT_LIMIT[workspace.plan];
   const { api } = useAuth();
+  const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
   const project = useCurrentProject();
   const base = project ? `/p/${project.id}` : '';
@@ -72,6 +75,11 @@ export function Sidebar() {
           label: w.name,
           onSelect: () => selectWorkspace(w.id),
         }))}
+        footer={
+          <button type="button" className={styles.newWorkspace} onClick={() => setCreating(true)}>
+            + New workspace
+          </button>
+        }
         currentId={workspace.id}
       />
 
@@ -83,6 +91,10 @@ export function Sidebar() {
         <Item to="/team">
           <TeamIcon />
           Team
+        </Item>
+        <Item to="/workspace">
+          <SettingsIcon />
+          Workspace settings
         </Item>
       </nav>
 
@@ -186,6 +198,13 @@ export function Sidebar() {
           Log out
         </button>
       </div>
+      {creating && (
+        <NewWorkspaceDialog
+          userId={user.id}
+          onCreated={selectWorkspace}
+          onClose={() => setCreating(false)}
+        />
+      )}
     </aside>
   );
 }
