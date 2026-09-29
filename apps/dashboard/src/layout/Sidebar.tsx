@@ -1,4 +1,5 @@
-import { NavLink, type NavLinkProps } from 'react-router';
+import { NavLink, useNavigate, type NavLinkProps } from 'react-router';
+import { useAuth } from '../auth/context';
 import {
   AudiencesIcon,
   ExperimentsIcon,
@@ -27,6 +28,8 @@ function Item(props: NavLinkProps) {
 /** 240 px dark sidebar from design/README.md "App shell". */
 export function Sidebar() {
   const { user, workspace, projects } = useWorkspace();
+  const { api } = useAuth();
+  const navigate = useNavigate();
   const project = useCurrentProject();
   const usage = workspace.eventsThisMonth / workspace.eventsLimit;
   const base = project ? `/p/${project.id}` : '';
@@ -140,6 +143,16 @@ export function Sidebar() {
           <span className={styles.userName}>{user.name}</span>
           <span className={styles.userRole}>{user.role}</span>
         </span>
+        <button
+          type="button"
+          className={styles.logout}
+          onClick={async () => {
+            await api.signOut();
+            navigate('/login');
+          }}
+        >
+          Log out
+        </button>
       </div>
     </aside>
   );
