@@ -6,3 +6,12 @@ export { evaluateTargeting, type Targeting, type TargetingContext } from './targ
 export { injectStyles, onceInView, onRouteChange, waitForElement } from './helpers';
 export { applyVariant, removeVariant, type VariantCode } from './apply';
 export { hidePage } from './antiflicker';
+export {
+  createQueue,
+  createTracker,
+  trackClicks,
+  trackPageviews,
+  type ClickGoal,
+  type PageviewGoal,
+  type Tracker,
+} from './tracking';
