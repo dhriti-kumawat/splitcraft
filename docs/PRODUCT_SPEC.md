@@ -196,7 +196,7 @@ page_sets(id, project_id, name, rules jsonb)
 metrics(id, project_id, name, event_key, source, source_config jsonb, measure, measure_config jsonb)
 experiments(id, project_id, key, name, hypothesis, status, traffic_pct,
             targeting jsonb,   -- {who:{mode,segmentIds}, where:[...], how:{mode,rules}, when:{...}}
-            primary_metric_id, planned_sample, started_at, ended_at)
+            primary_metric_id, planned_sample, started_at, ended_at, archived_at)
 experiment_metrics(experiment_id, metric_id, role)   -- 'secondary' | 'guardrail', limit jsonb
 variants(id, experiment_id, key, name, weight, js, css, version)
 variant_versions(id, variant_id, js, css, note, created_at)
