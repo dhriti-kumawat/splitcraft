@@ -120,9 +120,9 @@ export const CloseIcon = (p: IconProps) => (
 );
 
 export const MoreIcon = (p: IconProps) => (
-  <Icon size={18} stroke="none" fill="currentColor" {...p}>
-    <circle cx="4.5" cy="10" r="1.6" />
-    <circle cx="10" cy="10" r="1.6" />
-    <circle cx="15.5" cy="10" r="1.6" />
+  <Icon size={20} stroke="none" fill="currentColor" {...p}>
+    <circle cx="4" cy="10" r="2" />
+    <circle cx="10" cy="10" r="2" />
+    <circle cx="16" cy="10" r="2" />
   </Icon>
 );
