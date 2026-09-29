@@ -5,6 +5,7 @@ import { AuthPage } from './pages/auth/AuthPage';
 import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
+import { VariantsPage } from './pages/experiments/VariantsPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -61,10 +62,7 @@ export const routes: RouteObject[] = [
                 children: [
                   { index: true, element: <Navigate to="basics" replace /> },
                   { path: 'basics', element: <BasicsPage /> },
-                  {
-                    path: 'variants',
-                    element: <Placeholder title="Variants & code" step="feat/variant-editor" />,
-                  },
+                  { path: 'variants', element: <VariantsPage /> },
                   {
                     path: 'targeting',
                     element: <Placeholder title="Targeting" step="feat/targeting" />,

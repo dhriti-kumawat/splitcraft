@@ -143,6 +143,21 @@ describe('start', () => {
     expect(ran()).toBe(1);
   });
 
+  it('lets variant code send events with splitly.trackEvent', async () => {
+    runtime = start(
+      config([
+        exp({
+          variants: [
+            { key: 'b', name: 'B', weight: 1, js: 'splitly.trackEvent("trust_badges_seen")' },
+          ],
+        }),
+      ]),
+    );
+    await settle();
+    const goals = (await sentEvents()).filter((e) => e.type === 'goal');
+    expect(goals.map((g) => g.key)).toEqual(['trust_badges_seen']);
+  });
+
   it('tracks click goals and trackEvent calls', async () => {
     document.body.innerHTML = '<button class="book">Book now</button>';
     runtime = start(config([], { goals: { clicks: [{ key: 'book_click', selector: '.book' }] } }));

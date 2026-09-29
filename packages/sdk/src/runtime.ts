@@ -115,12 +115,10 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
       qa.setExperiment(exp.key, null);
       return;
     }
-    applyVariant({
-      experimentKey: exp.key,
-      variantKey: variant.key,
-      js: variant.js,
-      css: variant.css,
-    });
+    applyVariant(
+      { experimentKey: exp.key, variantKey: variant.key, js: variant.js, css: variant.css },
+      { trackEvent: tracker.trackEvent },
+    );
     if (tracker.exposure(exp.key, variant.key)) recordExposure(st, exp.key, Date.now());
     qa.setExperiment(exp.key, {
       key: exp.key,

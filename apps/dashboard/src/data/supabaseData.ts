@@ -315,6 +315,31 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       check(await supabase.from('variants').update(patch).eq('id', variantId));
     },
 
+    async listVariantVersions(variantId) {
+      const rows = check(
+        await supabase
+          .from('variant_versions')
+          .select('id, js, css, note, created_at')
+          .eq('variant_id', variantId)
+          .order('created_at', { ascending: false }),
+      ) as Array<{ id: string; js: string; css: string; note: string; created_at: string }>;
+      return rows.map((r) => ({
+        id: r.id,
+        js: r.js,
+        css: r.css,
+        note: r.note,
+        createdAt: r.created_at,
+      }));
+    },
+
+    async addVariant(experimentId, variant) {
+      check(await supabase.from('variants').insert({ experiment_id: experimentId, ...variant }));
+    },
+
+    async deleteVariant(variantId) {
+      check(await supabase.from('variants').delete().eq('id', variantId));
+    },
+
     async listMetrics(projectId) {
       const rows = check(
         await supabase
