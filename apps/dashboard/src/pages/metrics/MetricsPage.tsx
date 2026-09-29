@@ -14,6 +14,8 @@ const SOURCE_PARAM: Record<string, string> = {
   custom_js: 'custom-js',
   datalayer: 'datalayer',
   transaction: 'transaction',
+  browsing: 'browsing',
+  web_vitals: 'web-vitals',
 };
 
 /** Project › Metrics: every metric, and where it's used. */

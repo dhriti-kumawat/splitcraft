@@ -17,6 +17,8 @@ const TYPE: Record<Metric['source'], string> = {
   custom_js: 'Custom event',
   datalayer: 'dataLayer',
   transaction: 'Transaction',
+  browsing: 'Browsing',
+  web_vitals: 'Web Vitals',
 };
 
 function source(m: Metric): string {
@@ -220,6 +222,12 @@ export function GoalsPage() {
             name: 'dataLayer event',
             text: 'Any event your site or GTM pushes',
           },
+          { source: 'browsing', name: 'Browsing', text: 'Bounce, pages per visitor, time on site' },
+          {
+            source: 'web-vitals',
+            name: 'Web Vitals',
+            text: 'LCP, INP, CLS per variant, as guardrails',
+          },
         ].map((t) => (
           <Link
             key={t.name}
@@ -231,19 +239,6 @@ export function GoalsPage() {
               <span className={styles.gd}>{t.text}</span>
             </span>
           </Link>
-        ))}
-        {[
-          { name: 'Browsing', text: 'Bounce, pages per session, time on site' },
-          { name: 'Web Vitals', text: 'LCP, INP, CLS per variant, as guardrails' },
-        ].map((t) => (
-          <span key={t.name} className={`${styles.goalType} ${styles.off}`} aria-disabled="true">
-            <span>
-              <span className={styles.gn}>{t.name}</span>
-              <span className={styles.gd}>
-                {t.text}. Coming later: the SDK doesn't collect this yet.
-              </span>
-            </span>
-          </span>
         ))}
         <span className={styles.sub}>
           Action and custom-event goals only count from launch. Add them before you launch.

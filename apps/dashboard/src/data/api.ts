@@ -238,7 +238,8 @@ export interface Metric {
   projectId: string;
   name: string;
   eventKey: string;
-  source: 'click' | 'pageview' | 'custom_js' | 'datalayer' | 'transaction';
+  source:
+    'click' | 'pageview' | 'custom_js' | 'datalayer' | 'transaction' | 'browsing' | 'web_vitals';
   sourceConfig: Record<string, unknown>;
   measure: 'unique' | 'total' | 'sum' | 'value_per_conversion' | 'ctr' | 'time_to_click';
   measureConfig: Record<string, unknown>;

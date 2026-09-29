@@ -19,6 +19,8 @@ export const SOURCES: Array<{ id: Metric['source']; label: string; available: bo
   { id: 'custom_js', label: 'Custom JS', available: true },
   { id: 'datalayer', label: 'dataLayer', available: true },
   { id: 'transaction', label: 'Transaction', available: true },
+  { id: 'browsing', label: 'Browsing', available: true },
+  { id: 'web_vitals', label: 'Web Vitals', available: true },
 ];
 
 export const MEASURES: Record<Metric['measure'], { label: string; text: string }> = {
@@ -141,3 +143,53 @@ export function metricDetail(m: Metric): string {
   }
   return `splitcraft.trackEvent('${m.eventKey}') · ${how} · ${better}`;
 }
+
+/** Browsing measures: the SDK sends each under a fixed key; each has one natural measure. */
+export const BROWSING: Array<{
+  kind: 'engaged' | 'pages' | 'time' | 'return';
+  label: string;
+  text: string;
+  key: string;
+  measure: Metric['measure'];
+}> = [
+  {
+    kind: 'engaged',
+    label: 'Engaged visitors',
+    text: "Didn't bounce: a 2nd page, or 10 s on a page",
+    key: 'browse.engaged',
+    measure: 'unique',
+  },
+  {
+    kind: 'pages',
+    label: 'Pages per visitor',
+    text: 'Every page view counts',
+    key: 'browse.page',
+    measure: 'total',
+  },
+  {
+    kind: 'time',
+    label: 'Time on site',
+    text: 'Seconds pages were visible, per visitor',
+    key: 'browse.time',
+    measure: 'sum',
+  },
+  {
+    kind: 'return',
+    label: 'Returning visitors',
+    text: 'Came back for another session',
+    key: 'browse.return',
+    measure: 'unique',
+  },
+];
+
+/** Core Web Vitals: average per visitor, lower is better. Usually guardrails. */
+export const VITALS: Array<{
+  vital: 'lcp' | 'inp' | 'cls';
+  label: string;
+  text: string;
+  key: string;
+}> = [
+  { vital: 'lcp', label: 'LCP', text: 'Largest Contentful Paint, ms', key: 'vitals.lcp' },
+  { vital: 'inp', label: 'INP', text: 'Slowest interaction on the page, ms', key: 'vitals.inp' },
+  { vital: 'cls', label: 'CLS', text: 'Cumulative Layout Shift', key: 'vitals.cls' },
+];

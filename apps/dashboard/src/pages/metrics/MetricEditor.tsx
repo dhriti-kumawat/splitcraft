@@ -11,6 +11,7 @@ import { useCurrentProject } from '../../data/workspace';
 import { URL_OPS } from '../../lib/conditions';
 import { syntaxError } from '../../lib/launch';
 import {
+  BROWSING,
   clickCode,
   EVENT_KEY,
   eventKeyFor,
@@ -19,6 +20,7 @@ import {
   selectorHealth,
   SOURCES,
   trackerChecks,
+  VITALS,
   type Health,
 } from '../../lib/metrics';
 import type { UrlRule } from '../../lib/targeting';
@@ -30,6 +32,8 @@ const PARAM_SOURCE: Record<string, Metric['source']> = {
   'custom-js': 'custom_js',
   datalayer: 'datalayer',
   transaction: 'transaction',
+  browsing: 'browsing',
+  'web-vitals': 'web_vitals',
 };
 
 type Filter = { path: string; op: 'is' | 'is_not' | 'contains' | 'exists'; value: string };
@@ -116,21 +120,39 @@ function Form({
     idPath: str(cfg.idPath, TX_DEFAULTS.idPath),
     currencyPath: str(cfg.currencyPath, TX_DEFAULTS.currencyPath),
   });
+  const [browseKind, setBrowseKind] = useState<(typeof BROWSING)[number]['kind']>(
+    (str(cfg.kind) as (typeof BROWSING)[number]['kind']) || 'engaged',
+  );
+  const [vital, setVital] = useState<(typeof VITALS)[number]['vital']>(
+    (str(cfg.vital) as (typeof VITALS)[number]['vital']) || 'lcp',
+  );
+  const browse = BROWSING.find((b) => b.kind === browseKind)!;
+  const vitalInfo = VITALS.find((v) => v.vital === vital)!;
   const [measure, setMeasure] = useState<Metric['measure']>(metric?.measure ?? 'unique');
   const [direction, setDirection] = useState<'increase' | 'decrease'>(
-    metric?.measureConfig.direction === 'decrease' ? 'decrease' : 'increase',
+    metric?.measureConfig.direction === 'decrease' || (!metric && initialSource === 'web_vitals')
+      ? 'decrease'
+      : 'increase',
   );
   const [windowDays, setWindowDays] = useState(String(metric?.measureConfig.windowDays ?? 7));
   const [submitted, setSubmitted] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const ids = { name: useId(), key: useId(), selector: useId(), url: useId(), window: useId() };
 
-  const key = keyEdited ? eventKey : eventKeyFor(name);
+  // Browsing and Web Vitals use the SDK's fixed keys.
+  const fixedKey =
+    source === 'browsing' ? browse.key : source === 'web_vitals' ? vitalInfo.key : null;
+  const key = fixedKey ?? (keyEdited ? eventKey : eventKeyFor(name));
   // Parsing is cheap, so check on every change; save never waits on a stale result.
   const jsError = useMemo(() => syntaxError(code), [code]);
 
-  const allowed = measuresFor(source);
-  const measureNow = allowed.includes(measure) ? measure : 'unique';
+  const allowed: Array<Metric['measure']> =
+    source === 'browsing'
+      ? [browse.measure]
+      : source === 'web_vitals'
+        ? ['value_per_conversion']
+        : measuresFor(source);
+  const measureNow = allowed.includes(measure) ? measure : allowed[0]!;
   const errors = {
     name: name.trim() ? '' : 'Name the metric.',
     key: EVENT_KEY.test(key) ? '' : 'Use letters, numbers, _ . : or - (up to 100).',
@@ -182,19 +204,23 @@ function Form({
               }),
               ...(valuePath.trim() && { valuePath: valuePath.trim() }),
             }
-          : source === 'transaction'
-            ? {
-                event: tx.event.trim(),
-                valuePath: valuePath.trim() || TX_DEFAULTS.valuePath,
-                idPath: tx.idPath.trim() || TX_DEFAULTS.idPath,
-                currencyPath: tx.currencyPath.trim() || TX_DEFAULTS.currencyPath,
-              }
-            : {
-                code,
-                ...(pages.filter((p) => p.value.trim()).length && {
-                  pages: pages.filter((p) => p.value.trim()),
-                }),
-              };
+          : source === 'browsing'
+            ? { kind: browseKind }
+            : source === 'web_vitals'
+              ? { vital }
+              : source === 'transaction'
+                ? {
+                    event: tx.event.trim(),
+                    valuePath: valuePath.trim() || TX_DEFAULTS.valuePath,
+                    idPath: tx.idPath.trim() || TX_DEFAULTS.idPath,
+                    currencyPath: tx.currencyPath.trim() || TX_DEFAULTS.currencyPath,
+                  }
+                : {
+                    code,
+                    ...(pages.filter((p) => p.value.trim()).length && {
+                      pages: pages.filter((p) => p.value.trim()),
+                    }),
+                  };
 
   const save = () => {
     setSubmitted(true);
@@ -279,7 +305,11 @@ function Form({
                           ? 'Purchase'
                           : source === 'datalayer'
                             ? 'Added to cart'
-                            : 'Add-on selected'
+                            : source === 'browsing'
+                              ? browse.label
+                              : source === 'web_vitals'
+                                ? `${vitalInfo.label} (${vitalInfo.text.split(',')[0]})`
+                                : 'Add-on selected'
                   }
                   onChange={(e) => setName(e.target.value)}
                   aria-invalid={show('name')}
@@ -296,17 +326,20 @@ function Form({
                   Event key{' '}
                   <span className={styles.hint}>
                     ·{' '}
-                    {source === 'custom_js'
-                      ? 'must match your code'
-                      : keyEdited
-                        ? 'custom'
-                        : 'auto'}
+                    {fixedKey
+                      ? 'set by the SDK'
+                      : source === 'custom_js'
+                        ? 'must match your code'
+                        : keyEdited
+                          ? 'custom'
+                          : 'auto'}
                   </span>
                 </label>
                 <input
                   id={ids.key}
                   className={`${styles.input} ${styles.mono}`}
                   value={key}
+                  readOnly={fixedKey !== null}
                   onChange={(e) => {
                     setKeyEdited(true);
                     setEventKey(e.target.value);
@@ -551,6 +584,41 @@ function Form({
                   Each transaction id counts once, even if the thank-you page reloads.
                 </p>
               </>
+            )}
+
+            {(source === 'browsing' || source === 'web_vitals') && (
+              <div className={styles.field}>
+                <span className={styles.label} id="measure-kind">
+                  {source === 'browsing' ? 'What to measure' : 'Vital'}
+                </span>
+                <div className={styles.measures} role="radiogroup" aria-labelledby="measure-kind">
+                  {(source === 'browsing'
+                    ? BROWSING.map((b) => ({ id: b.kind, label: b.label, text: b.text }))
+                    : VITALS.map((v) => ({ id: v.vital, label: v.label, text: v.text }))
+                  ).map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={(source === 'browsing' ? browseKind : vital) === o.id}
+                      className={styles.measure}
+                      onClick={() =>
+                        source === 'browsing'
+                          ? setBrowseKind(o.id as typeof browseKind)
+                          : setVital(o.id as typeof vital)
+                      }
+                    >
+                      <span className={styles.measureTitle}>{o.label}</span>
+                      <span className={styles.measureText}>{o.text}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className={styles.note}>
+                  {source === 'browsing'
+                    ? 'Sent by the SDK on every page while an experiment uses it, so it adds events to your monthly allowance.'
+                    : 'Measured in the browser for each page load and sent when the page is hidden. Averaged per visitor; lower is better. Best as a guardrail.'}
+                </p>
+              </div>
             )}
 
             {source === 'custom_js' && (

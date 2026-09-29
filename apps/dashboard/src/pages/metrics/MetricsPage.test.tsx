@@ -248,3 +248,42 @@ describe('dataLayer and transaction metrics', () => {
     });
   });
 });
+
+describe('browsing and Web Vitals metrics', () => {
+  it('saves a Web Vitals metric with the SDK key, averaged, lower is better', async () => {
+    const user = userEvent.setup();
+    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=web-vitals');
+    await user.click(screen.getByRole('radio', { name: /INP/ }));
+    expect(screen.getByLabelText(/Event key/)).toHaveValue('vitals.inp');
+    expect(screen.getByLabelText(/Event key/)).toHaveAttribute('readonly');
+    await user.type(screen.getByLabelText('Name'), 'INP');
+    await user.click(screen.getByRole('button', { name: 'Create metric' }));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+    );
+    expect(metricsNow().at(-1)).toMatchObject({
+      source: 'web_vitals',
+      eventKey: 'vitals.inp',
+      sourceConfig: { vital: 'inp' },
+      measure: 'value_per_conversion',
+      measureConfig: { direction: 'decrease' },
+    });
+  });
+
+  it('saves a browsing metric with its natural measure', async () => {
+    const user = userEvent.setup();
+    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=browsing');
+    await user.click(screen.getByRole('radio', { name: /Time on site/ }));
+    await user.type(screen.getByLabelText('Name'), 'Time on site');
+    await user.click(screen.getByRole('button', { name: 'Create metric' }));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+    );
+    expect(metricsNow().at(-1)).toMatchObject({
+      source: 'browsing',
+      eventKey: 'browse.time',
+      sourceConfig: { kind: 'time' },
+      measure: 'sum',
+    });
+  });
+});
