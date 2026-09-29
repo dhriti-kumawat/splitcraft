@@ -1,8 +1,88 @@
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
+import { AppShell } from './layout/AppShell';
+import type { RouteHandle } from './layout/crumbs';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { Placeholder } from './pages/Placeholder';
+import { ProjectRoute } from './pages/ProjectRoute';
+import { ProjectsPage } from './pages/ProjectsPage';
 
-// Placeholder routes; real screens arrive in Phase 3 (see design/README.md).
-export const router = createBrowserRouter([
+const crumb = (label: string, to?: string): RouteHandle => ({ crumbs: () => [{ label, to }] });
+
+// Screen → route map from design/README.md.
+export const routes: RouteObject[] = [
   { path: '/', element: <Navigate to="/projects" replace /> },
-  { path: '/projects', element: <h1>Projects</h1> },
-  { path: '*', element: <h1>Page not found</h1> },
-]);
+  {
+    element: <AppShell />,
+    children: [
+      { path: 'projects', element: <ProjectsPage />, handle: crumb('Projects') },
+      {
+        path: 'team',
+        element: <Placeholder title="Team" step="a later step" />,
+        handle: crumb('Team'),
+      },
+      {
+        path: 'p/:projectId',
+        element: <ProjectRoute />,
+        handle: {
+          crumbs: ({ project }) =>
+            project ? [{ label: project.name, to: `/p/${project.id}/experiments` }] : [],
+        } satisfies RouteHandle,
+        children: [
+          { index: true, element: <Navigate to="experiments" replace /> },
+          {
+            path: 'experiments',
+            handle: crumb('Experiments'),
+            children: [
+              {
+                index: true,
+                element: <Placeholder title="Experiments" step="feat/experiments-list" />,
+              },
+              {
+                path: ':expId/*',
+                element: <Placeholder title="Experiment" step="feat/experiment-basics" />,
+                handle: crumb('Experiment'),
+              },
+            ],
+          },
+          {
+            path: 'audiences',
+            handle: crumb('Audiences'),
+            children: [
+              { index: true, element: <Placeholder title="Audiences" step="feat/segments" /> },
+              {
+                path: ':segmentId',
+                element: <Placeholder title="Segment" step="feat/segments" />,
+                handle: crumb('Segment'),
+              },
+            ],
+          },
+          {
+            path: 'metrics',
+            handle: crumb('Metrics'),
+            children: [
+              { index: true, element: <Placeholder title="Metrics" step="feat/metrics" /> },
+              {
+                path: 'new',
+                element: <Placeholder title="New metric" step="feat/metrics" />,
+                handle: crumb('New metric'),
+              },
+            ],
+          },
+          {
+            path: 'install',
+            element: <Placeholder title="Install" step="feat/projects" />,
+            handle: crumb('Install'),
+          },
+          {
+            path: 'settings',
+            element: <Placeholder title="Settings" step="a later step" />,
+            handle: crumb('Settings'),
+          },
+        ],
+      },
+      { path: '*', element: <NotFoundPage />, handle: crumb('Not found') },
+    ],
+  },
+];
+
+export const router = createBrowserRouter(routes);
