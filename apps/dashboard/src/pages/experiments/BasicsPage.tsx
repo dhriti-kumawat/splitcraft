@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router';
-import type { Experiment } from '../../data/api';
+import type { Experiment, Project } from '../../data/api';
 import {
   useGoalsQuery,
   useOverviewQuery,
@@ -8,7 +8,8 @@ import {
   useUpdateVariants,
 } from '../../data/queries';
 import { useWorkspace } from '../../data/workspace';
-import { launchChecks, qaDone } from '../../lib/launch';
+import { matchWhereUrl } from '../../../../../packages/sdk/src/targeting';
+import { launchChecks, qaDone, testPageUrl } from '../../lib/launch';
 import { sampleSizePerVariant } from '../../lib/stats';
 import { useExperiment } from './experimentContext';
 import styles from './BasicsPage.module.css';
@@ -22,7 +23,7 @@ export function BasicsPage() {
   return (
     <div className={styles.layout}>
       <div className={styles.main}>
-        <About experiment={experiment} />
+        <About experiment={experiment} project={project} />
         <TargetingSummary
           experiment={experiment}
           base={`/p/${project.id}/experiments/${experiment.id}`}
@@ -54,11 +55,18 @@ function useSaveOnBlur(experiment: Experiment) {
   return { update, status };
 }
 
-function About({ experiment }: { experiment: Experiment }) {
+function About({ experiment, project }: { experiment: Experiment; project: Project }) {
   const { update, status } = useSaveOnBlur(experiment);
   const [name, setName] = useState(experiment.name);
   const [hypothesis, setHypothesis] = useState(experiment.hypothesis);
-  const ids = { name: useId(), hyp: useId() };
+  const [page, setPage] = useState(experiment.previewUrl ?? '');
+  const ids = { name: useId(), hyp: useId(), page: useId() };
+  const pageResult = testPageUrl(page, project);
+  // Warn when the test page isn't in the experiment's WHERE rules: the variant won't show.
+  const outsideWhere =
+    pageResult.url !== null &&
+    !pageResult.error &&
+    !matchWhereUrl(pageResult.url, experiment.targeting.where);
   const nameError = name.trim() ? '' : 'The experiment needs a name.';
 
   return (
@@ -105,6 +113,35 @@ function About({ experiment }: { experiment: Experiment }) {
           onChange={(e) => setHypothesis(e.target.value)}
           onBlur={() => hypothesis !== experiment.hypothesis && update.mutate({ hypothesis })}
         />
+      </div>
+      <div className={styles.field}>
+        <label htmlFor={ids.page} className={styles.label}>
+          Test page <span className={styles.hint}>· opened by Preview on site</span>
+        </label>
+        <input
+          id={ids.page}
+          className={`${styles.input} mono`}
+          value={page}
+          placeholder={`/trips/norway or https://${project.mainDomain}/trips/norway`}
+          onChange={(e) => setPage(e.target.value)}
+          onBlur={() => {
+            if (!pageResult.error && pageResult.url !== experiment.previewUrl) {
+              update.mutate({ previewUrl: pageResult.url });
+              setPage(pageResult.url ?? '');
+            }
+          }}
+          aria-invalid={Boolean(pageResult.error)}
+          aria-describedby={`${ids.page}-hint`}
+        />
+        <span
+          id={`${ids.page}-hint`}
+          className={pageResult.error || outsideWhere ? styles.error : styles.hint}
+        >
+          {pageResult.error ??
+            (outsideWhere
+              ? "This page isn't in the experiment's WHERE rules, so the variant won't show there. Change the page or the targeting."
+              : `The page this test runs on. The snippet must be on it (install it site-wide). Empty: ${project.mainDomain}'s home page.`)}
+        </span>
       </div>
     </section>
   );

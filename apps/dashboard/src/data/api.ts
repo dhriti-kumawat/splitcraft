@@ -155,6 +155,8 @@ export interface Experiment {
   endedAt: string | null;
   /** Archived experiments are stopped and hidden from the list's usual filters. */
   archivedAt: string | null;
+  /** The page it runs on, opened by "Preview on site". Null: the home page. */
+  previewUrl: string | null;
   /** Set when a crossed guardrail paused it automatically (it isn't paused again after). */
   autoPaused: AutoPause | null;
   createdAt: string;
@@ -195,6 +197,7 @@ export type ExperimentPatch = Partial<
     | 'startedAt'
     | 'endedAt'
     | 'archivedAt'
+    | 'previewUrl'
   >
 >;
 

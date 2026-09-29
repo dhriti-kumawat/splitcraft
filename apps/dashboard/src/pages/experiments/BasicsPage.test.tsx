@@ -233,3 +233,41 @@ describe('launching', () => {
     ]);
   });
 });
+
+describe('test page', () => {
+  it('saves the page and uses it for Preview on site', async () => {
+    const user = userEvent.setup();
+    const { patches } = await open();
+    const field = screen.getByLabelText(/Test page/);
+    await user.type(field, '/trips/norway');
+    await user.tab();
+    await vi.waitFor(() =>
+      expect(patches.at(-1)).toMatchObject({
+        patch: { previewUrl: 'https://mytrips.dev/trips/norway' },
+      }),
+    );
+    expect(screen.getByRole('link', { name: 'Preview on site' })).toHaveAttribute(
+      'href',
+      'https://mytrips.dev/trips/norway?splitcraft_force=trust%3Ab',
+    );
+  });
+
+  it('refuses other sites and warns about pages outside WHERE', async () => {
+    const user = userEvent.setup();
+    await open(
+      '/p/trip-demo/experiments/trust/basics',
+      withExperiments({
+        ...EXPERIMENTS.find((e) => e.id === 'trust')!,
+        targeting: { where: { include: [{ op: 'matches', value: '/trips/*' }] } },
+      }),
+    );
+    const field = screen.getByLabelText(/Test page/);
+    await user.type(field, 'https://other.example/x');
+    expect(
+      screen.getByText(/other\.example isn't one of this project's domains/),
+    ).toBeInTheDocument();
+    await user.clear(field);
+    await user.type(field, '/checkout');
+    expect(screen.getByText(/isn't in the experiment's WHERE rules/)).toBeInTheDocument();
+  });
+});
