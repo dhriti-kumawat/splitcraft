@@ -12,6 +12,7 @@ describe('toProject', () => {
         public_key: 'prj_x',
         installed_at: null,
         created_at: '2026-09-29T00:00:00Z',
+        settings: { spa: false },
       }),
     ).toEqual({
       id: 'p1',
@@ -22,6 +23,8 @@ describe('toProject', () => {
       publicKey: 'prj_x',
       installedAt: null,
       createdAt: '2026-09-29T00:00:00Z',
+      // Missing switches are on.
+      settings: { antiFlicker: true, spa: false, ga4: true },
     });
   });
 });

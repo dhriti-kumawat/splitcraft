@@ -152,9 +152,7 @@ docs                product spec, decisions, build plan
 Things the designs or spec describe that are not built yet:
 
 - dataLayer, transaction, browsing and Web Vitals metrics (the SDK doesn't collect them).
-- Automatic pausing when a guardrail is crossed (results flag it; pausing is manual).
-- Reach estimates before launch, "pick on page" and a Chrome preview extension (planned as v1.1).
-- Rate limiting on the events endpoint, and the visitor's country in the config.
-- The anti-flicker / SPA / GA4 toggles per project (the SDK always does all three).
+- The visitor's country in the config.
+- "Pick on page" and a Chrome preview extension (planned as v1.1).
 
 `docs/DECISIONS.md` explains the choices behind these and the rest of the design.

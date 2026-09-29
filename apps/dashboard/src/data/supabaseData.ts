@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StoredTargeting } from '../lib/targeting';
 import type {
+  ProjectSettings,
   SessionPing,
   ActivityItem,
   Saved,
@@ -27,10 +28,11 @@ interface ProjectRow {
   public_key: string;
   installed_at: string | null;
   created_at: string;
+  settings: Partial<ProjectSettings> | null;
 }
 
 const PROJECT_COLUMNS =
-  'id, workspace_id, name, main_domain, allowed_domains, public_key, installed_at, created_at';
+  'id, workspace_id, name, main_domain, allowed_domains, public_key, installed_at, created_at, settings';
 
 export function toProject(row: ProjectRow): Project {
   return {
@@ -42,6 +44,11 @@ export function toProject(row: ProjectRow): Project {
     publicKey: row.public_key,
     installedAt: row.installed_at,
     createdAt: row.created_at,
+    settings: {
+      antiFlicker: row.settings?.antiFlicker !== false,
+      spa: row.settings?.spa !== false,
+      ga4: row.settings?.ga4 !== false,
+    },
   };
 }
 
@@ -434,6 +441,7 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       if (patch.name !== undefined) row.name = patch.name;
       if (patch.mainDomain !== undefined) row.main_domain = patch.mainDomain;
       if (patch.allowedDomains !== undefined) row.allowed_domains = patch.allowedDomains;
+      if (patch.settings !== undefined) row.settings = patch.settings;
       return toProject(
         check(
           await supabase

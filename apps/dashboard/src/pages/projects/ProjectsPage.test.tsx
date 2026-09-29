@@ -314,3 +314,28 @@ describe('best uplift and recent activity', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('SDK switches', () => {
+  it('saves each switch and updates the snippet for anti-flicker', async () => {
+    const user = userEvent.setup();
+    const data = fakeData();
+    renderApp('/p/trip-demo/install', { data: data.api });
+    const spa = await screen.findByRole('switch', { name: 'Single-page app mode' });
+    expect(spa).toHaveAttribute('aria-checked', 'true');
+    await user.click(spa);
+    await vi.waitFor(() =>
+      expect(data.projectsNow().find((p) => p.id === 'trip-demo')!.settings.spa).toBe(false),
+    );
+    expect(screen.getByRole('switch', { name: 'Single-page app mode' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+
+    expect(screen.getByLabelText('Install code')).not.toHaveTextContent('data-antiflicker');
+    await user.click(screen.getByRole('switch', { name: 'Anti-flicker' }));
+    expect(await screen.findByText(/copy the updated code/)).toBeInTheDocument();
+    await vi.waitFor(() =>
+      expect(screen.getByLabelText('Install code')).toHaveTextContent('data-antiflicker="off"'),
+    );
+  });
+});

@@ -1,5 +1,6 @@
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
-import type { Project } from '../../data/api';
+import type { Project, ProjectSettings } from '../../data/api';
+import { useProjectMutations } from '../../data/queries';
 import { SUPABASE_URL } from '../../lib/env';
 import {
   configUrl,
@@ -21,6 +22,7 @@ export function InstallPanel({ project }: { project: Project }) {
     sdkUrl: SDK_URL,
     publicKey: project.publicKey,
     configUrl: configUrl(SUPABASE_URL, project.publicKey),
+    antiFlicker: project.settings.antiFlicker,
   });
 
   const copy = async () => {
@@ -87,6 +89,7 @@ export function InstallPanel({ project }: { project: Project }) {
           {copied === 'copied' ? 'Install code copied' : ''}
         </span>
       </div>
+      <SdkSwitches project={project} />
       {SDK_URL_IS_PLACEHOLDER && (
         <p className={styles.warn}>
           The SDK isn't hosted yet, so <span className="mono">{SDK_URL}</span> is a placeholder. Set{' '}
@@ -104,5 +107,62 @@ export function InstallStatus({ installed }: { installed: boolean }) {
       <span className={styles.dot} aria-hidden="true" />
       {installed ? 'Snippet live: first ping received' : 'Listening for first ping…'}
     </span>
+  );
+}
+
+const SWITCHES: Array<{ key: keyof ProjectSettings; label: string; hint: string }> = [
+  { key: 'antiFlicker', label: 'Anti-flicker', hint: 'Hide page until variants apply, max 400 ms' },
+  { key: 'spa', label: 'Single-page app mode', hint: 'Re-check targeting on every route change' },
+  { key: 'ga4', label: 'Send events to GA4', hint: 'Push exposures to window.dataLayer' },
+];
+
+/** Per-project SDK switches, saved as soon as they change. */
+function SdkSwitches({ project }: { project: Project }) {
+  const { update } = useProjectMutations(project.workspaceId);
+  // Optimistic: show the new state while it saves; roll back if saving fails.
+  const [pending, setPending] = useState<ProjectSettings | null>(null);
+  const settings = pending ?? project.settings;
+  const toggle = (key: keyof ProjectSettings) => {
+    const next = { ...settings, [key]: !settings[key] };
+    setPending(next);
+    update.mutate(
+      { id: project.id, patch: { settings: next } },
+      { onSettled: () => setPending(null) },
+    );
+  };
+  return (
+    <div className={styles.switches} role="group" aria-label="SDK options">
+      {SWITCHES.map((s) => (
+        <div key={s.key} className={styles.switchRow}>
+          <span className={styles.switchText}>
+            <span className={styles.switchLabel} id={`${project.id}-${s.key}`}>
+              {s.label}
+            </span>
+            <span className={styles.switchHint}>{s.hint}</span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={settings[s.key]}
+            aria-labelledby={`${project.id}-${s.key}`}
+            className={styles.switch}
+            onClick={() => toggle(s.key)}
+          >
+            <span className={styles.knob} aria-hidden="true" />
+          </button>
+        </div>
+      ))}
+      {update.isError ? (
+        <p role="alert" className={styles.warn}>
+          Couldn't save: {update.error.message}
+        </p>
+      ) : (
+        !settings.antiFlicker && (
+          <p className={styles.note}>
+            Anti-flicker is set on the snippet: copy the updated code to your site.
+          </p>
+        )
+      )}
+    </div>
   );
 }

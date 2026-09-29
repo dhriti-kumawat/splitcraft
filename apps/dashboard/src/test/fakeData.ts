@@ -32,6 +32,7 @@ const project = (p: Partial<Project> & Pick<Project, 'id' | 'name' | 'mainDomain
   publicKey: `prj_${p.id.replace(/-/g, '').padEnd(32, '0').slice(0, 32)}`,
   installedAt: '2026-09-01T10:00:00Z',
   createdAt: '2026-09-01T09:00:00Z',
+  settings: { antiFlicker: true, spa: true, ga4: true },
   ...p,
 });
 

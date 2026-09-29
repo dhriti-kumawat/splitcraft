@@ -11,6 +11,8 @@ export interface SnippetValues {
   sdkUrl: string;
   publicKey: string;
   configUrl: string;
+  /** Default on; off adds `data-antiflicker="off"`. */
+  antiFlicker?: boolean;
 }
 
 /** Where the SDK file is served from. Placeholder until the SDK is hosted (see Install page). */
@@ -28,6 +30,7 @@ export function snippet(target: InstallTarget, v: SnippetValues): string {
     `src="${v.sdkUrl}"`,
     `data-project="${v.publicKey}"`,
     `data-config="${v.configUrl}"`,
+    ...(v.antiFlicker === false ? ['data-antiflicker="off"'] : []),
   ];
   const tag = (indent: string) =>
     `<script\n${attrs.map((a) => `${indent}${a}`).join('\n')}\n${indent}async\n></script>`;
