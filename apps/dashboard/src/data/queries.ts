@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ConditionGroup } from '../lib/targeting';
 import type {
   Experiment,
@@ -10,6 +10,7 @@ import type {
   NewProject,
   Role,
   VariantPatch,
+  VariantStats,
 } from './api';
 import { useData } from './context';
 
@@ -18,6 +19,7 @@ export const keys = {
   projects: (workspaceId: string) => ['projects', workspaceId] as const,
   project: (projectId: string) => ['project', projectId] as const,
   overview: (workspaceId: string) => ['overview', workspaceId] as const,
+  activity: (workspaceId: string, limit: number) => ['activity', workspaceId, limit] as const,
   events: (workspaceId: string) => ['eventsThisMonth', workspaceId] as const,
   experiments: (projectId: string) => ['experiments', projectId] as const,
   experimentStats: (projectId: string) => ['experimentStats', projectId] as const,
@@ -53,6 +55,14 @@ export function useOverviewQuery(workspaceId: string) {
   return useQuery({
     queryKey: keys.overview(workspaceId),
     queryFn: () => api.projectOverview(workspaceId),
+  });
+}
+
+export function useActivityQuery(workspaceId: string, limit: number) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.activity(workspaceId, limit),
+    queryFn: () => api.workspaceActivity(workspaceId, limit),
   });
 }
 
@@ -98,6 +108,34 @@ export function useExperimentsQuery(projectId: string) {
   });
 }
 
+/** Experiments (and optionally their stats) for several projects, keyed by project id. */
+export function useExperimentsByProject(
+  projectIds: string[],
+  { stats = false, enabled = true } = {},
+) {
+  const api = useData();
+  return useQueries({
+    queries: projectIds.flatMap((id) => [
+      { queryKey: keys.experiments(id), queryFn: () => api.listExperiments(id), enabled },
+      ...(stats
+        ? [{ queryKey: keys.experimentStats(id), queryFn: () => api.experimentStats(id), enabled }]
+        : []),
+    ]),
+    combine: (results) => {
+      const step = stats ? 2 : 1;
+      return Object.fromEntries(
+        projectIds.map((id, i) => [
+          id,
+          {
+            experiments: results[i * step]?.data as Experiment[] | undefined,
+            stats: stats ? (results[i * step + 1]?.data as VariantStats[] | undefined) : undefined,
+          },
+        ]),
+      );
+    },
+  });
+}
+
 export function useExperimentStatsQuery(projectId: string) {
   const api = useData();
   return useQuery({
@@ -131,9 +169,13 @@ export function useExperimentQuery(experimentId: string) {
   });
 }
 
-export function useMetricsQuery(projectId: string) {
+export function useMetricsQuery(projectId: string, enabled = true) {
   const api = useData();
-  return useQuery({ queryKey: keys.metrics(projectId), queryFn: () => api.listMetrics(projectId) });
+  return useQuery({
+    queryKey: keys.metrics(projectId),
+    queryFn: () => api.listMetrics(projectId),
+    enabled,
+  });
 }
 
 export function useGoalsQuery(experimentId: string) {
@@ -253,11 +295,12 @@ export function useEditVariants(experiment: Experiment) {
   return { add, remove };
 }
 
-export function useSegmentsQuery(projectId: string) {
+export function useSegmentsQuery(projectId: string, enabled = true) {
   const api = useData();
   return useQuery({
     queryKey: keys.segments(projectId),
     queryFn: () => api.listSegments(projectId),
+    enabled,
   });
 }
 

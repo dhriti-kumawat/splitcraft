@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StoredTargeting } from '../lib/targeting';
 import type {
+  ActivityItem,
   DataApi,
   Invite,
   Experiment,
@@ -337,6 +338,27 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         await supabase.from('projects').select(PROJECT_COLUMNS).eq('id', projectId).maybeSingle(),
       ) as ProjectRow | null;
       return row && toProject(row);
+    },
+
+    async workspaceActivity(workspaceId, limit) {
+      const rows = check(
+        await supabase.rpc('workspace_activity', { p_workspace: workspaceId, p_limit: limit }),
+      ) as Array<{
+        kind: ActivityItem['kind'];
+        project_id: string;
+        project_name: string;
+        subject_id: string;
+        subject: string;
+        at: string;
+      }>;
+      return rows.map((r) => ({
+        kind: r.kind,
+        projectId: r.project_id,
+        projectName: r.project_name,
+        subjectId: r.subject_id,
+        subject: r.subject,
+        at: r.at,
+      }));
     },
 
     async projectOverview(workspaceId) {

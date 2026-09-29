@@ -82,6 +82,45 @@
   text-overflow: ellipsis;
 }
 
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  width: 260px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--muted);
+  font: 400 14px var(--font-ui);
+  cursor: pointer;
+}
+
+.search:hover {
+  border-color: #c3c8bf;
+}
+
+.searchText {
+  flex-grow: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  font: 500 11px var(--font-mono);
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -100,6 +139,17 @@
   .menuButton {
     display: inline-flex;
   }
+
+  .search {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .searchText,
+  .kbd {
+    display: none;
+  }
 }
 
 /* Phones: the breadcrumb keeps only the current page, and page actions move to a
@@ -115,7 +165,7 @@
 
   .lead {
     height: 56px;
-    flex: 1 1 100%;
+    flex: 1 1 0;
   }
 
   .parent {
@@ -124,6 +174,10 @@
 
   .crumb + .crumb::before {
     content: none;
+  }
+
+  .tools {
+    display: contents;
   }
 
   .actions {
