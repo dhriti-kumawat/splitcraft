@@ -12,6 +12,8 @@ const SOURCE_PARAM: Record<string, string> = {
   click: 'click',
   pageview: 'pageview',
   custom_js: 'custom-js',
+  datalayer: 'datalayer',
+  transaction: 'transaction',
 };
 
 /** Project › Metrics: every metric, and where it's used. */

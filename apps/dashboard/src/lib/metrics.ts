@@ -17,8 +17,8 @@ export const SOURCES: Array<{ id: Metric['source']; label: string; available: bo
   { id: 'click', label: 'Click · selector', available: true },
   { id: 'pageview', label: 'Pageview · URL', available: true },
   { id: 'custom_js', label: 'Custom JS', available: true },
-  { id: 'datalayer', label: 'dataLayer', available: false },
-  { id: 'transaction', label: 'Transaction', available: false },
+  { id: 'datalayer', label: 'dataLayer', available: true },
+  { id: 'transaction', label: 'Transaction', available: true },
 ];
 
 export const MEASURES: Record<Metric['measure'], { label: string; text: string }> = {

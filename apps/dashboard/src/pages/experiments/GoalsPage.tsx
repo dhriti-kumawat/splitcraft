@@ -210,6 +210,16 @@ export function GoalsPage() {
             name: 'Custom event',
             text: 'Your code calls splitcraft.trackEvent(), with a value if you like',
           },
+          {
+            source: 'transaction',
+            name: 'Transaction',
+            text: 'Revenue, order value, purchase rate from the purchase event',
+          },
+          {
+            source: 'datalayer',
+            name: 'dataLayer event',
+            text: 'Any event your site or GTM pushes',
+          },
         ].map((t) => (
           <Link
             key={t.name}
@@ -223,7 +233,6 @@ export function GoalsPage() {
           </Link>
         ))}
         {[
-          { name: 'Transaction', text: 'Revenue, order value, purchase rate' },
           { name: 'Browsing', text: 'Bounce, pages per session, time on site' },
           { name: 'Web Vitals', text: 'LCP, INP, CLS per variant, as guardrails' },
         ].map((t) => (

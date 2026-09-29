@@ -28,9 +28,13 @@ describe('metrics list', () => {
       'href',
       '/p/trip-demo/metrics/new?source=custom-js',
     );
-    expect(within(menu).getByText('dataLayer').closest('[aria-disabled]')).toHaveAttribute(
-      'aria-disabled',
-      'true',
+    expect(within(menu).getByRole('link', { name: 'dataLayer' })).toHaveAttribute(
+      'href',
+      '/p/trip-demo/metrics/new?source=datalayer',
+    );
+    expect(within(menu).getByRole('link', { name: 'Transaction' })).toHaveAttribute(
+      'href',
+      '/p/trip-demo/metrics/new?source=transaction',
     );
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('list', { name: 'Event source' })).not.toBeInTheDocument();
@@ -191,5 +195,56 @@ describe('editing', () => {
   it('shows not found for an unknown metric', async () => {
     renderApp('/p/trip-demo/metrics/nope', { data: fakeData().api });
     expect(await screen.findByText("This metric doesn't exist.")).toBeInTheDocument();
+  });
+});
+
+describe('dataLayer and transaction metrics', () => {
+  it('saves a dataLayer event with filters and a value path', async () => {
+    const user = userEvent.setup();
+    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=datalayer');
+    await user.type(screen.getByLabelText('Name'), 'Added to cart');
+    await user.click(screen.getByRole('button', { name: 'Create metric' }));
+    expect(screen.getByText('Enter the dataLayer event name.')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('dataLayer event'), 'add_to_cart');
+    await user.type(screen.getByLabelText(/Value path/), 'ecommerce.value');
+    await user.click(screen.getByRole('button', { name: '+ Filter' }));
+    await user.type(screen.getByLabelText('Filter 1 property'), 'ecommerce.currency');
+    await user.type(screen.getByLabelText('Filter 1 value'), 'INR');
+    await user.click(screen.getByRole('radio', { name: /Sum of value/ }));
+    await user.click(screen.getByRole('button', { name: 'Create metric' }));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+    );
+    expect(metricsNow().at(-1)).toMatchObject({
+      source: 'datalayer',
+      eventKey: 'added_to_cart',
+      measure: 'sum',
+      sourceConfig: {
+        event: 'add_to_cart',
+        valuePath: 'ecommerce.value',
+        filters: [{ path: 'ecommerce.currency', op: 'is', value: 'INR' }],
+      },
+    });
+  });
+
+  it('saves a transaction metric with the GA4 defaults', async () => {
+    const user = userEvent.setup();
+    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=transaction');
+    expect(screen.getByLabelText('Purchase event')).toHaveValue('purchase');
+    expect(screen.getByLabelText('Transaction id path')).toHaveValue('ecommerce.transaction_id');
+    await user.type(screen.getByLabelText('Name'), 'Revenue');
+    await user.click(screen.getByRole('button', { name: 'Create metric' }));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+    );
+    expect(metricsNow().at(-1)).toMatchObject({
+      source: 'transaction',
+      sourceConfig: {
+        event: 'purchase',
+        valuePath: 'ecommerce.value',
+        idPath: 'ecommerce.transaction_id',
+        currencyPath: 'ecommerce.currency',
+      },
+    });
   });
 });
