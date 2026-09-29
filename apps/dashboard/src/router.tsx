@@ -3,6 +3,8 @@ import { RequireAuth } from './auth/RequireAuth';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
 import { AudiencesPage } from './pages/audiences/AudiencesPage';
 import { AuthPage } from './pages/auth/AuthPage';
+import { MetricEditor } from './pages/metrics/MetricEditor';
+import { MetricsPage } from './pages/metrics/MetricsPage';
 import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
@@ -84,12 +86,9 @@ export const routes: RouteObject[] = [
             path: 'metrics',
             handle: crumb('Metrics'),
             children: [
-              { index: true, element: <Placeholder title="Metrics" step="feat/metrics" /> },
-              {
-                path: 'new',
-                element: <Placeholder title="New metric" step="feat/metrics" />,
-                handle: crumb('New metric'),
-              },
+              { index: true, element: <MetricsPage /> },
+              { path: 'new', element: <MetricEditor />, handle: crumb('New metric') },
+              { path: ':metricId', element: <MetricEditor />, handle: crumb('Metric') },
             ],
           },
           {
