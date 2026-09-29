@@ -24,7 +24,7 @@ describe('toProject', () => {
       installedAt: null,
       createdAt: '2026-09-29T00:00:00Z',
       // Missing switches are on.
-      settings: { antiFlicker: true, spa: false, ga4: true },
+      settings: { antiFlicker: true, spa: false, ga4: true, previewAnywhere: false },
     });
   });
 });

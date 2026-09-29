@@ -1,4 +1,4 @@
-import { configUrl, INSTALL_TARGETS, snippet } from './snippet';
+import { bookmarklet, configUrl, INSTALL_TARGETS, snippet } from './snippet';
 
 const values = {
   sdkUrl: 'https://splitcraft.vercel.app/sdk/v1.js',
@@ -40,5 +40,19 @@ describe('anti-flicker switch', () => {
     expect(snippet('nextjs', { ...values, antiFlicker: false })).toContain(
       '  data-antiflicker="off"',
     );
+  });
+});
+
+describe('preview bookmarklet', () => {
+  it('loads the SDK for this project without hiding the page, once', () => {
+    const link = bookmarklet(values);
+    expect(link.startsWith('javascript:')).toBe(true);
+    const code = decodeURIComponent(link.slice('javascript:'.length));
+    expect(code).toContain(`s.src=${JSON.stringify(values.sdkUrl)}`);
+    expect(code).toContain(`'data-project',${JSON.stringify(values.publicKey)}`);
+    expect(code).toContain(`'data-config',${JSON.stringify(values.configUrl)}`);
+    expect(code).toContain("'data-antiflicker','off'");
+    expect(code).toContain('if(window.splitcraft)');
+    expect(() => new Function(code)).not.toThrow();
   });
 });

@@ -65,6 +65,8 @@ export interface ProjectSettings {
   spa: boolean;
   /** Push exposures and events to window.dataLayer for GTM / GA4. */
   ga4: boolean;
+  /** Offer a preview bookmark that loads the SDK on pages without the snippet. Default off. */
+  previewAnywhere: boolean;
 }
 
 export interface ProjectStats {
