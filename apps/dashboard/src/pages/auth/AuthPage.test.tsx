@@ -264,6 +264,21 @@ describe('social and SSO', () => {
 });
 
 describe('protected pages', () => {
+  it('show why a GitHub or Google login failed', async () => {
+    const { router } = await openAt(
+      '/projects#error=server_error&error_code=unexpected_failure&error_description=Unable+to+exchange+external+code',
+    );
+    expect(router.state.location.pathname).toBe('/login');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "Couldn't log you in: Unable to exchange external code",
+    );
+  });
+
+  it('show an error sent back in the query too', async () => {
+    await openAt('/projects?error=access_denied&error_description=The+user+denied+access');
+    expect(screen.getByRole('alert')).toHaveTextContent('The user denied access');
+  });
+
   it('send signed-out visitors to log in, then back', async () => {
     const user = userEvent.setup();
     const { router } = await openAt('/p/trip-demo/metrics');

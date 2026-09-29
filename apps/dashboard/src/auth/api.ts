@@ -29,6 +29,7 @@ export const MESSAGES = {
   weakPassword: 'Use 8+ characters with a number and upper and lower case.',
   rateLimited: 'Too many attempts. Wait a minute and try again.',
   providerOff: (provider: string) => `${provider} sign-in isn't set up yet. Use email for now.`,
+  providerFailed: (reason: string) => `Couldn't log you in: ${reason}`,
   sso: "Single sign-on isn't available yet. Use email or another option.",
   offline: "Can't reach Splitcraft. Check your connection and try again.",
   unknown: 'Something went wrong. Try again.',
