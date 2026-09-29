@@ -2,11 +2,11 @@
 // Each file: front matter (title, description) + Markdown. Order comes from the number
 // prefix; "01-overview" becomes /docs/, "04-sdk" becomes /docs/sdk/.
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { Marked } from 'marked';
 
 const root = new URL('../../../', import.meta.url);
 const srcDir = new URL('docs/developer/', root);
-const outDir = new URL('../dist/docs/', import.meta.url);
 const dashboard = (process.env.VITE_DASHBOARD_URL ?? 'https://splitcraft-app.vercel.app').replace(
   /\/$/,
   '',
@@ -22,28 +22,6 @@ const slugify = (s) =>
     .replace(/&[a-z]+;/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-
-const pages = readdirSync(srcDir)
-  .filter((f) => /^\d+-.+\.md$/.test(f))
-  .sort()
-  .map((file) => {
-    const raw = readFileSync(new URL(file, srcDir), 'utf8');
-    const [, front, body] = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) ?? [];
-    if (!front) throw new Error(`${file}: missing front matter`);
-    const meta = Object.fromEntries(
-      front
-        .split('\n')
-        .map((l) => [l.slice(0, l.indexOf(':')).trim(), l.slice(l.indexOf(':') + 1).trim()]),
-    );
-    const slug = file.replace(/^\d+-/, '').replace(/\.md$/, '');
-    return {
-      file,
-      slug: slug === 'overview' ? '' : slug,
-      title: meta.title,
-      description: meta.description,
-      body,
-    };
-  });
 
 const href = (slug) => (slug ? `/docs/${slug}/` : '/docs/');
 
@@ -75,7 +53,7 @@ function render(page) {
   return { html, headings };
 }
 
-function layout(page, { html, headings }, index) {
+function layout(pages, page, { html, headings }, index) {
   const prev = pages[index - 1];
   const next = pages[index + 1];
   const nav = pages
@@ -137,12 +115,42 @@ function layout(page, { html, headings }, index) {
 `;
 }
 
-mkdirSync(outDir, { recursive: true });
-pages.forEach((page, i) => {
-  const dir = new URL(page.slug ? `${page.slug}/` : '', outDir);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(new URL('index.html', dir), layout(page, render(page), i));
-});
-copyFileSync(new URL('design/tokens.css', root), new URL('tokens.css', outDir));
-copyFileSync(new URL('../src/docs.css', import.meta.url), new URL('docs.css', outDir));
-console.log(`Built ${pages.length} docs pages into dist/docs/`);
+/** Build every page into `outDir` (a file URL ending in /). Returns the page count. */
+export function buildDocs(outDir) {
+  const pages = readdirSync(srcDir)
+    .filter((f) => /^\d+-.+\.md$/.test(f))
+    .sort()
+    .map((file) => {
+      const raw = readFileSync(new URL(file, srcDir), 'utf8');
+      const [, front, body] = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) ?? [];
+      if (!front) throw new Error(`${file}: missing front matter`);
+      const meta = Object.fromEntries(
+        front
+          .split('\n')
+          .map((l) => [l.slice(0, l.indexOf(':')).trim(), l.slice(l.indexOf(':') + 1).trim()]),
+      );
+      const slug = file.replace(/^\d+-/, '').replace(/\.md$/, '');
+      return {
+        file,
+        slug: slug === 'overview' ? '' : slug,
+        title: meta.title,
+        description: meta.description,
+        body,
+      };
+    });
+  mkdirSync(outDir, { recursive: true });
+  pages.forEach((page, i) => {
+    const dir = new URL(page.slug ? `${page.slug}/` : '', outDir);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(new URL('index.html', dir), layout(pages, page, render(page), i));
+  });
+  copyFileSync(new URL('design/tokens.css', root), new URL('tokens.css', outDir));
+  copyFileSync(new URL('../src/docs.css', import.meta.url), new URL('docs.css', outDir));
+  return pages.length;
+}
+
+// Run directly (npm run build / npm run docs): write dist/docs/.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const count = buildDocs(new URL('../dist/docs/', import.meta.url));
+  console.log(`Built ${count} docs pages into dist/docs/`);
+}
