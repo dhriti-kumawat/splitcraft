@@ -151,6 +151,7 @@ describe('sdk_config_source + toSdkConfig', () => {
     expect(config.goals).toEqual({
       clicks: [{ key: 'book_click', selector: '.book', firstPerPage: true }],
       pageviews: [{ key: 'purchase_page', url: { op: 'is', value: '/checkout/done' } }],
+      custom: [],
     });
     expect(JSON.stringify(config)).not.toContain('secret-internal-button');
   });

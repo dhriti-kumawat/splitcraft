@@ -52,6 +52,7 @@ export interface SdkProjectConfig {
   goals: {
     clicks: Array<{ key: string; selector: string; firstPerPage?: boolean }>;
     pageviews: Array<{ key: string; url: UrlRule }>;
+    custom: Array<{ key: string; code: string; pages?: UrlRule[] }>;
   };
   country?: string;
 }
