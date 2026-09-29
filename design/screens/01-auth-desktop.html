@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Splitly · Log in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;color:#15171A;background:#F4F5F2;-webkit-font-smoothing:antialiased}
+a{color:#0F6B57}a:hover{color:#0A4E40}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+.lb{font-size:13px;font-weight:600;color:#15171A}
+.in{width:100%;height:44px;box-sizing:border-box;border:1px solid #D5D8D1;border-radius:9px;padding:0 14px;font:400 15px 'Instrument Sans',system-ui,sans-serif;color:#15171A;background:#FFFFFF;outline:none;transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}
+.in::placeholder{color:#9AA098}
+.in:hover{border-color:#B5BAB2}
+.in:focus{border-color:#0F6B57;box-shadow:0 0 0 4px rgba(15,107,87,.14)}
+.in.bad{border-color:#B3261E;background:#FFFBFA}
+.in.bad:focus{box-shadow:0 0 0 4px rgba(179,38,30,.14)}
+.er{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#B3261E;animation:rise .18s ease both}
+.cta{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;border:none;border-radius:10px;background:#15171A;color:#FFFFFF;font:600 15px 'Instrument Sans',system-ui,sans-serif;cursor:pointer;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+.cta:hover{background:#0F6B57;color:#FFFFFF;transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,107,87,.25)}
+.cta:active{transform:translateY(0)}
+.cta:focus-visible,.sso:focus-visible,.lnk:focus-visible,.eye:focus-visible{outline:2px solid #0F6B57;outline-offset:2px}
+.cta[disabled]{cursor:progress;background:#2E3337;transform:none;box-shadow:none}
+.sso{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:42px;border:1px solid #D5D8D1;border-radius:10px;background:#FFFFFF;font:600 14px 'Instrument Sans',system-ui,sans-serif;color:#15171A;cursor:pointer;transition:border-color .15s ease,background .15s ease}
+.sso:hover{border-color:#15171A;background:#FAFBF9}
+.lnk{border:none;background:none;padding:0;font:600 13px 'Instrument Sans',system-ui,sans-serif;color:#0F6B57;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(15,107,87,.35);text-underline-offset:3px}
+.lnk:hover{color:#0A4E40;text-decoration-color:#0A4E40}
+.eye{position:absolute;right:5px;top:5px;height:34px;display:flex;align-items:center;gap:6px;padding:0 10px;border:none;border-radius:7px;background:transparent;font:600 12.5px 'Instrument Sans',system-ui,sans-serif;color:#3E4440;cursor:pointer}
+.eye:hover{background:#F0F1ED}
+.ck{width:18px;height:18px;margin:0;accent-color:#0F6B57;cursor:pointer;flex-shrink:0}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#FFFFFF;animation:spin .7s linear infinite}
+.fade{animation:rise .32s cubic-bezier(.2,.7,.2,1) both}
+.tick{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .6s .15s ease forwards}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.fade,.er,.spin{animation:none}.tick{animation:none;stroke-dashoffset:0}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 980px; display: flex; flex-direction: column; overflow: hidden; background-color: #F4F5F2; background-image: linear-gradient(#E9EBE6 1px, transparent 1px), linear-gradient(90deg, #E9EBE6 1px, transparent 1px); background-size: 48px 48px">
+
+<header style="height: 76px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 40px">
+<a href="Home.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none"><svg width="28" height="28" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="#0F6B57"></rect><rect x="6.5" y="7" width="5.5" height="12" rx="1.5" fill="#FFFFFF"></rect><rect x="14" y="7" width="5.5" height="12" rx="1.5" fill="#F2B37A"></rect></svg><span style="font-size: 20px; font-weight: 700; color: #15171A; letter-spacing: -0.01em">Splitly</span></a>
+<a href="Home.dc.html" style="font-size: 14px; font-weight: 500; color: #3E4440; text-decoration: none">← Back to site</a>
+</header>
+
+<main style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 8px 16px">
+<div style="width: 440px; box-sizing: border-box; padding: 36px 40px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E5DF; box-shadow: 0 1px 2px rgba(21, 23, 26, 0.04), 0 24px 60px rgba(21, 23, 26, 0.08)">
+
+<sc-if value="{{isForm}}" hint-placeholder-val="{{true}}">
+<div class="fade" style="display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.025em">{{title}}</h1>
+<p style="margin: 0; font-size: 14.5px; line-height: 1.5; color: #5F6660">{{subtitle}}</p>
+</div>
+
+<sc-if value="{{showSocial}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; gap: 8px">
+<button type="button" class="sso">Google</button>
+<button type="button" class="sso">GitHub</button>
+<button type="button" class="sso"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="10" r="3.5"></circle><path d="M10.5 10H18M15 10v3M18 10v2"></path></svg>SSO</button>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #8C938A"><span style="flex-grow: 1; height: 1px; background: #E3E5DF"></span>or with email<span style="flex-grow: 1; height: 1px; background: #E3E5DF"></span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{hasFormError}}" hint-placeholder-val="{{false}}">
+<div role="alert" class="fade" style="display: flex; gap: 10px; align-items: flex-start; padding: 11px 13px; border-radius: 10px; background: #FBEAEA; color: #8E2A22; font-size: 13.5px; line-height: 1.45"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="10" cy="10" r="7.5"></circle><path d="M10 6v4.5M10 13.5v.2"></path></svg><span>{{formError}}</span></div>
+</sc-if>
+
+<form onSubmit="{{submit}}" noValidate="{{yes}}" style="display: flex; flex-direction: column; gap: 14px">
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="au-name" class="lb">Full name</label>
+<input id="au-name" class="{{nameCls}}" type="text" autoComplete="name" placeholder="Dhriti Kumawat" value="{{name}}" onChange="{{onName}}" onBlur="{{blurName}}" aria-invalid="{{nameInvalid}}" aria-describedby="au-name-err">
+<sc-if value="{{hasNameErr}}" hint-placeholder-val="{{false}}"><span id="au-name-err" class="er">{{nameErr}}</span></sc-if>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="au-email" class="lb">{{emailLabel}}</label>
+<input id="au-email" class="{{emailCls}}" type="email" autoComplete="email" inputMode="email" placeholder="you@company.com" value="{{email}}" onChange="{{onEmail}}" onBlur="{{blurEmail}}" aria-invalid="{{emailInvalid}}" aria-describedby="au-email-err">
+<sc-if value="{{hasEmailErr}}" hint-placeholder-val="{{false}}"><span id="au-email-err" class="er">{{emailErr}}</span></sc-if>
+</div>
+
+<sc-if value="{{hasPw}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<label for="au-pw" class="lb">Password</label>
+<sc-if value="{{isLogin}}" hint-placeholder-val="{{true}}"><button type="button" class="lnk" onClick="{{goForgot}}">Forgot password?</button></sc-if>
+</div>
+<div style="position: relative">
+<input id="au-pw" class="{{pwCls}}" type="{{pwType}}" autoComplete="{{pwAuto}}" placeholder="{{pwPlaceholder}}" value="{{pw}}" onChange="{{onPw}}" onBlur="{{blurPw}}" onKeyUp="{{onPwKey}}" aria-invalid="{{pwInvalid}}" aria-describedby="au-pw-err au-pw-rules" style="padding-right: 84px">
+<button type="button" class="eye" onClick="{{toggleShow}}" aria-pressed="{{showPressed}}" aria-controls="au-pw" aria-label="{{showAria}}">
+<sc-if value="{{show}}" hint-placeholder-val="{{false}}"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l14 14M8.5 5.2A8 8 0 0 1 10 5c5 0 8 5 8 5a13 13 0 0 1-2.4 2.9M6 6.8C3.7 8.2 2 10 2 10s3 5 8 5a7.5 7.5 0 0 0 3.2-.7"></path></svg></sc-if>
+<sc-if value="{{hidden}}" hint-placeholder-val="{{true}}"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5z"></path><circle cx="10" cy="10" r="2.5"></circle></svg></sc-if>
+{{showLabel}}
+</button>
+</div>
+<sc-if value="{{caps}}" hint-placeholder-val="{{false}}"><span class="er" style="color: #8A5300">Caps Lock is on.</span></sc-if>
+<sc-if value="{{hasPwErr}}" hint-placeholder-val="{{false}}"><span id="au-pw-err" class="er">{{pwErr}}</span></sc-if>
+<sc-if value="{{showStrength}}" hint-placeholder-val="{{false}}">
+<div id="au-pw-rules" class="fade" style="display: flex; flex-direction: column; gap: 8px; padding-top: 2px">
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="flex-grow: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="4"><span style="height: 4px; border-radius: 2px; background: {{b.bg}}; transition: background .25s ease"></span></sc-for>
+</div>
+<span style="width: 48px; text-align: right; font-size: 12px; font-weight: 700; color: {{strengthColor}}">{{strengthLabel}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px">
+<sc-for list="{{rules}}" as="r" hint-placeholder-count="4"><span style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: {{r.color}}; transition: color .2s ease"><span style="width: 12px; font-weight: 700">{{r.mark}}</span>{{r.label}}</span></sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isLogin}}" hint-placeholder-val="{{true}}">
+<label for="au-keep" style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #3E4440; cursor: pointer"><input id="au-keep" type="checkbox" class="ck" checked="{{keep}}" onChange="{{onKeep}}">Keep me logged in for 30 days</label>
+</sc-if>
+
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="au-terms" style="display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; line-height: 1.45; color: #3E4440; cursor: pointer"><input id="au-terms" type="checkbox" class="ck" style="margin-top: 1px" checked="{{terms}}" onChange="{{onTerms}}" aria-invalid="{{termsInvalid}}" aria-describedby="au-terms-err"><span>I agree to the <a href="#terms">Terms</a> and <a href="#privacy">Privacy Policy</a>.</span></label>
+<sc-if value="{{hasTermsErr}}" hint-placeholder-val="{{false}}"><span id="au-terms-err" class="er">{{termsErr}}</span></sc-if>
+</div>
+</sc-if>
+
+<button type="submit" class="cta" disabled="{{loading}}" aria-busy="{{loadingStr}}" style="margin-top: 4px">
+<sc-if value="{{loading}}" hint-placeholder-val="{{false}}"><span class="spin" aria-hidden="true"></span></sc-if>
+{{ctaLabel}}
+</button>
+</form>
+
+<div style="display: flex; justify-content: center; gap: 6px; padding-top: 16px; border-top: 1px solid #EEF0EB; font-size: 14px; color: #5F6660">
+<sc-if value="{{isLogin}}" hint-placeholder-val="{{true}}"><span>New to Splitly?</span><button type="button" class="lnk" style="font-size: 14px" onClick="{{goSignup}}">Create an account</button></sc-if>
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}"><span>Already have an account?</span><button type="button" class="lnk" style="font-size: 14px" onClick="{{goLogin}}">Log in</button></sc-if>
+<sc-if value="{{isForgot}}" hint-placeholder-val="{{false}}"><button type="button" class="lnk" style="font-size: 14px" onClick="{{goLogin}}">← Back to log in</button></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isSent}}" hint-placeholder-val="{{false}}">
+<div class="fade" style="display: flex; flex-direction: column; gap: 20px">
+<span style="width: 52px; height: 52px; border-radius: 14px; background: #E4F1EC; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F6B57" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"></rect><path d="M3.5 7l8.5 6 8.5-6"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.025em">Check your email</h1>
+<p role="status" style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5F6660">We sent a reset link to <b style="color: #15171A">{{emailShown}}</b>. It works for 30 minutes. Check spam if it isn't there in a minute.</p>
+</div>
+<button type="button" class="cta" onClick="{{resend}}" disabled="{{resendDisabled}}" style="background: #FFFFFF; color: #15171A; border: 1px solid #D5D8D1">{{resendLabel}}</button>
+<button type="button" class="lnk" style="align-self: center; font-size: 14px" onClick="{{goLogin}}">← Back to log in</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+<div class="fade" style="display: flex; flex-direction: column; gap: 20px">
+<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#0F6B57"></circle><path class="tick" d="M20 33l8 8 16-17" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.025em">{{doneTitle}}</h1>
+<p role="status" style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5F6660">{{doneText}}</p>
+</div>
+<a class="cta" href="Main.dc.html">{{doneCta}} →</a>
+<button type="button" class="lnk" style="align-self: center; font-size: 14px" onClick="{{goLogin}}">Use a different account</button>
+</div>
+</sc-if>
+
+</div>
+</main>
+
+<footer style="height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 13px; color: #5F6660">
+<span>© 2026 Splitly</span><a href="#privacy" style="color: #5F6660">Privacy</a><a href="#terms" style="color: #5F6660">Terms</a><a href="#status" style="color: #5F6660">Status</a><span class="mono" style="user-select: all">support@splitly.dev</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startMode":{"editor":"enum","options":["login","signup","forgot"],"default":"login"},"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: (props && props.startMode) || 'login', name: '', email: '', pw: '', show: false, keep: true, terms: false, touched: {}, submitted: false, loading: false, caps: false, formError: '', resendIn: 0 };
+  }
+  componentWillUnmount() { clearTimeout(this.t); clearInterval(this.iv); }
+  go(mode) {
+    clearTimeout(this.t); clearInterval(this.iv);
+    this.setState({ mode: mode, pw: '', show: false, caps: false, submitted: false, touched: {}, loading: false, formError: '', resendIn: 0 });
+  }
+  rulesFor(pw) {
+    return [
+      { label: '8+ characters', ok: pw.length >= 8 },
+      { label: 'A number', ok: /\d/.test(pw) },
+      { label: 'Upper and lower case', ok: /[a-z]/.test(pw) && /[A-Z]/.test(pw) },
+      { label: 'A symbol (optional)', ok: /[^A-Za-z0-9]/.test(pw) }
+    ];
+  }
+  errors() {
+    var s = this.state, e = {}, email = s.email.trim();
+    if (s.mode === 'signup' && s.name.trim().length < 2) e.name = 'Enter your full name.';
+    if (!email) e.email = 'Enter your email address.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) e.email = 'This email is missing something. Check for typos.';
+    if (s.mode === 'login' && !s.pw) e.pw = 'Enter your password.';
+    if (s.mode === 'signup') {
+      var r = this.rulesFor(s.pw);
+      if (!(r[0].ok && r[1].ok && r[2].ok)) e.pw = 'Use 8+ characters with a number and upper and lower case.';
+      if (!s.terms) e.terms = 'Accept the terms to create your workspace.';
+    }
+    return e;
+  }
+  submit(ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    if (this.state.loading) return;
+    var e = this.errors();
+    if (Object.keys(e).length) { this.setState({ submitted: true, formError: '' }); return; }
+    var mode = this.state.mode, self = this;
+    this.setState({ submitted: true, loading: true, formError: '' });
+    this.t = setTimeout(function () {
+      if (mode === 'login' && self.state.pw.length < 8) { self.setState({ loading: false, formError: 'Email or password is incorrect. Try again or reset your password.' }); return; }
+      if (mode === 'forgot') { self.setState({ loading: false, mode: 'sent' }); self.startResend(); return; }
+      self.setState({ loading: false, mode: mode === 'login' ? 'welcome' : 'created' });
+    }, 1100);
+  }
+  startResend() {
+    var self = this;
+    clearInterval(this.iv);
+    this.setState({ resendIn: 30 });
+    this.iv = setInterval(function () {
+      var n = self.state.resendIn - 1;
+      self.setState({ resendIn: n < 0 ? 0 : n });
+      if (n <= 0) clearInterval(self.iv);
+    }, 1000);
+  }
+  renderVals() {
+    var self = this, s = this.state, m = s.mode;
+    var e = this.errors();
+    function shown(k) { return !!((s.submitted || s.touched[k]) && e[k]); }
+    function touch(k) { return function () { var t = Object.assign({}, self.state.touched); t[k] = true; self.setState({ touched: t }); }; }
+    var rules = this.rulesFor(s.pw);
+    var score = rules.filter(function (r) { return r.ok; }).length;
+    var palette = ['#E3E5DF', '#B3261E', '#C27A10', '#0F6B57', '#0A4E40'];
+    var copy = {
+      login: ['Log in to Splitly', 'Welcome back. Your experiments are waiting.', 'Log in', 'Logging in…', 'Email'],
+      signup: ['Create your workspace', 'Free up to 100,000 events a month. No card needed.', 'Create workspace', 'Creating workspace…', 'Work email'],
+      forgot: ['Reset your password', 'Enter the email you signed up with and we will send you a reset link.', 'Send reset link', 'Sending…', 'Email']
+    }[m] || ['', '', '', '', 'Email'];
+    var first = (s.name.trim().split(' ')[0]) || (s.email.split('@')[0]) || 'there';
+    return {
+      yes: true,
+      isForm: m === 'login' || m === 'signup' || m === 'forgot', isLogin: m === 'login', isSignup: m === 'signup', isForgot: m === 'forgot',
+      isSent: m === 'sent', isDone: m === 'welcome' || m === 'created',
+      showSocial: m === 'login' || m === 'signup', hasPw: m === 'login' || m === 'signup',
+      title: copy[0], subtitle: copy[1], ctaLabel: s.loading ? copy[3] : copy[2], emailLabel: copy[4],
+      loading: s.loading, loadingStr: s.loading ? 'true' : 'false',
+      hasFormError: !!s.formError, formError: s.formError,
+      name: s.name, email: s.email, pw: s.pw, keep: s.keep, terms: s.terms,
+      nameCls: shown('name') ? 'in bad' : 'in', hasNameErr: shown('name'), nameErr: e.name || '', nameInvalid: shown('name') ? 'true' : 'false',
+      emailCls: shown('email') ? 'in bad' : 'in', hasEmailErr: shown('email'), emailErr: e.email || '', emailInvalid: shown('email') ? 'true' : 'false',
+      pwCls: shown('pw') ? 'in bad' : 'in', hasPwErr: shown('pw'), pwErr: e.pw || '', pwInvalid: shown('pw') ? 'true' : 'false',
+      hasTermsErr: shown('terms'), termsErr: e.terms || '', termsInvalid: shown('terms') ? 'true' : 'false',
+      pwType: s.show ? 'text' : 'password', show: s.show, hidden: !s.show,
+      showLabel: s.show ? 'Hide' : 'Show', showPressed: s.show ? 'true' : 'false', showAria: s.show ? 'Hide password' : 'Show password',
+      pwAuto: m === 'signup' ? 'new-password' : 'current-password',
+      pwPlaceholder: m === 'signup' ? 'Create a password' : 'Your password',
+      caps: s.caps,
+      showStrength: m === 'signup' && s.pw.length > 0,
+      bars: [0, 1, 2, 3].map(function (i) { return { bg: i < score ? palette[score] : '#E3E5DF' }; }),
+      strengthLabel: ['', 'Weak', 'Fair', 'Good', 'Strong'][score], strengthColor: palette[score],
+      rules: rules.map(function (r) { return { label: r.label, mark: r.ok ? '✓' : '·', color: r.ok ? '#0F6B57' : '#5F6660' }; }),
+      emailShown: s.email.trim(),
+      resendDisabled: s.resendIn > 0, resendLabel: s.resendIn > 0 ? 'Resend link in ' + s.resendIn + 's' : 'Resend link',
+      doneTitle: m === 'welcome' ? 'Welcome back, ' + first : 'Your workspace is ready',
+      doneText: m === 'welcome' ? '2 experiments are running on Trip Demo. Sticky Book Now bar is close to its planned sample.' : 'Next, add your first project and paste the snippet into your site. It takes about two minutes.',
+      doneCta: m === 'welcome' ? 'Open dashboard' : 'Set up first project',
+      onName: function (ev) { self.setState({ name: ev.target.value }); },
+      onEmail: function (ev) { self.setState({ email: ev.target.value, formError: '' }); },
+      onPw: function (ev) { self.setState({ pw: ev.target.value, formError: '' }); },
+      onPwKey: function (ev) { self.setState({ caps: !!(ev.getModifierState && ev.getModifierState('CapsLock')) }); },
+      blurName: touch('name'), blurEmail: touch('email'), blurPw: touch('pw'),
+      toggleShow: function () { self.setState({ show: !self.state.show }); },
+      onKeep: function (ev) { self.setState({ keep: ev.target.checked }); },
+      onTerms: function (ev) { var t = Object.assign({}, self.state.touched, { terms: true }); self.setState({ terms: ev.target.checked, touched: t }); },
+      submit: function (ev) { self.submit(ev); },
+      goLogin: function () { self.go('login'); },
+      goSignup: function () { self.go('signup'); },
+      goForgot: function () { self.go('forgot'); },
+      resend: function () { if (self.state.resendIn === 0) self.startResend(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Splitly · Audience builder</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;color:#15171A;background:#F4F5F2;-webkit-font-smoothing:antialiased}
+a{color:#0F6B57}a:hover{color:#0A4E40}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:#AEB4AC;text-decoration:none;font-size:14px;font-weight:500}
+.nv:hover{color:#FFFFFF}
+.nv.on{background:#262B2E;color:#FFFFFF}
+.sb{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:8px;border:1px solid #2E3337;background:#1D2124;color:#FFFFFF;text-align:left;cursor:pointer;font-family:inherit}
+.sl{padding:0 10px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#858D84}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:7px;border:1px solid #0F6B57;background:#0F6B57;color:#FFFFFF;font:600 14px 'Instrument Sans',system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.btn2{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:7px;border:1px solid #D5D8D1;background:#FFFFFF;color:#15171A;font:600 14px 'Instrument Sans',system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:11px;font-size:12px;font-weight:600;white-space:nowrap}
+.lbl{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#5F6660}
+.au{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:7px;border:1px solid transparent;background:transparent;font:500 13px 'Instrument Sans',system-ui,sans-serif;color:#3E4440;cursor:pointer;text-align:left;width:100%}
+.au.on{background:#FFFFFF;border-color:#E3E5DF;color:#15171A;font-weight:600;box-shadow:0 1px 2px rgba(21,23,26,0.06)}
+.au span:last-child{font:500 11px 'JetBrains Mono',ui-monospace,monospace;color:#5F6660}
+.grp{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px;border-radius:10px;background:#FFFFFF;border:1px solid #E3E5DF}
+.gh{display:flex;align-items:center;justify-content:space-between;gap:10px;height:30px}
+.seg{display:flex;gap:2px;padding:2px;border-radius:7px;background:#EEF0EB}
+.sg{height:24px;padding:0 10px;border-radius:5px;border:none;background:transparent;font:700 11px 'Instrument Sans',system-ui,sans-serif;letter-spacing:0.06em;color:#5F6660;cursor:pointer}
+.sg.on{background:#FFFFFF;color:#15171A;box-shadow:0 1px 2px rgba(21,23,26,0.12)}
+.sg.ex{background:#B3261E;color:#FFFFFF}
+.cr{display:flex;align-items:center;gap:6px;height:36px}
+.fd{display:inline-flex;align-items:center;gap:8px;width:184px;flex-shrink:0;height:34px;box-sizing:border-box;padding:0 8px 0 5px;border:1px solid #D5D8D1;border-radius:7px;background:#FFFFFF;font:600 13px 'Instrument Sans',system-ui,sans-serif;color:#15171A;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden}
+.ic{width:24px;height:24px;flex-shrink:0;border-radius:5px;display:flex;align-items:center;justify-content:center}
+.op{display:inline-flex;align-items:center;justify-content:space-between;gap:6px;width:130px;flex-shrink:0;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid #D5D8D1;border-radius:7px;background:#FAFBF9;font:500 13px 'Instrument Sans',system-ui,sans-serif;color:#3E4440;cursor:pointer;white-space:nowrap}
+.vl{display:flex;align-items:center;gap:6px;flex-grow:1;min-width:0;height:34px;box-sizing:border-box;padding:0 8px;border:1px solid #D5D8D1;border-radius:7px;background:#FFFFFF;overflow:hidden;font-size:13px}
+.ch{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:5px;background:#EEF0EB;font:500 12px 'Instrument Sans',system-ui,sans-serif;color:#15171A;white-space:nowrap}
+.cd{font:500 12px 'JetBrains Mono',ui-monospace,monospace;color:#15171A;white-space:nowrap}
+.x{width:30px;height:30px;flex-shrink:0;border:none;border-radius:6px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C938A}
+.and{align-self:center;display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:11px;background:#15171A;color:#FFFFFF;font:700 11px 'Instrument Sans',system-ui,sans-serif;letter-spacing:0.08em}
+.lib{display:flex;align-items:center;gap:10px;padding:7px 4px;font-size:13px;border-bottom:1px solid #F0F1ED}
+.lib span:last-child{margin-left:auto;font:500 11px 'JetBrains Mono',ui-monospace,monospace;color:#5F6660}
+.add{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;border:none;background:transparent;font:600 13px 'Instrument Sans',system-ui,sans-serif;color:#0F6B57;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; display: flex; overflow: hidden; background: #F4F5F2">
+
+<aside style="width: 240px; flex-shrink: 0; background: #15171A; display: flex; flex-direction: column; gap: 20px; padding: 20px 14px; box-sizing: border-box">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 8px">
+<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="#0F6B57"></rect><rect x="6.5" y="7" width="5.5" height="12" rx="1.5" fill="#FFFFFF"></rect><rect x="14" y="7" width="5.5" height="12" rx="1.5" fill="#F2B37A"></rect></svg>
+<span style="font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em">Splitly</span>
+</div>
+<button class="sb">
+<span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 6px; background: #3A2E22; color: #F2B37A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">DW</span>
+<span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 13px; font-weight: 600">Dhriti's Workspace</span><span style="font-size: 11px; color: #8C938A">Free plan · 3 projects</span></span>
+<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8C938A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l3-3 3 3M7 12l3 3 3-3"></path></svg>
+</button>
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<a class="nv" href="Main.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"></rect><rect x="11" y="3" width="6" height="6" rx="1.5"></rect><rect x="3" y="11" width="6" height="6" rx="1.5"></rect><rect x="11" y="11" width="6" height="6" rx="1.5"></rect></svg>Projects</a>
+<a class="nv" href="#team"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="7" r="3"></circle><path d="M2.5 17c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M13 4.5a3 3 0 0 1 0 5M15 12.8c1.3.6 2.2 1.9 2.5 4.2"></path></svg>Team</a>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span class="sl">Current project</span>
+<button class="sb">
+<span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 6px; background: #22403A; color: #9FD3C2; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">TD</span>
+<span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 13px; font-weight: 600">Trip Demo</span><span class="mono" style="font-size: 11px; color: #8C938A">mytrips.dev</span></span>
+<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8C938A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l3-3 3 3M7 12l3 3 3-3"></path></svg>
+</button>
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<a class="nv" href="Experiments.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h4M9 3v5l-5 8.5a1 1 0 0 0 .9 1.5h10.2a1 1 0 0 0 .9-1.5L11 8V3"></path></svg>Experiments</a>
+<a class="nv on" href="Audiences.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h14l-5.5 6.5V16l-3 1.5v-6L3 5z"></path></svg>Audiences</a>
+<a class="nv" href="Metrics.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7"></circle><circle cx="10" cy="10" r="3"></circle></svg>Metrics</a>
+<a class="nv" href="#install"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 6l-4 4 4 4M13 6l4 4-4 4"></path></svg>Install</a>
+<a class="nv" href="#settings"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 6h14M3 14h14"></path><circle cx="7" cy="6" r="2" fill="#15171A"></circle><circle cx="13" cy="14" r="2" fill="#15171A"></circle></svg>Settings</a>
+</nav>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 8px; background: #1D2124">
+<span style="font-size: 12px; color: #AEB4AC">Events this month</span>
+<span class="mono" style="font-size: 13px; color: #FFFFFF">48,210 <span style="color: #8C938A">/ 100,000</span></span>
+<div style="height: 4px; border-radius: 2px; background: #2E3337"><div style="width: 48%; height: 4px; border-radius: 2px; background: #5FB89F"></div></div>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+<span style="width: 30px; height: 30px; border-radius: 15px; background: #F2B37A; color: #15171A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">DK</span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 600; color: #FFFFFF">Dhriti Kumawat</span><span style="font-size: 12px; color: #8C938A">Owner</span></span>
+</div>
+</aside>
+
+<main style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<header style="height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 32px; background: #FFFFFF; border-bottom: 1px solid #E3E5DF">
+<div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+<span style="font-size: 14px; color: #5F6660; white-space: nowrap">Trip Demo <span style="color: #B5BAB2">/</span> Audiences <span style="color: #B5BAB2">/</span> <span style="color: #15171A; font-weight: 600">High-intent returners</span></span>
+<span class="pill" style="background: #E8ECF3; color: #3B5B8C">Used in 2 experiments</span>
+</div>
+<div style="display: flex; gap: 10px">
+<button class="btn2"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 6l-4 4 4 4M13 6l4 4-4 4"></path></svg>View as JSON</button>
+<button class="btn2">Duplicate</button>
+<button class="btn">Save audience</button>
+</div>
+</header>
+
+<div style="flex-grow: 1; display: flex; gap: 20px; padding: 20px 32px; min-height: 0">
+
+<section style="width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px">
+<div class="seg" style="margin-bottom: 6px"><button class="sg on" style="flex: 1; height: 28px; font-size: 12px; letter-spacing: 0">Segments</button><button class="sg" style="flex: 1; height: 28px; font-size: 12px; letter-spacing: 0">Triggers</button></div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px 4px"><span class="lbl">Saved segments</span><button aria-label="New segment" class="x" style="color: #0F6B57"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"></path></svg></button></div>
+<button class="au"><span>All visitors</span><span>100%</span></button>
+<button class="au"><span>Mobile first-timers</span><span>31%</span></button>
+<button class="au on"><span>High-intent returners</span><span>9.4%</span></button>
+<button class="au"><span>Google Ads traffic</span><span>14%</span></button>
+<button class="au"><span>Logged-in members</span><span>22%</span></button>
+<button class="au"><span>Checkout abandoners</span><span>6.1%</span></button>
+<button class="au"><span>Weekend browsers</span><span>27%</span></button>
+<button class="au"><span>Internal staff</span><span>0.3%</span></button>
+<div style="margin-top: 12px; padding: 12px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3E5DF; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600">Reusable everywhere</span>
+<span style="font-size: 12px; line-height: 1.45; color: #5F6660">Save once, pick it in any experiment's setup. Edits apply on the next page load.</span>
+</div>
+</section>
+
+<section style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; background: #15171A; color: #D8DCD5">
+<span class="lbl" style="color: #F2B37A; padding-top: 2px; white-space: nowrap">In plain words</span>
+<span style="font-size: 13px; line-height: 1.5">Mobile or tablet visitors in India on their 2nd+ session <span style="color: #FFFFFF; font-weight: 600">and</span> showing intent (3+ trip views, the summer-sale campaign, or gold loyalty) <span style="color: #FFFFFF; font-weight: 600">but not</span> recent buyers or internal staff.</span>
+</div>
+
+<div class="grp">
+<div class="gh">
+<div style="display: flex; align-items: center; gap: 10px"><div class="seg"><button class="sg on">ALL</button><button class="sg">ANY</button><button class="sg">NONE</button></div><span style="font-size: 13px; color: #5F6660">Who they are</span></div>
+<div style="display: flex; align-items: center; gap: 2px"><span class="mono" style="font-size: 11px; color: #5F6660; margin-right: 6px">38% match</span><button class="add">+ Condition</button></div>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #E8ECF3"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#3B5B8C" stroke-width="1.8" aria-hidden="true"><rect x="6" y="2.5" width="8" height="15" rx="2"></rect></svg></span>Device type</button>
+<button class="op">is any of<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl"><span class="ch">Mobile</span><span class="ch">Tablet</span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #E4F1EC"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#0F6B57" stroke-width="1.8" aria-hidden="true"><path d="M10 18s6-5.5 6-10a6 6 0 0 0-12 0c0 4.5 6 10 6 10z"></path><circle cx="10" cy="8" r="2"></circle></svg></span>Country</button>
+<button class="op">is<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl"><span class="ch">India</span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #FBE9DA"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#9A4B0E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10h4l2-5 4 10 2-5h4"></path></svg></span>Session number</button>
+<button class="op">is at least<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl"><span class="cd">2</span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+</div>
+
+<span class="and">AND</span>
+
+<div class="grp">
+<div class="gh">
+<div style="display: flex; align-items: center; gap: 10px"><div class="seg"><button class="sg">ALL</button><button class="sg on">ANY</button><button class="sg">NONE</button></div><span style="font-size: 13px; color: #5F6660">Showed intent</span></div>
+<div style="display: flex; align-items: center; gap: 2px"><span class="mono" style="font-size: 11px; color: #5F6660; margin-right: 6px">41% match</span><button class="add">+ Condition</button></div>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #FBE9DA"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#9A4B0E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10h4l2-5 4 10 2-5h4"></path></svg></span>Pages viewed</button>
+<button class="op">3+ times in 7d<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl"><span style="font-size: 12px; color: #5F6660">matching</span><span class="cd">/trips/*</span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #EFE7F2"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#6E3F7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h11M10 5l5 5-5 5"></path></svg></span>UTM campaign</button>
+<button class="op">contains<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl"><span class="cd">summer-sale</span><span style="font-size: 12px; color: #5F6660; margin-left: auto">first-touch</span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #ECEDEA"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#3E4440" stroke-width="1.8" aria-hidden="true"><ellipse cx="10" cy="5" rx="6" ry="2.5"></ellipse><path d="M4 5v10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"></path></svg></span>Cookie <span class="mono" style="font-size: 12px; font-weight: 500">loyalty_tier</span></button>
+<button class="op">equals<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl"><span class="cd">gold</span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+</div>
+
+<span class="and">AND</span>
+
+<div class="grp" style="background: #FFFBFA; border-color: #EDD3D0">
+<div class="gh">
+<div style="display: flex; align-items: center; gap: 10px"><div class="seg"><button class="sg">ALL</button><button class="sg">ANY</button><button class="sg ex">NONE</button></div><span style="font-size: 13px; color: #8E2A22; font-weight: 600">Exclude</span></div>
+<div style="display: flex; align-items: center; gap: 2px"><span class="mono" style="font-size: 11px; color: #5F6660; margin-right: 6px">removes 12%</span><button class="add">+ Condition</button></div>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #ECEDEA"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#3E4440" stroke-width="1.8" aria-hidden="true"><ellipse cx="10" cy="5" rx="6" ry="2.5"></ellipse><path d="M4 5v10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"></path></svg></span>dataLayer event</button>
+<button class="op">fired in 30d<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl"><span class="cd">purchase</span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+<div class="cr">
+<button class="fd"><span class="ic" style="background: #15171A"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#F2B37A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 6l-4 4 4 4M13 6l4 4-4 4"></path></svg></span>Custom JavaScript</button>
+<button class="op">returns true<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8l4 4 4-4"></path></svg></button>
+<div class="vl" style="background: #15171A; border-color: #15171A"><span class="cd" style="color: #D8DCD5">window.<span style="color: #F2B37A">__user</span>?.<span style="color: #7FC4E8">isStaff</span></span></div>
+<button class="x" aria-label="Remove condition"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+</div>
+
+<div style="display: flex; gap: 8px">
+<button class="btn2" style="height: 34px; border-style: dashed"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"></path></svg>Add group</button>
+<button class="btn2" style="height: 34px; border-style: dashed">Nest group inside…</button>
+<button class="btn2" style="height: 34px; border-style: dashed">Insert saved audience</button>
+</div>
+</section>
+
+<aside style="width: 290px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #FFFFFF; border: 1px solid #E3E5DF; border-radius: 10px">
+<span class="lbl">Estimated reach · last 14 days</span>
+<div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums">9.4%</span><span style="font-size: 13px; color: #5F6660">≈ 180 visitors a day</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; justify-content: space-between"><span>Who they are</span><span class="mono" style="color: #5F6660">38%</span></div><div style="height: 6px; border-radius: 3px; background: #EEF0EB"><div style="width: 38%; height: 6px; border-radius: 3px; background: #3B5B8C"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; justify-content: space-between"><span>+ showed intent</span><span class="mono" style="color: #5F6660">10.7%</span></div><div style="height: 6px; border-radius: 3px; background: #EEF0EB"><div style="width: 10.7%; height: 6px; border-radius: 3px; background: #3B5B8C"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; justify-content: space-between"><span>− exclusions</span><span class="mono" style="color: #0F6B57; font-weight: 500">9.4%</span></div><div style="height: 6px; border-radius: 3px; background: #EEF0EB"><div style="width: 9.4%; height: 6px; border-radius: 3px; background: #0F6B57"></div></div></div>
+</div>
+<span style="font-size: 12px; line-height: 1.45; color: #8A5300">At this reach a 15% lift needs about 150 days. Widen the audience or test a bigger change.</span>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #FFFFFF; border: 1px solid #E3E5DF; border-radius: 10px">
+<span class="lbl">When to evaluate</span>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+<div style="display: flex; justify-content: space-between; gap: 8px"><span>Check on</span><span style="font-weight: 600">Load + route change</span></div>
+<div style="display: flex; justify-content: space-between; gap: 8px"><span>Wait for dataLayer</span><span class="mono" style="font-weight: 500">up to 1500 ms</span></div>
+<div style="display: flex; justify-content: space-between; gap: 8px"><span>Once matched</span><span style="font-weight: 600">Stay in audience</span></div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 4px; padding: 16px; background: #FFFFFF; border: 1px solid #E3E5DF; border-radius: 10px; min-height: 0">
+<span class="lbl" style="padding-bottom: 6px">Segment criteria · 52 types</span>
+<div class="lib"><span class="ic" style="background: #E4F1EC; width: 20px; height: 20px"></span><span>Navigation &amp; recency</span><span>7</span></div>
+<div class="lib"><span class="ic" style="background: #FBE9DA; width: 20px; height: 20px"></span><span>Behaviour &amp; past tests</span><span>9</span></div>
+<div class="lib"><span class="ic" style="background: #FBE9DA; width: 20px; height: 20px"></span><span>Purchase history</span><span>5</span></div>
+<div class="lib"><span class="ic" style="background: #E8ECF3; width: 20px; height: 20px"></span><span>Device &amp; browser</span><span>7</span></div>
+<div class="lib"><span class="ic" style="background: #E4F1EC; width: 20px; height: 20px"></span><span>Location &amp; weather</span><span>6</span></div>
+<div class="lib"><span class="ic" style="background: #EFE7F2; width: 20px; height: 20px"></span><span>Traffic source &amp; UTM</span><span>7</span></div>
+<div class="lib"><span class="ic" style="background: #ECEDEA; width: 20px; height: 20px"></span><span>GA4, Mixpanel, CRM list</span><span>5</span></div>
+<div class="lib" style="border-bottom: none"><span class="ic" style="background: #15171A; width: 20px; height: 20px"></span><span>Cookie, dataLayer, JS, code</span><span>6</span></div>
+</section>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

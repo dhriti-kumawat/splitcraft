@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Splitly · QA mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;color:#15171A;background:#FFFFFF;-webkit-font-smoothing:antialiased}
+a{color:#0F6B57}a:hover{color:#0A4E40}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFFFFF; display: flex; flex-direction: column">
+
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 14px; background: #ECEDEA; border-bottom: 1px solid #D5D8D1">
+<span class="mono" style="font-size: 12px; color: #3E4440; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">mytrips.dev/trips/norway?<span style="color: #9A4B0E">splitly_force=trust:B</span></span>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 18px; border-bottom: 1px solid #EEF0EB">
+<span style="font-size: 17px; font-weight: 700; letter-spacing: -0.01em">mytrips</span>
+<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="#15171A" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14"></path></svg>
+</div>
+
+<div style="height: 200px; background: #C9D6D2; display: flex; align-items: flex-end; padding: 14px 18px; box-sizing: border-box">
+<span style="font-size: 12px; font-weight: 600; color: #2F5A4E; background: rgba(255, 255, 255, 0.8); padding: 4px 8px; border-radius: 4px">[Trip photo]</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 18px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 13px; color: #5F6660">8 days · Small group</span>
+<h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em">Norway fjords by rail and boat</h1>
+</div>
+<div style="display: flex; align-items: baseline; gap: 6px"><span style="font-size: 22px; font-weight: 700">₹1,42,000</span><span style="font-size: 13px; color: #5F6660">per person</span></div>
+<button style="height: 48px; border: none; border-radius: 8px; background: #15171A; color: #FFFFFF; font: 700 16px 'Instrument Sans', system-ui, sans-serif; cursor: pointer">Book now</button>
+<div style="position: relative; padding: 12px 12px 12px 12px; border: 1.5px dashed #D97A2B; border-radius: 8px; background: #FFF8F2">
+<span class="mono" style="position: absolute; top: -10px; right: 10px; font-size: 10px; font-weight: 500; background: #D97A2B; color: #FFFFFF; padding: 2px 6px; border-radius: 4px">Variant B</span>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #3E4440">
+<li style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#0F6B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4 4 8-8"></path></svg>Free cancellation up to 30 days</li>
+<li style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#0F6B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4 4 8-8"></path></svg>Secure payment</li>
+<li style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#0F6B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4 4 8-8"></path></svg>Pay in 3 instalments</li>
+</ul>
+</div>
+</div>
+
+<section aria-label="Splitly QA panel" style="position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 12px; background: #15171A; color: #D8DCD5; box-shadow: 0 16px 40px rgba(21, 23, 26, 0.35)">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="#0F6B57"></rect><rect x="6.5" y="7" width="5.5" height="12" rx="1.5" fill="#FFFFFF"></rect><rect x="14" y="7" width="5.5" height="12" rx="1.5" fill="#F2B37A"></rect></svg><span style="font-size: 13px; font-weight: 700; color: #FFFFFF">Splitly QA</span></span>
+<span class="mono" style="font-size: 11px; color: #F2B37A">forced by URL</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px">
+<div style="display: flex; justify-content: space-between; gap: 10px"><span>Trust badges</span><span class="mono" style="font-size: 12px; color: #F2B37A">B · forced</span></div>
+<div style="display: flex; justify-content: space-between; gap: 10px"><span>Sticky Book Now bar</span><span class="mono" style="font-size: 12px; color: #7FC4E8">Control · bucketed</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 10px; border-radius: 8px; background: #1D2124">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8C938A">Events sent</span>
+<span class="mono" style="font-size: 12px; color: #A8D8A0">✓ exposure · trust · B</span>
+<span class="mono" style="font-size: 12px; color: #A8D8A0">✓ trust_badges_seen</span>
+<span class="mono" style="font-size: 12px; color: #8C938A">· waiting: book click</span>
+</div>
+<div style="display: flex; gap: 8px">
+<button style="flex: 1; height: 36px; border-radius: 7px; border: 1px solid #3A4044; background: #262B2E; color: #FFFFFF; font: 600 13px 'Instrument Sans', system-ui, sans-serif; cursor: pointer">Switch variant</button>
+<button style="flex: 1; height: 36px; border-radius: 7px; border: 1px solid #3A4044; background: transparent; color: #D8DCD5; font: 600 13px 'Instrument Sans', system-ui, sans-serif; cursor: pointer">Reset</button>
+<button aria-label="Hide QA panel" style="width: 36px; height: 36px; border-radius: 7px; border: 1px solid #3A4044; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#D8DCD5" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg></button>
+</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

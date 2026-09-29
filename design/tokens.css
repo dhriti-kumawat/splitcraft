@@ -1,0 +1,64 @@
+/* Splitly design tokens — source of truth for colours and type.
+   Mirror these in Tailwind config or CSS variables. */
+
+:root {
+  /* Neutrals */
+  --ink: #15171A;          /* primary text, dark sidebar, primary buttons */
+  --ink-2: #1D2124;        /* dark raised surface (sidebar cards, code chrome) */
+  --ink-3: #262B2E;        /* dark active nav item */
+  --ground: #F4F5F2;       /* app background */
+  --surface: #FFFFFF;      /* cards, inputs */
+  --surface-2: #FAFBF9;    /* table headers, subtle panels */
+  --line: #E3E5DF;         /* card borders */
+  --line-soft: #EEF0EB;    /* row dividers */
+  --line-strong: #D5D8D1;  /* input borders */
+  --text-2: #3E4440;       /* secondary text */
+  --muted: #5F6660;        /* captions, labels (4.5:1 on white) */
+  --faint: #8C938A;        /* placeholders on dark, disabled */
+
+  /* Brand */
+  --accent: #0F6B57;       /* primary action, links, "live", winner */
+  --accent-hover: #0A4E40;
+  --accent-soft: #E4F1EC;
+  --accent-soft-line: #BFDDD1;
+
+  /* Variants */
+  --variant-a: #3B5B8C;    /* Control */
+  --variant-a-soft: #E8ECF3;
+  --variant-b: #D97A2B;    /* Variant B on light */
+  --variant-b-soft: #FBE9DA;
+  --highlight: #F2B37A;    /* variant B on dark, logo second bar */
+
+  /* Status */
+  --warn: #8A5300;
+  --warn-dot: #C27A10;
+  --warn-soft: #FBEFD9;
+  --danger: #B3261E;
+  --danger-text: #8E2A22;
+  --danger-soft: #FBEAEA;
+
+  /* Code editor (dark) */
+  --code-bg: #15171A;
+  --code-text: #D8DCD5;
+  --code-keyword: #7FC4E8;
+  --code-string: #A8D8A0;
+  --code-fn: #F2B37A;
+  --code-comment: #7D857A;
+
+  /* Type */
+  --font-ui: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  /* Google Fonts: Instrument Sans 400/500/600/700, JetBrains Mono 400/500 */
+
+  /* Radii */
+  --r-sm: 5px;    /* chips inside inputs */
+  --r-md: 7px;    /* buttons, inputs (dashboard) */
+  --r-lg: 10px;   /* cards (dashboard), auth inputs/buttons */
+  --r-xl: 16px;   /* marketing cards, auth card 18px */
+}
+
+/* Type scale used in designs
+   Dashboard: page title 26/700 -0.02em · section title 15/700 · body 14 · caption 12–13
+              uppercase label 11/600 letter-spacing 0.08em
+   Auth:      title 26/700 · body 14.5 · input 15 · button 15/600, height 46
+   Marketing: hero 76/600 -0.045em · h2 48/600 -0.035em · lede 18–20 · card title 21/700 */

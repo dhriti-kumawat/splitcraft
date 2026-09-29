@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Splitly · Targeting</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;color:#15171A;background:#F4F5F2;-webkit-font-smoothing:antialiased}
+a{color:#0F6B57}a:hover{color:#0A4E40}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:#AEB4AC;text-decoration:none;font-size:14px;font-weight:500}
+.nv:hover{color:#FFFFFF}
+.nv.on{background:#262B2E;color:#FFFFFF}
+.sb{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:8px;border:1px solid #2E3337;background:#1D2124;color:#FFFFFF;text-align:left;cursor:pointer;font-family:inherit}
+.sl{padding:0 10px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#858D84}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:7px;border:1px solid #0F6B57;background:#0F6B57;color:#FFFFFF;font:600 14px 'Instrument Sans',system-ui,sans-serif;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn2{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:7px;border:1px solid #D5D8D1;background:#FFFFFF;color:#15171A;font:600 14px 'Instrument Sans',system-ui,sans-serif;cursor:pointer;white-space:nowrap;text-decoration:none}
+.pill{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:11px;font-size:12px;font-weight:600;white-space:nowrap}
+.lbl{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#5F6660}
+.tab{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 2px;font-size:14px;font-weight:600;color:#5F6660;text-decoration:none;border-bottom:2px solid transparent}
+.tab.on{color:#15171A;border-bottom-color:#0F6B57}
+.tn{width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:#E4F1EC;color:#0F6B57}
+.sec{display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#FFFFFF;border:1px solid #E3E5DF;border-radius:10px}
+.sh{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:28px}
+.sq{display:flex;align-items:baseline;gap:10px}
+.sk{font:700 11px 'JetBrains Mono',ui-monospace,monospace;letter-spacing:0.06em;color:#FFFFFF;background:#15171A;padding:3px 7px;border-radius:4px}
+.st{margin:0;font-size:15px;font-weight:700}
+.sd{font-size:12px;color:#5F6660}
+.cr{display:flex;align-items:center;gap:6px;height:36px}
+.io{display:inline-flex;align-items:center;justify-content:center;width:72px;flex-shrink:0;height:24px;border-radius:5px;font:700 11px 'Instrument Sans',system-ui,sans-serif;letter-spacing:0.05em}
+.fd{display:inline-flex;align-items:center;gap:8px;width:180px;flex-shrink:0;height:34px;box-sizing:border-box;padding:0 8px;border:1px solid #D5D8D1;border-radius:7px;background:#FFFFFF;font:600 13px 'Instrument Sans',system-ui,sans-serif;color:#15171A;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden}
+.op{display:inline-flex;align-items:center;justify-content:space-between;gap:6px;width:136px;flex-shrink:0;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid #D5D8D1;border-radius:7px;background:#FAFBF9;font:500 13px 'Instrument Sans',system-ui,sans-serif;color:#3E4440;cursor:pointer;white-space:nowrap}
+.vl{display:flex;align-items:center;gap:6px;flex-grow:1;min-width:0;height:34px;box-sizing:border-box;padding:0 8px;border:1px solid #D5D8D1;border-radius:7px;background:#FFFFFF;overflow:hidden;font-size:13px}
+.ch{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:5px;background:#EEF0EB;font:500 12px 'Instrument Sans',system-ui,sans-serif;color:#15171A;white-space:nowrap}
+.cd{font:500 12px 'JetBrains Mono',ui-monospace,monospace;color:#15171A;white-space:nowrap}
+.x{width:30px;height:30px;flex-shrink:0;border:none;border-radius:6px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C938A}
+.add{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px;border-radius:6px;border:none;background:transparent;font:600 13px 'Instrument Sans',system-ui,sans-serif;color:#0F6B57;cursor:pointer}
+.seg{display:flex;gap:2px;padding:2px;border-radius:7px;background:#EEF0EB}
+.sg{height:26px;padding:0 10px;border-radius:5px;border:none;background:transparent;font:600 12px 'Instrument Sans',system-ui,sans-serif;color:#5F6660;cursor:pointer;white-space:nowrap}
+.sg.on{background:#FFFFFF;color:#15171A;box-shadow:0 1px 2px rgba(21,23,26,0.12)}
+.seg2{display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:15px;border:1px solid #D5D8D1;background:#FFFFFF;font:600 13px 'Instrument Sans',system-ui,sans-serif;color:#15171A;cursor:pointer}
+.tr{display:flex;align-items:center;gap:10px;font-size:13px;padding:6px 0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; display: flex; overflow: hidden; background: #F4F5F2">
+
+<aside style="width: 240px; flex-shrink: 0; background: #15171A; display: flex; flex-direction: column; gap: 20px; padding: 20px 14px; box-sizing: border-box">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 8px">
+<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="1" width="24" height="24" rx="6" fill="#0F6B57"></rect><rect x="6.5" y="7" width="5.5" height="12" rx="1.5" fill="#FFFFFF"></rect><rect x="14" y="7" width="5.5" height="12" rx="1.5" fill="#F2B37A"></rect></svg>
+<span style="font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em">Splitly</span>
+</div>
+<button class="sb">
+<span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 6px; background: #3A2E22; color: #F2B37A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">DW</span>
+<span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 13px; font-weight: 600">Dhriti's Workspace</span><span style="font-size: 11px; color: #8C938A">Free plan · 3 projects</span></span>
+<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8C938A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l3-3 3 3M7 12l3 3 3-3"></path></svg>
+</button>
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<a class="nv" href="Main.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"></rect><rect x="11" y="3" width="6" height="6" rx="1.5"></rect><rect x="3" y="11" width="6" height="6" rx="1.5"></rect><rect x="11" y="11" width="6" height="6" rx="1.5"></rect></svg>Projects</a>
+<a class="nv" href="#team"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="7" r="3"></circle><path d="M2.5 17c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M13 4.5a3 3 0 0 1 0 5M15 12.8c1.3.6 2.2 1.9 2.5 4.2"></path></svg>Team</a>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span class="sl">Current project</span>
+<button class="sb">
+<span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 6px; background: #22403A; color: #9FD3C2; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">TD</span>
+<span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 13px; font-weight: 600">Trip Demo</span><span class="mono" style="font-size: 11px; color: #8C938A">mytrips.dev</span></span>
+<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8C938A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l3-3 3 3M7 12l3 3 3-3"></path></svg>
+</button>
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<a class="nv on" href="Experiments.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h4M9 3v5l-5 8.5a1 1 0 0 0 .9 1.5h10.2a1 1 0 0 0 .9-1.5L11 8V3"></path></svg>Experiments</a>
+<a class="nv" href="Audiences.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h14l-5.5 6.5V16l-3 1.5v-6L3 5z"></path></svg>Audiences</a>
+<a class="nv" href="Metrics.dc.html"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7"></circle><circle cx="10" cy="10" r="3"></circle></svg>Metrics</a>
+<a class="nv" href="#install"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 6l-4 4 4 4M13 6l4 4-4 4"></path></svg>Install</a>
+<a class="nv" href="#settings"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 6h14M3 14h14"></path><circle cx="7" cy="6" r="2" fill="#15171A"></circle><circle cx="13" cy="14" r="2" fill="#15171A"></circle></svg>Settings</a>
+</nav>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 8px; background: #1D2124">
+<span style="font-size: 12px; color: #AEB4AC">Events this month</span>
+<span class="mono" style="font-size: 13px; color: #FFFFFF">48,210 <span style="color: #8C938A">/ 100,000</span></span>
+<div style="height: 4px; border-radius: 2px; background: #2E3337"><div style="width: 48%; height: 4px; border-radius: 2px; background: #5FB89F"></div></div>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+<span style="width: 30px; height: 30px; border-radius: 15px; background: #F2B37A; color: #15171A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">DK</span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 600; color: #FFFFFF">Dhriti Kumawat</span><span style="font-size: 12px; color: #8C938A">Owner</span></span>
+</div>
+</aside>
+
+<main style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<header style="flex-shrink: 0; display: flex; flex-direction: column; padding: 0 32px; background: #FFFFFF; border-bottom: 1px solid #E3E5DF">
+<div style="height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 20px">
+<div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+<span style="font-size: 14px; color: #5F6660; white-space: nowrap"><a href="Experiments.dc.html" style="color: #5F6660; text-decoration: none">Experiments</a> <span style="color: #B5BAB2">/</span> <span style="color: #15171A; font-weight: 600">Trust badges under Book button</span></span>
+<span class="pill" style="background: #ECEDEA; color: #4A504B"><span style="width: 6px; height: 6px; border-radius: 3px; background: #8C938A"></span>Draft</span>
+</div>
+<div style="display: flex; gap: 10px">
+<a class="btn2" href="QA.dc.html">Preview on site</a>
+<button class="btn">Launch experiment</button>
+</div>
+</div>
+<nav style="display: flex; gap: 26px">
+<a class="tab" href="Setup.dc.html"><span class="tn">✓</span>Basics</a>
+<a class="tab" href="Editor.dc.html"><span class="tn">✓</span>Variants &amp; code</a>
+<a class="tab on" href="Targeting.dc.html"><span class="tn" style="background: #0F6B57; color: #FFFFFF">3</span>Targeting</a>
+<a class="tab" href="Goals.dc.html"><span class="tn" style="background: #EEF0EB; color: #5F6660">4</span>Goals</a>
+<a class="tab" href="Results.dc.html"><span class="tn" style="background: #EEF0EB; color: #5F6660">5</span>Results</a>
+</nav>
+</header>
+
+<div style="flex-grow: 1; display: flex; gap: 20px; padding: 18px 32px; min-height: 0">
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+
+<section class="sec">
+<div class="sh"><div class="sq"><span class="sk">WHO</span><h2 class="st">Segment</h2><span class="sd">Traits that stay true across visits</span></div><a href="Audiences.dc.html" style="font-size: 13px; font-weight: 600">Create segment</a></div>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<span style="font-size: 13px; color: #3E4440">Visitor is in</span>
+<div class="seg"><button class="sg on">any</button><button class="sg">all</button></div>
+<span style="font-size: 13px; color: #3E4440">of</span>
+<span class="seg2">High-intent returners <span class="mono" style="font-size: 11px; color: #5F6660">9.4%</span> <span style="color: #8C938A">×</span></span>
+<span class="seg2">Logged-in members <span class="mono" style="font-size: 11px; color: #5F6660">22%</span> <span style="color: #8C938A">×</span></span>
+<button class="add">+ Segment</button>
+</div>
+</section>
+
+<section class="sec">
+<div class="sh"><div class="sq"><span class="sk">WHERE</span><h2 class="st">Pages</h2><span class="sd">Include rules OR together, exclude rules always win</span></div><div style="display: flex; gap: 4px"><button class="add">Use saved page set</button><button class="add">+ Rule</button></div></div>
+<div class="cr"><span class="io" style="background: #E4F1EC; color: #0F6B57">INCLUDE</span><button class="fd">URL</button><button class="op">matches pattern ▾</button><div class="vl"><span class="cd">/trips/*</span></div><button class="x" aria-label="Remove rule">×</button></div>
+<div class="cr"><span class="io" style="background: #E4F1EC; color: #0F6B57">INCLUDE</span><button class="fd">URL</button><button class="op">regex ▾</button><div class="vl"><span class="cd">^/deals/(summer|monsoon)</span></div><button class="x" aria-label="Remove rule">×</button></div>
+<div class="cr"><span class="io" style="background: #FBEAEA; color: #B3261E">EXCLUDE</span><button class="fd">URL</button><button class="op">contains ▾</button><div class="vl"><span class="cd">/archive</span></div><button class="x" aria-label="Remove rule">×</button></div>
+<div class="cr"><span class="io" style="background: #15171A; color: #FFFFFF">AND</span><button class="fd">Element on page</button><button class="op">exists ▾</button><div class="vl"><span class="cd">.book-now-btn</span><span style="margin-left: auto; font-size: 12px; color: #5F6660">wait up to 3 s</span></div><button class="x" aria-label="Remove rule">×</button></div>
+</section>
+
+<section class="sec">
+<div class="sh"><div class="sq"><span class="sk">HOW</span><h2 class="st">Triggers</h2><span class="sd">Conditions in this visit, checked on every page</span></div><div style="display: flex; align-items: center; gap: 8px"><div class="seg"><button class="sg on">all</button><button class="sg">any</button></div><button class="add">+ Trigger</button></div></div>
+<div class="cr"><button class="fd">Screen width</button><button class="op">is at least ▾</button><div class="vl"><span class="cd">360 px</span></div><button class="x" aria-label="Remove trigger">×</button></div>
+<div class="cr"><button class="fd">Pages viewed this visit</button><button class="op">is at least ▾</button><div class="vl"><span class="cd">2</span></div><button class="x" aria-label="Remove trigger">×</button></div>
+<div class="cr"><button class="fd">Source type</button><button class="op">is any of ▾</button><div class="vl"><span class="ch">Paid search</span><span class="ch">Email</span><span class="ch">Direct</span></div><button class="x" aria-label="Remove trigger">×</button></div>
+<div class="cr"><button class="fd">dataLayer <span class="mono" style="font-size: 12px; font-weight: 500">pageType</span></button><button class="op">equals ▾</button><div class="vl"><span class="cd">"trip-detail"</span></div><button class="x" aria-label="Remove trigger">×</button></div>
+</section>
+
+<section class="sec">
+<div class="sh"><div class="sq"><span class="sk">WHEN</span><h2 class="st">Frequency</h2><span class="sd">How often a matched visitor sees the variant</span></div></div>
+<div class="seg" style="align-self: flex-start"><button class="sg on">Every page load</button><button class="sg">Once</button><button class="sg">Once per session</button><button class="sg">Every 7 days</button></div>
+</section>
+</div>
+
+<aside style="width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 10px; background: #15171A; color: #D8DCD5">
+<span class="lbl" style="color: #F2B37A">Who will see this</span>
+<span style="font-size: 13px; line-height: 1.55">High-intent returners <b style="color: #FFFFFF">or</b> logged-in members, on trip or seasonal deal pages with a Book button, from their 2nd page onward, on screens 360 px+, arriving from paid search, email or direct.</span>
+<div style="display: flex; align-items: baseline; gap: 8px; padding-top: 4px"><span style="font-size: 26px; font-weight: 700; color: #FFFFFF; font-variant-numeric: tabular-nums">18%</span><span style="font-size: 13px; color: #AEB4AC">of traffic · ≈ 350 visitors a day</span></div>
+<span style="font-size: 12px; line-height: 1.45; color: #F2B37A">At this reach, a 15% lift needs about 77 days. Widen a rule or test a bolder change.</span>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #FFFFFF; border: 1px solid #E3E5DF; border-radius: 10px">
+<span class="lbl">Test a URL</span>
+<label for="test-url" style="position: absolute; left: -9999px">URL to test</label>
+<input id="test-url" value="mytrips.dev/trips/norway?utm_source=google" style="height: 36px; box-sizing: border-box; border: 1px solid #D5D8D1; border-radius: 7px; padding: 0 10px; font: 500 12px 'JetBrains Mono', ui-monospace, monospace; color: #15171A">
+<div style="display: flex; flex-direction: column">
+<div class="tr" style="border-bottom: 1px solid #F0F1ED"><span style="color: #0F6B57; font-weight: 700">✓</span><span style="flex-grow: 1">Where: matches <span class="cd">/trips/*</span></span></div>
+<div class="tr" style="border-bottom: 1px solid #F0F1ED"><span style="color: #0F6B57; font-weight: 700">✓</span><span style="flex-grow: 1">Element <span class="cd">.book-now-btn</span> found</span></div>
+<div class="tr" style="border-bottom: 1px solid #F0F1ED"><span style="color: #0F6B57; font-weight: 700">✓</span><span style="flex-grow: 1">Source: Paid search</span></div>
+<div class="tr"><span style="color: #B3261E; font-weight: 700">✗</span><span style="flex-grow: 1">Pages viewed: 1, needs 2</span></div>
+</div>
+<span style="font-size: 12px; color: #8A5300; line-height: 1.45">This visitor would see the test from their next page.</span>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px; padding: 16px; background: #FFFFFF; border: 1px solid #E3E5DF; border-radius: 10px">
+<span class="lbl">Segment vs trigger</span>
+<span style="font-size: 12px; line-height: 1.5; color: #3E4440"><b>Segments</b> remember the visitor (cookie, past sessions, purchases). <b>Triggers</b> only read the current visit (URL, screen, dataLayer, JS). Mixing both is how you target tricky groups.</span>
+</section>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
