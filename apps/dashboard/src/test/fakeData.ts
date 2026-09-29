@@ -223,6 +223,10 @@ export function fakeData(
   }));
   const patches: Array<{ id: string; patch: unknown }> = [];
   const variantPatches: Array<{ id: string; patch: unknown }> = [];
+  const versions: Record<
+    string,
+    Array<{ id: string; js: string; css: string; note: string; createdAt: string }>
+  > = {};
   const createdExperiments: string[] = [];
   const created: NewProject[] = [];
   let installNext = false;
@@ -271,8 +275,38 @@ export function fakeData(
       variantPatches.push({ id, patch });
       for (const e of experiments) {
         const v = e.variants.find((x) => x.id === id);
-        if (v) Object.assign(v, patch);
+        if (!v) continue;
+        // Like the database trigger: keep the old code as a version.
+        if (
+          (patch.js !== undefined && patch.js !== v.js) ||
+          (patch.css !== undefined && patch.css !== v.css)
+        ) {
+          (versions[id] ??= []).unshift({
+            id: `${id}-v${v.version}`,
+            js: v.js,
+            css: v.css,
+            note: '',
+            createdAt: daysAgo(0),
+          });
+          v.version += 1;
+        }
+        Object.assign(v, patch);
       }
+    },
+    listVariantVersions: async (id) => versions[id] ?? [],
+    async addVariant(experimentId, variant) {
+      const e = experiments.find((x) => x.id === experimentId)!;
+      e.variants.push({
+        id: `${experimentId}-${variant.key}`,
+        js: '',
+        css: '',
+        version: 1,
+        ...variant,
+      });
+      e.variants.sort((a, b) => a.key.localeCompare(b.key));
+    },
+    async deleteVariant(id) {
+      for (const e of experiments) e.variants = e.variants.filter((v) => v.id !== id);
     },
     listMetrics: async (projectId) => METRICS.filter((m) => m.projectId === projectId),
     experimentGoals: async (id) => GOALS[id] ?? [],

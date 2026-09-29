@@ -98,6 +98,14 @@ export type ExperimentPatch = Partial<
 
 export type VariantPatch = Partial<Pick<Variant, 'name' | 'weight' | 'js' | 'css'>>;
 
+export interface VariantVersion {
+  id: string;
+  js: string;
+  css: string;
+  note: string;
+  createdAt: string;
+}
+
 export interface Metric {
   id: string;
   projectId: string;
@@ -138,6 +146,13 @@ export interface DataApi {
   getExperiment(experimentId: string): Promise<Experiment | null>;
   updateExperiment(experimentId: string, patch: ExperimentPatch): Promise<Experiment>;
   updateVariant(variantId: string, patch: VariantPatch): Promise<void>;
+  /** Earlier code of a variant, newest first. The current code is on the variant. */
+  listVariantVersions(variantId: string): Promise<VariantVersion[]>;
+  addVariant(
+    experimentId: string,
+    variant: { key: string; name: string; weight: number },
+  ): Promise<void>;
+  deleteVariant(variantId: string): Promise<void>;
   listMetrics(projectId: string): Promise<Metric[]>;
   /** Secondary goals and guardrails (the primary goal is on the experiment). */
   experimentGoals(experimentId: string): Promise<ExperimentGoal[]>;

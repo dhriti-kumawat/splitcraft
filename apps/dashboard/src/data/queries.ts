@@ -14,6 +14,7 @@ export const keys = {
   experiment: (experimentId: string) => ['experiment', experimentId] as const,
   metrics: (projectId: string) => ['metrics', projectId] as const,
   goals: (experimentId: string) => ['goals', experimentId] as const,
+  versions: (variantId: string) => ['versions', variantId] as const,
 };
 
 export function useWorkspacesQuery(userId: string) {
@@ -150,4 +151,62 @@ export function useUpdateVariants(experiment: Pick<Experiment, 'id' | 'projectId
       void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
     },
   });
+}
+
+export function useVersionsQuery(variantId: string | undefined) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.versions(variantId ?? ''),
+    queryFn: () => api.listVariantVersions(variantId!),
+    enabled: Boolean(variantId),
+  });
+}
+
+/** Save one variant's code; its history and the experiment refresh. */
+export function useSaveVariantCode(experiment: Pick<Experiment, 'id' | 'projectId'>) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ variantId, js, css }: { variantId: string; js: string; css: string }) =>
+      api.updateVariant(variantId, { js, css }),
+    onSuccess: (_r, { variantId }) => {
+      void client.invalidateQueries({ queryKey: keys.versions(variantId) });
+      void client.invalidateQueries({ queryKey: keys.experiment(experiment.id) });
+    },
+  });
+}
+
+/** Add or remove a variant (drafts only). Remaining weights are rebalanced evenly. */
+export function useEditVariants(experiment: Experiment) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => {
+    void client.invalidateQueries({ queryKey: keys.experiment(experiment.id) });
+    void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
+  };
+  const add = useMutation({
+    mutationFn: async () => {
+      const used = new Set(experiment.variants.map((v) => v.key));
+      const letter = 'bcdefghijklmnopqrstuvwxyz'.split('').find((l) => !used.has(l))!;
+      const even = Math.round((100 / (experiment.variants.length + 1)) * 100) / 100;
+      await api.addVariant(experiment.id, {
+        key: letter,
+        name: letter.toUpperCase(),
+        weight: even,
+      });
+      await Promise.all(experiment.variants.map((v) => api.updateVariant(v.id, { weight: even })));
+      return letter;
+    },
+    onSuccess: refresh,
+  });
+  const remove = useMutation({
+    mutationFn: async (variantId: string) => {
+      const rest = experiment.variants.filter((v) => v.id !== variantId);
+      const even = Math.round((100 / rest.length) * 100) / 100;
+      await api.deleteVariant(variantId);
+      await Promise.all(rest.map((v) => api.updateVariant(v.id, { weight: even })));
+    },
+    onSuccess: refresh,
+  });
+  return { add, remove };
 }
