@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CumulativeChart } from '../../components/CumulativeChart';
-import type { ExperimentGoal } from '../../data/api';
+import type { ExperimentGoal, Metric } from '../../data/api';
 import { useDailyQuery, useGoalsQuery, useMetricsQuery, useResultsQuery } from '../../data/queries';
 import { SERIES } from '../../lib/chartColors';
 import { controlKey, percent } from '../../lib/experiments';
@@ -86,7 +86,8 @@ export function ResultsPage() {
     series.map((s) => s.key),
   );
   const unique = primaryMetric.measure === 'unique';
-  const fmt = (x: number) => (unique ? `${(x * 100).toFixed(2)}%` : x.toFixed(2));
+  const proportion = unique || primaryMetric.measure === 'ctr';
+  const fmt = (x: number) => formatValue(primaryMetric.measure, x);
   const plannedTotal = plan ? plan * experiment.variants.length : null;
 
   return (
@@ -143,7 +144,7 @@ export function ResultsPage() {
             {best?.chanceBetter !== undefined ? `${Math.round(best.chanceBetter * 100)}%` : '—'}
           </dd>
           <dd className={styles.kpiNote} style={{ margin: 0 }}>
-            {unique ? 'Bayesian, flat prior' : 'Normal approximation'}
+            {proportion ? 'Bayesian, flat prior' : 'Normal approximation'}
             {primary.lowerIsBetter ? ' · lower is better' : ''}
           </dd>
         </div>
@@ -325,8 +326,7 @@ function GuardCell({
   result: MetricResult;
   isControl: boolean;
 }) {
-  const value =
-    result.metric.measure === 'unique' ? `${(arm.value * 100).toFixed(2)}%` : arm.value.toFixed(2);
+  const value = formatValue(result.metric.measure, arm.value);
   if (isControl) return <span className={styles.range}>Baseline {arm.visitors ? value : '—'}</span>;
   const status = guardrailStatus(arm, goal, result.lowerIsBetter);
   const cls =
@@ -343,4 +343,10 @@ function GuardCell({
       {GUARD_TEXT[status]}
     </span>
   );
+}
+
+function formatValue(measure: Metric['measure'], x: number): string {
+  if (measure === 'unique' || measure === 'ctr') return `${(x * 100).toFixed(2)}%`;
+  if (measure === 'time_to_click') return `${x.toFixed(1)} s`;
+  return x.toFixed(2);
 }

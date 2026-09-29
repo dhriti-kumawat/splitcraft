@@ -33,6 +33,8 @@ export function toSdkConfig(
         key: m.eventKey,
         selector: cfg.selector,
         ...(cfg.firstPerPage === true && { firstPerPage: true }),
+        ...(cfg.views === true && { views: true }),
+        ...(cfg.timing === true && { timing: true }),
       });
     } else if (m.source === 'pageview' && isUrlRule(cfg.url)) {
       pageviews.push({ key: m.eventKey, url: cfg.url });

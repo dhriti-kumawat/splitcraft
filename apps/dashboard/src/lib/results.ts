@@ -71,17 +71,25 @@ export function metricResult(
       eventsSumsq: 0,
       valueSum: 0,
       valueSumsq: 0,
+      viewers: 0,
     };
   const c = armOf(control);
+  // Click-through rate is a proportion like conversion rate, over viewers instead of visitors.
+  const ctr = metric.measure === 'ctr';
+  const proportion = metric.measure === 'unique' || ctr;
+  const base = (a: MetricArm) => ({
+    visitors: ctr ? a.viewers : a.visitors,
+    conversions: Math.min(a.converters, ctr ? a.viewers : a.visitors),
+  });
   const arms = experiment.variants.map((v): ArmResult => {
     const a = armOf(v.key);
-    const value =
-      metric.measure === 'unique'
-        ? a.visitors
-          ? a.converters / a.visitors
-          : 0
-        : meanArm(metric, a).mean;
-    const base = {
+    const p = base(a);
+    const value = proportion
+      ? p.visitors
+        ? p.conversions / p.visitors
+        : 0
+      : meanArm(metric, a).mean;
+    const arm = {
       variantKey: v.key,
       name: v.name,
       visitors: a.visitors,
@@ -89,16 +97,12 @@ export function metricResult(
       events: a.events,
       value,
     };
-    if (v.key === control || a.visitors === 0 || c.visitors === 0) return base;
-    const comparison =
-      metric.measure === 'unique'
-        ? compareConversion(
-            { visitors: c.visitors, conversions: c.converters },
-            { visitors: a.visitors, conversions: a.converters },
-          )
-        : compareMeans(meanArm(metric, c), meanArm(metric, a));
+    if (v.key === control || p.visitors === 0 || base(c).visitors === 0) return arm;
+    const comparison = proportion
+      ? compareConversion(base(c), p)
+      : compareMeans(meanArm(metric, c), meanArm(metric, a));
     return {
-      ...base,
+      ...arm,
       comparison,
       chanceBetter: lowerIsBetter ? 1 - comparison.chanceToWin : comparison.chanceToWin,
     };

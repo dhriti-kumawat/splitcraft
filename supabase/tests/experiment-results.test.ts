@@ -85,10 +85,10 @@ afterAll(async () => {
 describe('experiment_results', () => {
   it('counts converters, events and capped values per variant and metric', async () => {
     const rows = await as(db, owner, () =>
-      q<Row>('select * from experiment_results($1) order by metric_id = $2 desc, variant_key', [
-        experiment,
-        book,
-      ]),
+      q<Row>(
+        'select metric_id, variant_key, visitors, converters, events, events_sumsq, value_sum, value_sumsq from experiment_results($1) order by metric_id = $2 desc, variant_key',
+        [experiment, book],
+      ),
     );
     const pick = (metric: string, variant: string) =>
       rows.find((r) => r.metric_id === metric && r.variant_key === variant)!;

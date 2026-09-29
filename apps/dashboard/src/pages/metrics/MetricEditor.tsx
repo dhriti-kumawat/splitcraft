@@ -126,7 +126,13 @@ function Form({
 
   const sourceConfig =
     source === 'click'
-      ? { selector: selector.trim(), ...(firstPerPage && { firstPerPage: true }) }
+      ? {
+          selector: selector.trim(),
+          ...(firstPerPage && { firstPerPage: true }),
+          // Tell the SDK what the measure needs: element views, or first-click timing.
+          ...(measureNow === 'ctr' && { views: true }),
+          ...(measureNow === 'time_to_click' && { timing: true }),
+        }
       : source === 'pageview'
         ? { url: { op: url.op, value: url.value.trim() } }
         : {
@@ -436,7 +442,12 @@ function Form({
                   role="radio"
                   aria-checked={measureNow === m}
                   className={styles.measure}
-                  onClick={() => setMeasure(m)}
+                  onClick={() => {
+                    setMeasure(m);
+                    // Faster is better for time to first click.
+                    if (m === 'time_to_click') setDirection('decrease');
+                    else if (measureNow === 'time_to_click') setDirection('increase');
+                  }}
                 >
                   <span className={styles.measureTitle}>{MEASURES[m].label}</span>
                   <span className={styles.measureText}>{MEASURES[m].text}</span>

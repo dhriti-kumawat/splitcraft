@@ -50,7 +50,15 @@ export interface SdkProjectConfig {
     };
   }>;
   goals: {
-    clicks: Array<{ key: string; selector: string; firstPerPage?: boolean }>;
+    clicks: Array<{
+      key: string;
+      selector: string;
+      firstPerPage?: boolean;
+      /** Send `<key>:view` once per page when a matching element is seen (click-through rate). */
+      views?: boolean;
+      /** Send seconds since page load as the value of each page's first click. */
+      timing?: boolean;
+    }>;
     pageviews: Array<{ key: string; url: UrlRule }>;
     custom: Array<{ key: string; code: string; pages?: UrlRule[] }>;
   };

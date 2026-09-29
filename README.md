@@ -67,7 +67,7 @@ flowchart LR
 
 |                                     |                                                                          |
 | ----------------------------------- | ------------------------------------------------------------------------ |
-| SDK, main bundle                    | **6.6 KB** gzipped (budget 7 KB, checked in CI), no runtime dependencies |
+| SDK, main bundle                    | **6.9 KB** gzipped (budget 8 KB, checked in CI), no runtime dependencies |
 | QA panel                            | 2.0 KB gzipped, a separate file loaded only in QA mode                   |
 | Marketing site, Lighthouse (mobile) | Performance 100 · Accessibility 100 · Best practices 100 · SEO 100       |
 | Tests                               | ~500 across SDK, dashboard, site, database and simulator                 |

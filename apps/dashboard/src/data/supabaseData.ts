@@ -576,6 +576,7 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         events_sumsq: number;
         value_sum: number;
         value_sumsq: number;
+        viewers: number | null;
       }>;
       return rows.map((r) => ({
         metricId: r.metric_id,
@@ -586,6 +587,7 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         eventsSumsq: r.events_sumsq,
         valueSum: r.value_sum,
         valueSumsq: r.value_sumsq,
+        viewers: r.viewers ?? 0,
       }));
     },
 

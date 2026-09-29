@@ -26,11 +26,17 @@ export const MEASURES: Record<Metric['measure'], { label: string; text: string }
   total: { label: 'Total conversions', text: 'Events per visitor, every fire counts' },
   sum: { label: 'Sum of value', text: 'Adds value per visitor, capped at p99' },
   value_per_conversion: { label: 'Value per conversion', text: 'Average value when it fires' },
+  ctr: { label: 'Click-through rate', text: 'Clicks ÷ visitors who saw it' },
+  time_to_click: {
+    label: 'Time to first click',
+    text: 'Seconds from page load, average per visitor',
+  },
 };
 
 /** Click trackers only count clicks; value-based measures need events with a value. */
 export function measuresFor(source: Metric['source']): Array<Metric['measure']> {
-  return source === 'click' || source === 'pageview'
+  if (source === 'click') return ['unique', 'total', 'ctr', 'time_to_click'];
+  return source === 'pageview'
     ? ['unique', 'total']
     : ['unique', 'total', 'sum', 'value_per_conversion'];
 }
