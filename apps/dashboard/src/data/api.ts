@@ -1,4 +1,4 @@
-import type { StoredTargeting } from '../lib/targeting';
+import type { ConditionGroup, StoredTargeting } from '../lib/targeting';
 
 export type Role = 'owner' | 'admin' | 'member';
 
@@ -106,6 +106,15 @@ export interface VariantVersion {
   createdAt: string;
 }
 
+export interface Segment {
+  id: string;
+  projectId: string;
+  name: string;
+  /** One ALL group whose items are the builder's groups. */
+  rules: ConditionGroup;
+  updatedAt: string;
+}
+
 export interface Metric {
   id: string;
   projectId: string;
@@ -154,6 +163,13 @@ export interface DataApi {
   ): Promise<void>;
   deleteVariant(variantId: string): Promise<void>;
   listMetrics(projectId: string): Promise<Metric[]>;
+  listSegments(projectId: string): Promise<Segment[]>;
+  createSegment(projectId: string, name: string, rules: ConditionGroup): Promise<Segment>;
+  updateSegment(
+    segmentId: string,
+    patch: { name?: string; rules?: ConditionGroup },
+  ): Promise<Segment>;
+  deleteSegment(segmentId: string): Promise<void>;
   /** Secondary goals and guardrails (the primary goal is on the experiment). */
   experimentGoals(experimentId: string): Promise<ExperimentGoal[]>;
 }

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { RequireAuth } from './auth/RequireAuth';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
+import { AudiencesPage } from './pages/audiences/AudiencesPage';
 import { AuthPage } from './pages/auth/AuthPage';
 import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
@@ -77,12 +78,8 @@ export const routes: RouteObject[] = [
             path: 'audiences',
             handle: crumb('Audiences'),
             children: [
-              { index: true, element: <Placeholder title="Audiences" step="feat/segments" /> },
-              {
-                path: ':segmentId',
-                element: <Placeholder title="Segment" step="feat/segments" />,
-                handle: crumb('Segment'),
-              },
+              { index: true, element: <AudiencesPage /> },
+              { path: ':segmentId', element: <AudiencesPage />, handle: crumb('Segment') },
             ],
           },
           {

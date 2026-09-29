@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ConditionGroup } from '../lib/targeting';
 import type { Experiment, ExperimentPatch, NewProject, VariantPatch } from './api';
 import { useData } from './context';
 
@@ -15,6 +16,7 @@ export const keys = {
   metrics: (projectId: string) => ['metrics', projectId] as const,
   goals: (experimentId: string) => ['goals', experimentId] as const,
   versions: (variantId: string) => ['versions', variantId] as const,
+  segments: (projectId: string) => ['segments', projectId] as const,
 };
 
 export function useWorkspacesQuery(userId: string) {
@@ -209,4 +211,31 @@ export function useEditVariants(experiment: Experiment) {
     onSuccess: refresh,
   });
   return { add, remove };
+}
+
+export function useSegmentsQuery(projectId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.segments(projectId),
+    queryFn: () => api.listSegments(projectId),
+  });
+}
+
+export function useSegmentMutations(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => void client.invalidateQueries({ queryKey: keys.segments(projectId) });
+  return {
+    create: useMutation({
+      mutationFn: ({ name, rules }: { name: string; rules: ConditionGroup }) =>
+        api.createSegment(projectId, name, rules),
+      onSuccess: refresh,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, name, rules }: { id: string; name?: string; rules?: ConditionGroup }) =>
+        api.updateSegment(id, { name, rules }),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => api.deleteSegment(id), onSuccess: refresh }),
+  };
 }

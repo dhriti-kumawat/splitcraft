@@ -3,12 +3,28 @@
 import type {
   Condition,
   ConditionGroup,
+  DeviceType,
   Frequency,
+  NumberOperator,
+  SourceType,
+  StringOperator,
   UrlRule,
+  UtmParam,
   WhereRules,
 } from '../../../../packages/sdk/src/targeting/types';
 
-export type { Condition, ConditionGroup, Frequency, UrlRule, WhereRules };
+export type {
+  Condition,
+  ConditionGroup,
+  DeviceType,
+  Frequency,
+  NumberOperator,
+  SourceType,
+  StringOperator,
+  UrlRule,
+  UtmParam,
+  WhereRules,
+};
 
 export interface StoredTargeting {
   who?: { mode: 'all' | 'any'; segmentIds: string[] };

@@ -6,6 +6,7 @@ import type {
   NewProject,
   Project,
   ProjectStats,
+  Segment,
   VariantStats,
   Workspace,
 } from '../data/api';
@@ -103,7 +104,10 @@ export const EXPERIMENTS: Experiment[] = [
     status: 'live',
     startedAt: daysAgo(9),
     primaryMetricName: 'Search started',
-    targeting: { where: { include: [{ op: 'is', value: '/' }] } },
+    targeting: {
+      who: { mode: 'any', segmentIds: ['seg-returners'] },
+      where: { include: [{ op: 'is', value: '/' }] },
+    },
   }),
   experiment({ id: 'trust', name: 'Trust badges under Book button', status: 'draft' }),
   experiment({
@@ -206,6 +210,45 @@ export const GOALS: Record<string, ExperimentGoal[]> = {
   ],
 };
 
+export const SEGMENTS: Segment[] = [
+  {
+    id: 'seg-returners',
+    projectId: 'trip-demo',
+    name: 'High-intent returners',
+    updatedAt: daysAgo(1),
+    rules: {
+      mode: 'all',
+      items: [
+        { mode: 'all', items: [{ type: 'visitor_type', value: 'returning' }] },
+        {
+          mode: 'any',
+          items: [
+            {
+              type: 'page_views_matching',
+              url: { op: 'matches', value: '/trips/*' },
+              count: 3,
+              days: 7,
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: 'seg-mobile',
+    projectId: 'trip-demo',
+    name: 'Mobile first-timers',
+    updatedAt: daysAgo(3),
+    rules: {
+      mode: 'all',
+      items: [
+        { type: 'device_type', value: ['mobile'] },
+        { type: 'visitor_type', value: 'new' },
+      ],
+    },
+  },
+];
+
 /** In-memory DataApi seeded with the design's projects. */
 export function fakeData(
   opts: {
@@ -214,6 +257,7 @@ export function fakeData(
     experiments?: Experiment[];
     stats?: VariantStats[];
     lastEventAt?: string | null;
+    segments?: Segment[];
   } = {},
 ) {
   const projects = [...(opts.projects ?? PROJECTS)];
@@ -223,6 +267,7 @@ export function fakeData(
   }));
   const patches: Array<{ id: string; patch: unknown }> = [];
   const variantPatches: Array<{ id: string; patch: unknown }> = [];
+  let segments = (opts.segments ?? SEGMENTS).map((x) => ({ ...x }));
   const versions: Record<
     string,
     Array<{ id: string; js: string; css: string; note: string; createdAt: string }>
@@ -308,6 +353,28 @@ export function fakeData(
     async deleteVariant(id) {
       for (const e of experiments) e.variants = e.variants.filter((v) => v.id !== id);
     },
+    listSegments: async (projectId) =>
+      segments.filter((x) => x.projectId === projectId).map((x) => ({ ...x })),
+    async createSegment(projectId, name, rules) {
+      const seg = {
+        id: `seg-${segments.length + 1}`,
+        projectId,
+        name,
+        rules,
+        updatedAt: daysAgo(0),
+      };
+      segments.push(seg);
+      return { ...seg };
+    },
+    async updateSegment(id, patch) {
+      const seg = segments.find((x) => x.id === id)!;
+      if (patch.name !== undefined) seg.name = patch.name;
+      if (patch.rules !== undefined) seg.rules = patch.rules;
+      return { ...seg };
+    },
+    async deleteSegment(id) {
+      segments = segments.filter((x) => x.id !== id);
+    },
     listMetrics: async (projectId) => METRICS.filter((m) => m.projectId === projectId),
     experimentGoals: async (id) => GOALS[id] ?? [],
     async createExperiment(projectId, name) {
@@ -330,6 +397,7 @@ export function fakeData(
     createdExperiments,
     patches,
     variantPatches,
+    segmentsNow: () => segments,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;
