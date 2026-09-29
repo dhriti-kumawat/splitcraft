@@ -1,4 +1,4 @@
-import type { ConditionGroup, StoredTargeting } from '../lib/targeting';
+import type { ConditionGroup, StoredTargeting, WhereRules } from '../lib/targeting';
 
 export type Role = 'owner' | 'admin' | 'member';
 
@@ -156,6 +156,22 @@ export interface VariantVersion {
   createdAt: string;
 }
 
+/** What each kind of saved targeting stores: triggers are visit conditions, page sets WHERE rules. */
+export interface SavedRules {
+  triggers: ConditionGroup;
+  page_sets: WhereRules;
+}
+export type SavedKind = keyof SavedRules;
+
+/** A saved trigger or page set: reusable in any experiment's targeting (inserted as a copy). */
+export interface Saved<K extends SavedKind> {
+  id: string;
+  projectId: string;
+  name: string;
+  rules: SavedRules[K];
+  updatedAt: string;
+}
+
 export interface Segment {
   id: string;
   projectId: string;
@@ -271,6 +287,19 @@ export interface DataApi {
     patch: { name?: string; rules?: ConditionGroup },
   ): Promise<Segment>;
   deleteSegment(segmentId: string): Promise<void>;
+  listSaved<K extends SavedKind>(kind: K, projectId: string): Promise<Saved<K>[]>;
+  createSaved<K extends SavedKind>(
+    kind: K,
+    projectId: string,
+    name: string,
+    rules: SavedRules[K],
+  ): Promise<Saved<K>>;
+  updateSaved<K extends SavedKind>(
+    kind: K,
+    id: string,
+    patch: { name?: string; rules?: SavedRules[K] },
+  ): Promise<Saved<K>>;
+  deleteSaved(kind: SavedKind, id: string): Promise<void>;
   /** Secondary goals and guardrails (the primary goal is on the experiment). */
   experimentGoals(experimentId: string): Promise<ExperimentGoal[]>;
   /** Add or update a secondary goal or guardrail. */
