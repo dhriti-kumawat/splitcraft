@@ -158,6 +158,25 @@ describe('sdk_config_source + toSdkConfig', () => {
     expect(JSON.stringify(config)).not.toContain('secret-internal-button');
   });
 
+  it('passes on only the switches a project turned off', async () => {
+    expect(toSdkConfig((await configSource(publicKey))!, publicKey, '/e')).not.toHaveProperty(
+      'options',
+    );
+    await as(db, owner, () =>
+      rows(
+        `update projects set settings = '{"spa": false, "ga4": false, "antiFlicker": false}' where id = $1 returning id`,
+        [projectId],
+      ),
+    );
+    expect(toSdkConfig((await configSource(publicKey))!, publicKey, '/e').options).toEqual({
+      spa: false,
+      ga4: false,
+    });
+    await as(db, owner, () =>
+      rows(`update projects set settings = '{}' where id = $1 returning id`, [projectId]),
+    );
+  });
+
   it('returns null for an unknown public key', async () => {
     expect(await configSource('prj_00000000000000000000000000000000')).toBeNull();
   });

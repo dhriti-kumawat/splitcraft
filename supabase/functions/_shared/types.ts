@@ -32,6 +32,8 @@ export interface ConfigSource {
   }>;
   segments: Record<string, ConditionGroup>;
   metrics: Array<{ id: string; eventKey: string; source: string; sourceConfig: Json }>;
+  /** projects.settings: `{ antiFlicker?, spa?, ga4? }`, each on unless false. */
+  settings?: Json;
 }
 
 export interface SdkProjectConfig {
@@ -63,6 +65,8 @@ export interface SdkProjectConfig {
     custom: Array<{ key: string; code: string; pages?: UrlRule[] }>;
   };
   country?: string;
+  /** Only the switches that are off. */
+  options?: { spa?: false; ga4?: false };
 }
 
 /** One event as the SDK sends it (packages/sdk/src/tracking/transport.ts). */
