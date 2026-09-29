@@ -122,3 +122,16 @@ export function clickCode(selector: string, firstPerPage: boolean, key: string):
     '}, true);',
   ].join('\n');
 }
+
+/** One line describing where a metric comes from and how it is counted. */
+export function metricDetail(m: Metric): string {
+  const cfg = m.sourceConfig;
+  const better = m.measureConfig.direction === 'decrease' ? 'lower is better' : 'higher is better';
+  const how = MEASURES[m.measure].label.toLowerCase();
+  if (m.source === 'click') return `Click on ${String(cfg.selector ?? '')} · ${how} · ${better}`;
+  if (m.source === 'pageview') {
+    const url = cfg.url as { op?: string; value?: string } | undefined;
+    return `URL ${url?.op ?? ''} ${url?.value ?? ''} · ${how} · ${better}`;
+  }
+  return `splitly.trackEvent('${m.eventKey}') · ${how} · ${better}`;
+}

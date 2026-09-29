@@ -126,10 +126,15 @@ export interface Metric {
   measureConfig: Record<string, unknown>;
 }
 
+/** A guardrail: the metric must not move the wrong way by more than `maxPct` percent. */
+export interface GuardrailLimit {
+  maxPct: number;
+}
+
 export interface ExperimentGoal {
   metric: Metric;
   role: 'secondary' | 'guardrail';
-  limit: Record<string, unknown> | null;
+  limit: GuardrailLimit | null;
 }
 
 /** Monthly event allowance per plan. Only the free plan exists in v1. */
@@ -175,4 +180,12 @@ export interface DataApi {
   deleteSegment(segmentId: string): Promise<void>;
   /** Secondary goals and guardrails (the primary goal is on the experiment). */
   experimentGoals(experimentId: string): Promise<ExperimentGoal[]>;
+  /** Add or update a secondary goal or guardrail. */
+  setExperimentGoal(
+    experimentId: string,
+    metricId: string,
+    role: ExperimentGoal['role'],
+    limit: GuardrailLimit | null,
+  ): Promise<void>;
+  removeExperimentGoal(experimentId: string, metricId: string): Promise<void>;
 }

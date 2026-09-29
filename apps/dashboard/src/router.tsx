@@ -8,6 +8,7 @@ import { MetricsPage } from './pages/metrics/MetricsPage';
 import { BasicsPage } from './pages/experiments/BasicsPage';
 import { ExperimentLayout } from './pages/experiments/ExperimentLayout';
 import { ExperimentsPage } from './pages/experiments/ExperimentsPage';
+import { GoalsPage } from './pages/experiments/GoalsPage';
 import { TargetingPage } from './pages/experiments/TargetingPage';
 import { VariantsPage } from './pages/experiments/VariantsPage';
 import { AppShell } from './layout/AppShell';
@@ -68,7 +69,7 @@ export const routes: RouteObject[] = [
                   { path: 'basics', element: <BasicsPage /> },
                   { path: 'variants', element: <VariantsPage /> },
                   { path: 'targeting', element: <TargetingPage /> },
-                  { path: 'goals', element: <Placeholder title="Goals" step="feat/goals" /> },
+                  { path: 'goals', element: <GoalsPage /> },
                   { path: 'results', element: <Placeholder title="Results" step="feat/results" /> },
                 ],
               },
