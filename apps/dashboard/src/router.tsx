@@ -1,4 +1,6 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
+import { RequireAuth } from './auth/RequireAuth';
+import { AuthPage } from './pages/auth/AuthPage';
 import { AppShell } from './layout/AppShell';
 import type { RouteHandle } from './layout/crumbs';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -11,8 +13,16 @@ const crumb = (label: string, to?: string): RouteHandle => ({ crumbs: () => [{ l
 // Screen → route map from design/README.md.
 export const routes: RouteObject[] = [
   { path: '/', element: <Navigate to="/projects" replace /> },
+  { path: 'login', element: <AuthPage key="login" mode="login" /> },
+  { path: 'signup', element: <AuthPage key="signup" mode="signup" /> },
+  { path: 'forgot-password', element: <AuthPage key="forgot" mode="forgot" /> },
+  { path: 'reset-password', element: <AuthPage key="reset" mode="reset" /> },
   {
-    element: <AppShell />,
+    element: (
+      <RequireAuth>
+        <AppShell />
+      </RequireAuth>
+    ),
     children: [
       { path: 'projects', element: <ProjectsPage />, handle: crumb('Projects') },
       {

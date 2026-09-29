@@ -168,3 +168,25 @@
   color: var(--faint);
   text-transform: capitalize;
 }
+
+.userText {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.logout {
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid #2e3337;
+  border-radius: 6px;
+  background: transparent;
+  color: #aeb4ac;
+  font: 600 12px var(--font-ui);
+  cursor: pointer;
+}
+
+.logout:hover {
+  color: #ffffff;
+  border-color: #3a4044;
+}
