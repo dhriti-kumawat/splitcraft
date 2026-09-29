@@ -1,9 +1,11 @@
 import {
+  STRING_OPS,
   URL_OPS,
   type ConditionGroup,
   type ConfigSource,
   type SdkProjectConfig,
   type StoredTargeting,
+  type StringOp,
   type UrlRule,
 } from './types.ts';
 
@@ -26,6 +28,10 @@ export function toSdkConfig(
   const clicks: SdkProjectConfig['goals']['clicks'] = [];
   const pageviews: SdkProjectConfig['goals']['pageviews'] = [];
   const custom: SdkProjectConfig['goals']['custom'] = [];
+  const datalayer: SdkProjectConfig['goals']['datalayer'] = [];
+  const transactions: SdkProjectConfig['goals']['transactions'] = [];
+  const path = (v: unknown, fallback: string) =>
+    typeof v === 'string' && /^[\w$.-]{1,100}$/.test(v) ? v : fallback;
   for (const m of used) {
     const cfg = m.sourceConfig;
     if (m.source === 'click' && typeof cfg.selector === 'string' && cfg.selector) {
@@ -41,8 +47,33 @@ export function toSdkConfig(
     } else if (m.source === 'custom_js' && typeof cfg.code === 'string' && cfg.code.trim()) {
       const pages = Array.isArray(cfg.pages) ? cfg.pages.filter(isUrlRule) : [];
       custom.push({ key: m.eventKey, code: cfg.code, ...(pages.length && { pages }) });
+    } else if (m.source === 'datalayer' && typeof cfg.event === 'string' && cfg.event) {
+      const filters = (Array.isArray(cfg.filters) ? cfg.filters : []).flatMap((f) => {
+        const r = (f ?? {}) as Record<string, unknown>;
+        if (typeof r.path !== 'string' || !(STRING_OPS as readonly unknown[]).includes(r.op))
+          return [];
+        const value =
+          typeof r.value === 'string' || Array.isArray(r.value)
+            ? (r.value as string | string[])
+            : undefined;
+        return [{ path: r.path, op: r.op as StringOp, ...(value !== undefined && { value }) }];
+      });
+      datalayer.push({
+        key: m.eventKey,
+        event: cfg.event,
+        ...(filters.length && { filters }),
+        ...(typeof cfg.valuePath === 'string' &&
+          cfg.valuePath && { valuePath: path(cfg.valuePath, '') }),
+      });
+    } else if (m.source === 'transaction') {
+      transactions.push({
+        key: m.eventKey,
+        event: path(cfg.event, 'purchase'),
+        valuePath: path(cfg.valuePath, 'ecommerce.value'),
+        idPath: path(cfg.idPath, 'ecommerce.transaction_id'),
+        currencyPath: path(cfg.currencyPath, 'ecommerce.currency'),
+      });
     }
-    // datalayer and transaction metrics are not tracked by the SDK yet.
   }
 
   return {
@@ -61,7 +92,7 @@ export function toSdkConfig(
       })),
       targeting: toSdkTargeting(e.targeting ?? {}, source.segments),
     })),
-    goals: { clicks, pageviews, custom },
+    goals: { clicks, pageviews, custom, datalayer, transactions },
     ...(country && { country }),
     ...(options(source.settings) && { options: options(source.settings) }),
   };

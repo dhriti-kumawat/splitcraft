@@ -1,6 +1,6 @@
 import { toSdkConfig, toSdkTargeting } from '../functions/_shared/config.ts';
 import { cleanEvent, hostFromOrigin, MAX_EVENTS, parseBatch } from '../functions/_shared/events.ts';
-import type { ConditionGroup } from '../functions/_shared/types.ts';
+import type { ConditionGroup, ConfigSource } from '../functions/_shared/types.ts';
 
 const KEY = 'prj_0123456789abcdef0123456789abcdef';
 const goal = {
@@ -205,11 +205,70 @@ describe('toSdkConfig goals', () => {
     expect(build(metric('custom_js', { code: '  ' })).custom).toEqual([]);
   });
 
-  it('leaves out goal sources the SDK does not track yet', () => {
-    expect(build(metric('datalayer', { event: 'purchase' }))).toEqual({
+  it('leaves out a dataLayer goal without an event name', () => {
+    expect(build(metric('datalayer', { event: '' }))).toEqual({
       clicks: [],
       pageviews: [],
       custom: [],
+      datalayer: [],
+      transactions: [],
     });
+  });
+});
+
+describe('toSdkConfig: dataLayer and transaction goals', () => {
+  const source = (metrics: ConfigSource['metrics']): ConfigSource => ({
+    experiments: [
+      {
+        key: 'x',
+        name: 'X',
+        trafficPct: 100,
+        targeting: {},
+        metricIds: metrics.map((m) => m.id),
+        variants: [],
+      },
+    ],
+    segments: {},
+    metrics,
+  });
+
+  it('passes dataLayer goals with valid filters, and transactions with default paths', () => {
+    const config = toSdkConfig(
+      source([
+        {
+          id: 'a',
+          eventKey: 'cart',
+          source: 'datalayer',
+          sourceConfig: {
+            event: 'add_to_cart',
+            filters: [
+              { path: 'ecommerce.currency', op: 'is', value: 'INR' },
+              { path: 'x', op: 'drop table' },
+            ],
+            valuePath: 'ecommerce.value',
+          },
+        },
+        { id: 'b', eventKey: 'purchase', source: 'transaction', sourceConfig: {} },
+      ]),
+      'prj_x',
+      '/e',
+    );
+    expect(config.goals.datalayer).toEqual([
+      {
+        key: 'cart',
+        event: 'add_to_cart',
+        filters: [{ path: 'ecommerce.currency', op: 'is', value: 'INR' }],
+        valuePath: 'ecommerce.value',
+      },
+    ]);
+    expect(config.goals.transactions).toEqual([
+      {
+        key: 'purchase',
+        event: 'purchase',
+        valuePath: 'ecommerce.value',
+        idPath: 'ecommerce.transaction_id',
+        currencyPath: 'ecommerce.currency',
+      },
+    ]);
   });
 });
