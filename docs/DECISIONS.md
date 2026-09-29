@@ -19,3 +19,4 @@ Why things are the way they are. Read before changing direction.
 | 13 | Auth = centered minimal card | Split-screen brand panel didn't feel right; top platforms (GrowthBook, Optimizely) use minimal centered login. |
 | 14 | No fake logos, testimonials or customer numbers on the marketing site | Portfolio credibility. "Works with your stack" lists integrations as text only. |
 | 15 | Brand | Ink `#15171A`, accent `#0F6B57`, variant B `#D97A2B` / `#F2B37A`, control `#3B5B8C`, ground `#F4F5F2`. Instrument Sans + JetBrains Mono. Logo = rounded square with a white and an orange bar. |
+| 16 | QA panel ships as a separate file (`splitly-qa.iife.js`) | The main SDK must stay under 5 KB gzipped. The panel is only needed when `?splitly_force` is in the URL, so it loads on demand and normal visitors never download it. |
