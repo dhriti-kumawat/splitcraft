@@ -150,3 +150,46 @@ describe('URL tester', () => {
     );
   });
 });
+
+describe('saved targeting', () => {
+  it('uses a saved page set and inserts a saved trigger as copies', async () => {
+    const user = userEvent.setup();
+    const { patches } = await open();
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Use saved page set' }),
+      'Trip and deal pages · 3 URL rules',
+    );
+    expect(screen.getByRole('textbox', { name: 'Page rule 1 value' })).toHaveValue('/trips/*');
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Insert saved trigger' }),
+      'Engaged mobile visit',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    await vi.waitFor(() => expect(patches.length).toBe(1));
+    expect(saved(patches)).toMatchObject({
+      where: {
+        include: [
+          { op: 'matches', value: '/trips/*' },
+          { op: 'regex', value: '^/deals/(summer|monsoon)' },
+        ],
+        exclude: [{ op: 'contains', value: '/archive' }],
+      },
+      how: [{ mode: 'all', items: [{ type: 'screen_width' }, { type: 'pages_viewed_session' }] }],
+    });
+  });
+
+  it('saves the current page rules as a page set', async () => {
+    const user = userEvent.setup();
+    const data = await open();
+    await user.click(screen.getByRole('button', { name: '+ Rule' }));
+    await user.type(screen.getByRole('textbox', { name: 'Page rule 1 value' }), '/checkout');
+    await user.click(screen.getByRole('button', { name: 'Save these rules as a page set' }));
+    await user.type(screen.getByLabelText('Name'), 'Checkout');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Saved “Checkout” to Audiences.')).toBeInTheDocument();
+    expect(data.savedNow().page_sets.at(-1)).toMatchObject({
+      name: 'Checkout',
+      rules: { include: [{ op: 'matches', value: '/checkout' }] },
+    });
+  });
+});

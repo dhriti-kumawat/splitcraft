@@ -2,43 +2,51 @@ import { useId, useState } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button';
 import { ConditionBuilder } from '../../components/ConditionBuilder';
-import { useExperimentStatsQuery, useSegmentsQuery, useUpdateExperiment } from '../../data/queries';
-import { describeGroups, groupsProblemCount, URL_OPS } from '../../lib/conditions';
+import { PageRulesEditor } from '../../components/PageRulesEditor';
+import { InsertSavedSelect, SaveAsDialog } from '../../components/SavedPicker';
+import type { SavedKind } from '../../data/api';
+import {
+  useExperimentStatsQuery,
+  useSavedMutations,
+  useSavedQuery,
+  useSegmentsQuery,
+  useUpdateExperiment,
+} from '../../data/queries';
+import { describeGroups, groupsProblemCount } from '../../lib/conditions';
+import {
+  describePageRules,
+  fromWhere,
+  pageRuleProblems,
+  toWhere,
+  type PageRules,
+} from '../../lib/pageRules';
+import { fromGroups, toGroups } from '../../lib/segments';
 import { summarize } from '../../lib/experiments';
-import type { ConditionGroup, Frequency, StoredTargeting, UrlRule } from '../../lib/targeting';
+import type { ConditionGroup, Frequency, StoredTargeting } from '../../lib/targeting';
 import { testUrl } from '../../lib/urlTest';
 import { useExperiment } from './experimentContext';
 import styles from './TargetingPage.module.css';
 
-type PageRule = UrlRule & { kind: 'include' | 'exclude' };
-type ElementRule = { selector: string; timeoutMs?: number };
-
 const number = new Intl.NumberFormat('en-US');
-
-function validRegex(value: string): boolean {
-  try {
-    new RegExp(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /** Experiment step 3: WHO / WHERE / HOW / WHEN (14-exp-step3-targeting.html). */
 export function TargetingPage() {
   const { experiment, project } = useExperiment();
   const update = useUpdateExperiment(experiment);
   const segments = useSegmentsQuery(project.id);
+  const pageSets = useSavedQuery('page_sets', project.id);
+  const triggers = useSavedQuery('triggers', project.id);
+  const saveTrigger = useSavedMutations('triggers', project.id);
+  const savePageSet = useSavedMutations('page_sets', project.id);
+  const [savingAs, setSavingAs] = useState<SavedKind | null>(null);
+  const [savedAs, setSavedAs] = useState('');
   const stats = useExperimentStatsQuery(project.id);
   const t = experiment.targeting;
 
   const [whoMode, setWhoMode] = useState<'any' | 'all'>(t.who?.mode ?? 'any');
   const [segmentIds, setSegmentIds] = useState<string[]>(t.who?.segmentIds ?? []);
-  const [pages, setPages] = useState<PageRule[]>([
-    ...(t.where?.include ?? []).map((r) => ({ ...r, kind: 'include' as const })),
-    ...(t.where?.exclude ?? []).map((r) => ({ ...r, kind: 'exclude' as const })),
-  ]);
-  const [elements, setElements] = useState<ElementRule[]>(t.where?.elements ?? []);
+  const [where, setWhere] = useState<PageRules>(() => fromWhere(t.where));
+  const { pages, elements } = where;
   const [how, setHow] = useState<ConditionGroup[]>(t.how ?? []);
   const [when, setWhen] = useState<Frequency>(t.when ?? { mode: 'every_load' });
   const [submitted, setSubmitted] = useState(false);
@@ -46,39 +54,14 @@ export function TargetingPage() {
 
   const next: StoredTargeting = {
     ...(segmentIds.length ? { who: { mode: whoMode, segmentIds } } : {}),
-    ...(pages.length || elements.length
-      ? {
-          where: {
-            ...(pages.some((p) => p.kind === 'include')
-              ? {
-                  include: pages
-                    .filter((p) => p.kind === 'include')
-                    .map(({ op, value }) => ({ op, value })),
-                }
-              : {}),
-            ...(pages.some((p) => p.kind === 'exclude')
-              ? {
-                  exclude: pages
-                    .filter((p) => p.kind === 'exclude')
-                    .map(({ op, value }) => ({ op, value })),
-                }
-              : {}),
-            ...(elements.length ? { elements } : {}),
-          },
-        }
-      : {}),
+    ...(toWhere(where) ? { where: toWhere(where) } : {}),
     ...(how.some((g) => g.items.length) ? { how: how.filter((g) => g.items.length) } : {}),
     ...(when.mode !== 'every_load' ? { when } : {}),
   };
   const snapshot = JSON.stringify(next);
   const dirty = snapshot !== JSON.stringify(t);
-  const pageProblems = pages.filter(
-    (p) => !p.value.trim() || (p.op === 'regex' && !validRegex(p.value)),
-  ).length;
-  const elementProblems = elements.filter((e) => !e.selector.trim()).length;
   const problems =
-    pageProblems +
-    elementProblems +
+    pageRuleProblems(where) +
     groupsProblemCount(how) +
     (when.mode === 'every_n_days' && !(when.days >= 1) ? 1 : 0);
   const ended = experiment.status === 'ended';
@@ -175,10 +158,26 @@ export function TargetingPage() {
               </span>
             </div>
             <div className={styles.buttons}>
+              <InsertSavedSelect
+                label="Use saved page set"
+                className={styles.small}
+                items={(pageSets.data ?? []).map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  hint: describePageRules(p.rules),
+                }))}
+                onInsert={(id) => {
+                  const set = fromWhere(pageSets.data!.find((p) => p.id === id)!.rules);
+                  setWhere({
+                    pages: [...pages, ...set.pages],
+                    elements: [...elements, ...set.elements],
+                  });
+                }}
+              />
               <button
                 type="button"
                 className={styles.small}
-                onClick={() => setElements((e) => [...e, { selector: '' }])}
+                onClick={() => setWhere({ pages, elements: [...elements, { selector: '' }] })}
               >
                 + Element rule
               </button>
@@ -186,7 +185,10 @@ export function TargetingPage() {
                 type="button"
                 className={styles.small}
                 onClick={() =>
-                  setPages((p) => [...p, { kind: 'include', op: 'matches', value: '' }])
+                  setWhere({
+                    pages: [...pages, { kind: 'include', op: 'matches', value: '' }],
+                    elements,
+                  })
                 }
               >
                 + Rule
@@ -196,95 +198,16 @@ export function TargetingPage() {
           {pages.length === 0 && elements.length === 0 && (
             <span className={styles.sub}>Runs on every page of the site.</span>
           )}
-          {pages.map((rule, i) => {
-            const label = `Page rule ${i + 1}`;
-            const bad =
-              submitted && (!rule.value.trim() || (rule.op === 'regex' && !validRegex(rule.value)));
-            const set = (patch: Partial<PageRule>) =>
-              setPages((all) => all.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-            return (
-              <div key={i} className={`${styles.rule} ${bad ? styles.invalid : ''}`}>
-                <select
-                  className={`${styles.select} ${styles.io}`}
-                  aria-label={`${label} include or exclude`}
-                  value={rule.kind}
-                  onChange={(e) => set({ kind: e.target.value as PageRule['kind'] })}
-                >
-                  <option value="include">INCLUDE</option>
-                  <option value="exclude">EXCLUDE</option>
-                </select>
-                <span className={styles.sub}>URL</span>
-                <select
-                  className={styles.select}
-                  aria-label={`${label} operator`}
-                  value={rule.op}
-                  onChange={(e) => set({ op: e.target.value as UrlRule['op'] })}
-                >
-                  {URL_OPS.map((o) => (
-                    <option key={o.op} value={o.op}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  className={`${styles.input} ${styles.mono}`}
-                  aria-label={`${label} value`}
-                  placeholder={rule.op === 'regex' ? '^/deals/(summer|monsoon)' : '/trips/*'}
-                  value={rule.value}
-                  onChange={(e) => set({ value: e.target.value })}
-                  aria-invalid={bad}
-                />
-                <button
-                  type="button"
-                  className={styles.remove}
-                  aria-label={`Remove ${label}`}
-                  onClick={() => setPages((all) => all.filter((_, j) => j !== i))}
-                >
-                  ×
-                </button>
-              </div>
-            );
-          })}
-          {elements.map((el, i) => {
-            const label = `Element rule ${i + 1}`;
-            const set = (patch: Partial<ElementRule>) =>
-              setElements((all) => all.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-            return (
-              <div
-                key={`el-${i}`}
-                className={`${styles.rule} ${submitted && !el.selector.trim() ? styles.invalid : ''}`}
-              >
-                <span className={styles.io}>AND</span>
-                <span className={styles.sub}>Element on page exists</span>
-                <input
-                  className={`${styles.input} ${styles.mono}`}
-                  aria-label={`${label} CSS selector`}
-                  placeholder=".book-now-btn"
-                  value={el.selector}
-                  onChange={(e) => set({ selector: e.target.value })}
-                />
-                <span className={styles.sub}>wait up to</span>
-                <input
-                  className={`${styles.input} ${styles.number}`}
-                  type="number"
-                  min={0}
-                  max={10}
-                  aria-label={`${label} wait in seconds`}
-                  value={(el.timeoutMs ?? 3000) / 1000}
-                  onChange={(e) => set({ timeoutMs: Math.round(Number(e.target.value) * 1000) })}
-                />
-                <span className={styles.sub}>s</span>
-                <button
-                  type="button"
-                  className={styles.remove}
-                  aria-label={`Remove ${label}`}
-                  onClick={() => setElements((all) => all.filter((_, j) => j !== i))}
-                >
-                  ×
-                </button>
-              </div>
-            );
-          })}
+          <PageRulesEditor value={where} onChange={setWhere} submitted={submitted} />
+          {toWhere(where) && pageRuleProblems(where) === 0 && (
+            <button
+              type="button"
+              className={styles.saveAs}
+              onClick={() => setSavingAs('page_sets')}
+            >
+              Save these rules as a page set
+            </button>
+          )}
         </section>
 
         {/* HOW */}
@@ -297,8 +220,21 @@ export function TargetingPage() {
               </h2>
               <span className={styles.sub}>Conditions in this visit, checked on every page</span>
             </div>
+            <InsertSavedSelect
+              label="Insert saved trigger"
+              className={styles.small}
+              items={(triggers.data ?? []).map((t) => ({ id: t.id, name: t.name }))}
+              onInsert={(id) =>
+                setHow([...how, ...toGroups(triggers.data!.find((t) => t.id === id)!.rules)])
+              }
+            />
           </div>
           <ConditionBuilder groups={how} onChange={setHow} noun="Trigger" />
+          {how.some((g) => g.items.length) && groupsProblemCount(how) === 0 && (
+            <button type="button" className={styles.saveAs} onClick={() => setSavingAs('triggers')}>
+              Save these conditions as a trigger
+            </button>
+          )}
         </section>
 
         {/* WHEN */}
@@ -337,6 +273,39 @@ export function TargetingPage() {
             </span>
           )}
         </div>
+        {savedAs && (
+          <p role="status" className={styles.status}>
+            {savedAs}
+          </p>
+        )}
+        {savingAs && (
+          <SaveAsDialog
+            title={savingAs === 'triggers' ? 'Save as trigger' : 'Save as page set'}
+            description={
+              savingAs === 'triggers'
+                ? 'Reuse these conditions in other experiments with Insert saved trigger.'
+                : 'Reuse these page rules in other experiments with Use saved page set.'
+            }
+            placeholder={savingAs === 'triggers' ? 'Engaged mobile visit' : 'Trip and deal pages'}
+            pending={saveTrigger.create.isPending || savePageSet.create.isPending}
+            error={(saveTrigger.create.error ?? savePageSet.create.error)?.message}
+            onClose={() => setSavingAs(null)}
+            onSave={(name) => {
+              const done = () => {
+                setSavingAs(null);
+                setSavedAs(`Saved “${name}” to Audiences.`);
+              };
+              if (savingAs === 'triggers') {
+                saveTrigger.create.mutate(
+                  { name, rules: fromGroups(how.filter((g) => g.items.length)) },
+                  { onSuccess: done },
+                );
+              } else {
+                savePageSet.create.mutate({ name, rules: toWhere(where)! }, { onSuccess: done });
+              }
+            }}
+          />
+        )}
       </div>
 
       <aside className={styles.aside} aria-label="Targeting check">

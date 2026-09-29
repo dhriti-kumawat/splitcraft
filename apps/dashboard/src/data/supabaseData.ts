@@ -2,6 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StoredTargeting } from '../lib/targeting';
 import type {
   ActivityItem,
+  Saved,
+  SavedKind,
+  SavedRules,
   DataApi,
   Invite,
   Experiment,
@@ -161,6 +164,18 @@ const toSegment = (r: SegmentRow): Segment => ({
 });
 
 const SEGMENT_COLUMNS = 'id, project_id, name, rules, updated_at';
+
+const EMPTY_RULES: SavedRules = { triggers: { mode: 'all', items: [] }, page_sets: {} };
+
+function toSaved<K extends SavedKind>(kind: K, r: SegmentRow): Saved<K> {
+  return {
+    id: r.id,
+    projectId: r.project_id,
+    name: r.name,
+    rules: (r.rules ?? EMPTY_RULES[kind]) as SavedRules[K],
+    updatedAt: r.updated_at,
+  };
+}
 
 const metricColumns = (m: Partial<Omit<Metric, 'id'>>) => {
   const row: Record<string, unknown> = {};
@@ -698,6 +713,40 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
 
     async deleteSegment(segmentId) {
       check(await supabase.from('segments').delete().eq('id', segmentId));
+    },
+
+    async listSaved(kind, projectId) {
+      const rows = check(
+        await supabase.from(kind).select(SEGMENT_COLUMNS).eq('project_id', projectId).order('name'),
+      ) as SegmentRow[];
+      return rows.map((r) => toSaved(kind, r));
+    },
+
+    async createSaved(kind, projectId, name, rules) {
+      const row = check(
+        await supabase
+          .from(kind)
+          .insert({ project_id: projectId, name, rules })
+          .select(SEGMENT_COLUMNS)
+          .single(),
+      ) as SegmentRow;
+      return toSaved(kind, row);
+    },
+
+    async updateSaved(kind, id, patch) {
+      const row = check(
+        await supabase
+          .from(kind)
+          .update({ ...patch, updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .select(SEGMENT_COLUMNS)
+          .single(),
+      ) as SegmentRow;
+      return toSaved(kind, row);
+    },
+
+    async deleteSaved(kind, id) {
+      check(await supabase.from(kind).delete().eq('id', id));
     },
 
     async listMetrics(projectId) {
