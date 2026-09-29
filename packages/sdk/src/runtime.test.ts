@@ -276,6 +276,26 @@ describe('project switches', () => {
   });
 });
 
+describe('metrics bundle', () => {
+  it('loads only when browsing or Web Vitals goals are live, and starts them', async () => {
+    const started = vi.fn(() => () => {});
+    (window as unknown as { splitcraftMetrics?: unknown }).splitcraftMetrics = { start: started };
+    runtime = start(config([exp()]), { metricsUrl: '/m.js' });
+    await settle();
+    expect(started).not.toHaveBeenCalled();
+    runtime.stop();
+    runtime = start(
+      { ...config([exp()]), goals: { browsing: ['pages'], vitals: ['lcp'] } },
+      { metricsUrl: '/m.js' },
+    );
+    await settle();
+    expect(started).toHaveBeenCalledWith(
+      expect.objectContaining({ browsing: ['pages'], vitals: ['lcp'] }),
+    );
+    delete (window as unknown as { splitcraftMetrics?: unknown }).splitcraftMetrics;
+  });
+});
+
 describe('boot', () => {
   const script = (attrs: Record<string, string>) => {
     const s = document.createElement('script');

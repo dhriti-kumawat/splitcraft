@@ -76,6 +76,8 @@ export interface SdkProjectConfig {
       idPath: string;
       currencyPath?: string;
     }>;
+    browsing?: Array<'engaged' | 'pages' | 'time' | 'return'>;
+    vitals?: Array<'lcp' | 'inp' | 'cls'>;
   };
   country?: string;
   /** Only the switches that are off. */

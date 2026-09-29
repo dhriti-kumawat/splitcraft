@@ -76,18 +76,18 @@ describe('goals', () => {
     );
   });
 
-  it('offers new goals by source and marks the rest as coming later', async () => {
+  it('offers new goals by source', async () => {
     await open('trust');
     const aside = screen.getByRole('complementary', { name: 'Add a goal' });
     expect(within(aside).getByRole('link', { name: /Custom event/ })).toHaveAttribute(
       'href',
       '/p/trip-demo/metrics/new?source=custom-js',
     );
-    expect(
-      within(aside)
-        .getByText(/Web Vitals/)
-        .closest('[aria-disabled]'),
-    ).toHaveAttribute('aria-disabled', 'true');
+    expect(within(aside).getByRole('link', { name: /Web Vitals/ })).toHaveAttribute(
+      'href',
+      '/p/trip-demo/metrics/new?source=web-vitals',
+    );
+    expect(within(aside).queryByText(/Coming later/)).not.toBeInTheDocument();
     expect(within(aside).queryByText(/Formula/)).not.toBeInTheDocument();
   });
 });

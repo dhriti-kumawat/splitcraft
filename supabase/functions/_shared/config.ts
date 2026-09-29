@@ -30,6 +30,8 @@ export function toSdkConfig(
   const custom: SdkProjectConfig['goals']['custom'] = [];
   const datalayer: SdkProjectConfig['goals']['datalayer'] = [];
   const transactions: SdkProjectConfig['goals']['transactions'] = [];
+  const browsing = new Set<NonNullable<SdkProjectConfig['goals']['browsing']>[number]>();
+  const vitals = new Set<NonNullable<SdkProjectConfig['goals']['vitals']>[number]>();
   const path = (v: unknown, fallback: string) =>
     typeof v === 'string' && /^[\w$.-]{1,100}$/.test(v) ? v : fallback;
   for (const m of used) {
@@ -73,6 +75,13 @@ export function toSdkConfig(
         idPath: path(cfg.idPath, 'ecommerce.transaction_id'),
         currencyPath: path(cfg.currencyPath, 'ecommerce.currency'),
       });
+    } else if (
+      m.source === 'browsing' &&
+      ['engaged', 'pages', 'time', 'return'].includes(cfg.kind as string)
+    ) {
+      browsing.add(cfg.kind as 'engaged');
+    } else if (m.source === 'web_vitals' && ['lcp', 'inp', 'cls'].includes(cfg.vital as string)) {
+      vitals.add(cfg.vital as 'lcp');
     }
   }
 
@@ -92,7 +101,16 @@ export function toSdkConfig(
       })),
       targeting: toSdkTargeting(e.targeting ?? {}, source.segments),
     })),
-    goals: { clicks, pageviews, custom, datalayer, transactions },
+    goals: {
+      clicks,
+      pageviews,
+      custom,
+      datalayer,
+      transactions,
+      // Only when used: their presence makes the SDK load its metrics bundle.
+      ...(browsing.size && { browsing: [...browsing] }),
+      ...(vitals.size && { vitals: [...vitals] }),
+    },
     ...(country && { country }),
     ...(options(source.settings) && { options: options(source.settings) }),
   };
