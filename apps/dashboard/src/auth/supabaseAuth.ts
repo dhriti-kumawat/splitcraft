@@ -89,6 +89,18 @@ export function createSupabaseAuth(supabase: SupabaseClient): AuthApi {
       });
       return error ? { ok: false, error: messageFor(error) } : { ok: true };
     },
+    async sendLoginLink(email, next) {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false, emailRedirectTo: `${origin}${next}` },
+      });
+      // An unknown address fails with "Signups not allowed for otp"; answer as if sent, so
+      // the screen never reveals who has an account (same as sign-up and password reset).
+      if (error && !/signups? not allowed/i.test(error.message)) {
+        return { ok: false, error: messageFor(error) };
+      }
+      return { ok: true };
+    },
     async updatePassword(password) {
       const { error } = await supabase.auth.updateUser({ password });
       return error ? { ok: false, error: messageFor(error) } : { ok: true };

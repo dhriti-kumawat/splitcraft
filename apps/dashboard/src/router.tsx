@@ -24,6 +24,7 @@ const crumb = (label: string, to?: string): RouteHandle => ({ crumbs: () => [{ l
 export const routes: RouteObject[] = [
   { path: '/', element: <Navigate to="/projects" replace /> },
   { path: 'login', element: <AuthPage key="login" mode="login" /> },
+  { path: 'login/link', element: <AuthPage key="magic" mode="magic" /> },
   { path: 'signup', element: <AuthPage key="signup" mode="signup" /> },
   { path: 'forgot-password', element: <AuthPage key="forgot" mode="forgot" /> },
   { path: 'reset-password', element: <AuthPage key="reset" mode="reset" /> },

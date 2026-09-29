@@ -37,6 +37,10 @@ export function fakeAuth(opts: { signedIn?: boolean; confirmSignUps?: boolean } 
       calls.push(`reset:${email}`);
       return { ok: true };
     },
+    async sendLoginLink(email, next) {
+      calls.push(`link:${email}:${next}`);
+      return { ok: true };
+    },
     async updatePassword() {
       calls.push('updatePassword');
       return { ok: true };

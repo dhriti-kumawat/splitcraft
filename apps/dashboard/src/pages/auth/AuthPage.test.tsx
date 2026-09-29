@@ -300,3 +300,26 @@ describe('protected pages', () => {
     expect(router.state.location.pathname).toBe('/login');
   });
 });
+
+describe('login link', () => {
+  it('emails a one-time login link from the login page', async () => {
+    const user = userEvent.setup();
+    const { router, calls } = await openAt('/login?next=%2Fteam');
+    await user.click(screen.getByRole('link', { name: 'Email me a login link instead' }));
+    expect(router.state.location.pathname).toBe('/login/link');
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Log in with an email link' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Password/)).not.toBeInTheDocument();
+
+    await user.click(submit('Email me a link'));
+    expect(screen.getByText('Enter your email address.')).toBeInTheDocument();
+    await user.type(field('Email'), ALEX.email);
+    await user.click(submit('Email me a link'));
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      `login link to ${ALEX.email} if it has an account`,
+    );
+    expect(calls).toContain(`link:${ALEX.email}:/team`);
+    expect(screen.getByRole('button', { name: /Resend link in/ })).toBeDisabled();
+  });
+});
