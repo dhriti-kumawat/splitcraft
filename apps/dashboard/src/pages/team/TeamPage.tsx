@@ -145,6 +145,8 @@ function Invites({
   const [submitted, setSubmitted] = useState(false);
   const [created, setCreated] = useState<Invite | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  // Fixed at mount so render stays pure.
+  const [now] = useState(() => Date.now());
   const ids = { email: useId(), role: useId() };
   const error = EMAIL.test(email.trim()) ? '' : 'Enter the email address they will log in with.';
 
@@ -260,7 +262,7 @@ function Invites({
           </thead>
           <tbody>
             {invites.map((i) => {
-              const expired = Date.parse(i.expiresAt) < Date.now();
+              const expired = Date.parse(i.expiresAt) < now;
               return (
                 <tr key={i.id}>
                   <td>{i.email}</td>
