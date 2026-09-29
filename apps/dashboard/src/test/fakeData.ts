@@ -1,6 +1,8 @@
 import type {
   DataApi,
   Experiment,
+  ExperimentGoal,
+  Metric,
   NewProject,
   Project,
   ProjectStats,
@@ -74,6 +76,7 @@ const experiment = (
   primaryMetricId: 'm-book',
   primaryMetricName: 'Book click',
   plannedSample: null,
+  plan: {},
   startedAt: null,
   endedAt: null,
   createdAt: daysAgo(30),
@@ -156,6 +159,53 @@ export const EXPERIMENT_STATS: VariantStats[] = [
   { experimentId: 'urgency', variantKey: 'b', visitors: 20_648, conversions: 5_776, visitors7d: 0 },
 ];
 
+const metric = (
+  m: Partial<Metric> & Pick<Metric, 'id' | 'name' | 'eventKey' | 'source'>,
+): Metric => ({
+  projectId: 'trip-demo',
+  sourceConfig: {},
+  measure: 'unique',
+  measureConfig: {},
+  ...m,
+});
+
+export const METRICS: Metric[] = [
+  metric({
+    id: 'm-book',
+    name: 'Book click',
+    eventKey: 'book_click',
+    source: 'click',
+    sourceConfig: { selector: '.book-now-btn' },
+  }),
+  metric({
+    id: 'm-purchase',
+    name: 'Purchase',
+    eventKey: 'purchase',
+    source: 'transaction',
+    measure: 'sum',
+  }),
+  metric({
+    id: 'm-search',
+    name: 'Search started',
+    eventKey: 'search_started',
+    source: 'custom_js',
+  }),
+  metric({
+    id: 'm-confirm',
+    name: 'Confirmation page',
+    eventKey: 'confirmation',
+    source: 'pageview',
+    sourceConfig: { url: { op: 'is', value: '/checkout/done' } },
+  }),
+];
+
+export const GOALS: Record<string, ExperimentGoal[]> = {
+  sticky: [
+    { role: 'secondary', limit: null, metric: METRICS[3]! },
+    { role: 'guardrail', limit: { direction: 'decrease', maxPct: 2 }, metric: METRICS[1]! },
+  ],
+};
+
 /** In-memory DataApi seeded with the design's projects. */
 export function fakeData(
   opts: {
@@ -167,7 +217,12 @@ export function fakeData(
   } = {},
 ) {
   const projects = [...(opts.projects ?? PROJECTS)];
-  const experiments = [...(opts.experiments ?? EXPERIMENTS)];
+  const experiments = (opts.experiments ?? EXPERIMENTS).map((e) => ({
+    ...e,
+    variants: e.variants.map((v) => ({ ...v })),
+  }));
+  const patches: Array<{ id: string; patch: unknown }> = [];
+  const variantPatches: Array<{ id: string; patch: unknown }> = [];
   const createdExperiments: string[] = [];
   const created: NewProject[] = [];
   let installNext = false;
@@ -202,6 +257,25 @@ export function fakeData(
       opts.lastEventAt === undefined
         ? new Date(Date.now() - 2 * 60_000).toISOString()
         : opts.lastEventAt,
+    getExperiment: async (id) => {
+      const e = experiments.find((x) => x.id === id);
+      return e ? { ...e, variants: e.variants.map((v) => ({ ...v })) } : null;
+    },
+    async updateExperiment(id, patch) {
+      patches.push({ id, patch });
+      const e = experiments.find((x) => x.id === id)!;
+      Object.assign(e, patch);
+      return { ...e, variants: e.variants.map((v) => ({ ...v })) };
+    },
+    async updateVariant(id, patch) {
+      variantPatches.push({ id, patch });
+      for (const e of experiments) {
+        const v = e.variants.find((x) => x.id === id);
+        if (v) Object.assign(v, patch);
+      }
+    },
+    listMetrics: async (projectId) => METRICS.filter((m) => m.projectId === projectId),
+    experimentGoals: async (id) => GOALS[id] ?? [],
     async createExperiment(projectId, name) {
       createdExperiments.push(name);
       const e = experiment({
@@ -220,6 +294,8 @@ export function fakeData(
     api,
     created,
     createdExperiments,
+    patches,
+    variantPatches,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;
