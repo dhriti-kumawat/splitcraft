@@ -302,7 +302,10 @@ export function fakeData(
     results?: Record<string, MetricArm[]>;
   } = {},
 ) {
-  const projects = [...(opts.projects ?? PROJECTS)];
+  const projects = (opts.projects ?? PROJECTS).map((p) => ({
+    ...p,
+    allowedDomains: [...p.allowedDomains],
+  }));
   const experiments = (opts.experiments ?? EXPERIMENTS).map((e) => ({
     ...e,
     variants: e.variants.map((v) => ({ ...v })),
@@ -344,6 +347,15 @@ export function fakeData(
       });
       projects.push(p);
       return p;
+    },
+    async updateProject(id, patch) {
+      const p = projects.find((x) => x.id === id)!;
+      Object.assign(p, patch);
+      return { ...p };
+    },
+    async deleteProject(id) {
+      const i = projects.findIndex((x) => x.id === id);
+      if (i >= 0) projects.splice(i, 1);
     },
     listExperiments: async (projectId) =>
       experiments.filter((e) => e.projectId === projectId).map((e) => ({ ...e })),
@@ -480,6 +492,7 @@ export function fakeData(
     variantPatches,
     segmentsNow: () => segments,
     metricsNow: () => metrics,
+    projectsNow: () => projects,
     goalsNow: () => goals,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {

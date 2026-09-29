@@ -170,6 +170,12 @@ export interface DataApi {
   projectOverview(workspaceId: string): Promise<ProjectStats[]>;
   eventsThisMonth(workspaceId: string): Promise<number>;
   createProject(project: NewProject): Promise<Project>;
+  updateProject(
+    projectId: string,
+    patch: Partial<Pick<Project, 'name' | 'mainDomain' | 'allowedDomains'>>,
+  ): Promise<Project>;
+  /** Deletes the project with its experiments, audiences, metrics and events. */
+  deleteProject(projectId: string): Promise<void>;
   listExperiments(projectId: string): Promise<Experiment[]>;
   experimentStats(projectId: string): Promise<VariantStats[]>;
   /** Time of the project's most recent event, or null if it never sent one. */
