@@ -157,6 +157,31 @@ export function useUpdateExperiment(experiment: Pick<Experiment, 'id' | 'project
   });
 }
 
+export function useDuplicateExperiment(experiment: Pick<Experiment, 'id' | 'projectId'>) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.duplicateExperiment(experiment.id),
+    onSuccess: (copy) => {
+      client.setQueryData(keys.experiment(copy.id), copy);
+      void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
+    },
+  });
+}
+
+export function useDeleteExperiment(experiment: Pick<Experiment, 'id' | 'projectId'>) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.deleteExperiment(experiment.id),
+    onSuccess: () => {
+      client.removeQueries({ queryKey: keys.experiment(experiment.id) });
+      void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
+      void client.invalidateQueries({ queryKey: keys.experimentStats(experiment.projectId) });
+    },
+  });
+}
+
 export function useUpdateVariants(experiment: Pick<Experiment, 'id' | 'projectId'>) {
   const api = useData();
   const client = useQueryClient();

@@ -92,6 +92,8 @@ export interface Experiment {
   plan: { baseline?: number; mde?: number };
   startedAt: string | null;
   endedAt: string | null;
+  /** Archived experiments are stopped and hidden from the list's usual filters. */
+  archivedAt: string | null;
   createdAt: string;
   /** Control first, then by key. */
   variants: Variant[];
@@ -119,6 +121,7 @@ export type ExperimentPatch = Partial<
     | 'plan'
     | 'startedAt'
     | 'endedAt'
+    | 'archivedAt'
   >
 >;
 
@@ -223,6 +226,10 @@ export interface DataApi {
   createExperiment(projectId: string, name: string): Promise<Experiment>;
   getExperiment(experimentId: string): Promise<Experiment | null>;
   updateExperiment(experimentId: string, patch: ExperimentPatch): Promise<Experiment>;
+  /** A new draft with the same setup, variant code and goals. */
+  duplicateExperiment(experimentId: string): Promise<Experiment>;
+  /** Owners and admins only, and not while live. Removes its events too. */
+  deleteExperiment(experimentId: string): Promise<void>;
   updateVariant(variantId: string, patch: VariantPatch): Promise<void>;
   /** Earlier code of a variant, newest first. The current code is on the variant. */
   listVariantVersions(variantId: string): Promise<VariantVersion[]>;

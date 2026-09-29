@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { EXPERIMENT_STATS, fakeData } from '../../test/fakeData';
+import { EXPERIMENT_STATS, EXPERIMENTS, fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(data = fakeData()) {
@@ -21,7 +21,28 @@ describe('experiments list', () => {
       within(filters)
         .getAllByRole('button')
         .map((b) => b.textContent),
-    ).toEqual(['All5', 'Live2', 'Draft1', 'Paused1', 'Ended1']);
+    ).toEqual(['All5', 'Live2', 'Draft1', 'Paused1', 'Ended1', 'Archived0']);
+  });
+
+  it('keeps archived experiments under their own filter', async () => {
+    const user = userEvent.setup();
+    await open(
+      fakeData({
+        experiments: EXPERIMENTS.map((e) =>
+          e.id === 'urgency' ? { ...e, archivedAt: '2026-09-20T10:00:00Z' } : e,
+        ),
+      }),
+    );
+    expect(screen.getByText('4 experiments on mytrips.dev · 2 running now')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Urgency banner: “3 spots left”' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Ended0' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Archived1' }));
+    expect(
+      screen
+        .getAllByRole('row')
+        .map((r) => r.querySelector('a')?.textContent)
+        .filter(Boolean),
+    ).toEqual(['Urgency banner: “3 spots left”']);
   });
 
   it('shows the worked example on the live test', async () => {

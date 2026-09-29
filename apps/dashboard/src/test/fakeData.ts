@@ -84,6 +84,7 @@ const experiment = (
   plan: {},
   startedAt: null,
   endedAt: null,
+  archivedAt: null,
   createdAt: daysAgo(30),
   variants: variants(e.id),
   ...e,
@@ -566,6 +567,32 @@ export function fakeData(
     async removeExperimentGoal(experimentId, metricId) {
       goals[experimentId] = (goals[experimentId] ?? []).filter((g) => g.metric.id !== metricId);
     },
+    async duplicateExperiment(id) {
+      const src = experiments.find((x) => x.id === id)!;
+      const copy: Experiment = {
+        ...src,
+        id: `${src.id}-copy`,
+        key: `${src.key}-copy`,
+        name: `${src.name} (copy)`,
+        status: 'draft',
+        startedAt: null,
+        endedAt: null,
+        archivedAt: null,
+        createdAt: new Date().toISOString(),
+        variants: src.variants.map((v) => ({ ...v, id: `${v.id}-copy`, version: 1 })),
+      };
+      experiments.unshift(copy);
+      goals[copy.id] = (goals[id] ?? []).map((g) => ({ ...g }));
+      return { ...copy };
+    },
+    async deleteExperiment(id) {
+      const e = experiments.find((x) => x.id === id);
+      if (e?.status === 'live')
+        throw new Error(
+          'Only owners and admins can delete an experiment, and not while it is live.',
+        );
+      experiments.splice(experiments.indexOf(e!), 1);
+    },
     async createExperiment(projectId, name) {
       createdExperiments.push(name);
       const e = experiment({
@@ -589,6 +616,7 @@ export function fakeData(
     segmentsNow: () => segments,
     metricsNow: () => metrics,
     projectsNow: () => projects,
+    experimentsNow: () => experiments,
     workspacesNow: () => workspaces,
     peopleNow: () => people,
     /** Seed an invite as if another workspace had created it. */

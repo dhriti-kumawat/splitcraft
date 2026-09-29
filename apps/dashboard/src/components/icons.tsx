@@ -106,3 +106,11 @@ export const SearchIcon = (p: IconProps) => (
     <path d="M13.5 13.5L17 17" />
   </Icon>
 );
+
+export const MoreIcon = (p: IconProps) => (
+  <Icon size={18} stroke="none" fill="currentColor" {...p}>
+    <circle cx="4.5" cy="10" r="1.6" />
+    <circle cx="10" cy="10" r="1.6" />
+    <circle cx="15.5" cy="10" r="1.6" />
+  </Icon>
+);
