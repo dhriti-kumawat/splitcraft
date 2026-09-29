@@ -1,0 +1,6 @@
+dist
+coverage
+package-lock.json
+design
+docs
+CLAUDE.md
