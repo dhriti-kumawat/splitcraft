@@ -300,6 +300,7 @@ const r = (
   eventsSumsq: converters,
   valueSum,
   valueSumsq: valueSum * 50,
+  viewers: 0,
 });
 export const RESULTS: Record<string, MetricArm[]> = {
   sticky: [

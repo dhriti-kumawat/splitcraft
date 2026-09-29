@@ -10,6 +10,7 @@ const arm = (metricId: string, variantKey: string, p: Partial<MetricArm>): Metri
   variantKey,
   visitors: 0,
   converters: 0,
+  viewers: 0,
   events: 0,
   eventsSumsq: 0,
   valueSum: 0,
@@ -159,5 +160,37 @@ describe('cumulativeSeries and splitShares', () => {
   it('formats the split like the design', () => {
     const result = metricResult(book, sticky, worked);
     expect(splitShares(result.arms)).toBe('50.2 / 49.8');
+  });
+});
+
+describe('click measures', () => {
+  it('computes click-through rate over visitors who saw the element', () => {
+    const ctr = { ...book, measure: 'ctr' as const };
+    const r = metricResult(ctr, sticky, [
+      arm(book.id, 'control', { visitors: 1000, viewers: 400, converters: 40 }),
+      arm(book.id, 'b', { visitors: 1000, viewers: 500, converters: 75 }),
+    ]);
+    expect(r.arms.map((a) => a.value)).toEqual([0.1, 0.15]);
+    expect(r.best?.comparison?.uplift).toBeCloseTo(0.5, 5);
+  });
+
+  it('treats a lower time to first click as better', () => {
+    const timing = {
+      ...book,
+      measure: 'time_to_click' as const,
+      measureConfig: { ...book.measureConfig, direction: 'decrease' as const },
+    };
+    const r = metricResult(timing, sticky, [
+      arm(book.id, 'control', {
+        visitors: 1000,
+        converters: 200,
+        valueSum: 1000,
+        valueSumsq: 6000,
+      }),
+      arm(book.id, 'b', { visitors: 1000, converters: 200, valueSum: 800, valueSumsq: 3800 }),
+    ]);
+    expect(r.arms.map((a) => a.value)).toEqual([5, 4]);
+    expect(r.lowerIsBetter).toBe(true);
+    expect(r.best!.chanceBetter!).toBeGreaterThan(0.95);
   });
 });

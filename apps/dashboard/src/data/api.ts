@@ -172,7 +172,7 @@ export interface Metric {
   eventKey: string;
   source: 'click' | 'pageview' | 'custom_js' | 'datalayer' | 'transaction';
   sourceConfig: Record<string, unknown>;
-  measure: 'unique' | 'total' | 'sum' | 'value_per_conversion';
+  measure: 'unique' | 'total' | 'sum' | 'value_per_conversion' | 'ctr' | 'time_to_click';
   measureConfig: Record<string, unknown>;
 }
 
@@ -197,6 +197,8 @@ export interface MetricArm {
   eventsSumsq: number;
   valueSum: number;
   valueSumsq: number;
+  /** Click-through rate only: exposed visitors who saw the tracked element. */
+  viewers: number;
 }
 
 export interface DailyArm {

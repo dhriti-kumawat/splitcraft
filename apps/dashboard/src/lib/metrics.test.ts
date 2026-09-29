@@ -46,9 +46,11 @@ describe('trackerChecks', () => {
 });
 
 describe('measuresFor and clickCode', () => {
-  it('offers value measures only where events carry values', () => {
-    expect(measuresFor('click')).toEqual(['unique', 'total']);
+  it('offers value measures only where events carry values, and click measures for clicks', () => {
+    expect(measuresFor('click')).toEqual(['unique', 'total', 'ctr', 'time_to_click']);
+    expect(measuresFor('pageview')).toEqual(['unique', 'total']);
     expect(measuresFor('custom_js')).toContain('sum');
+    expect(measuresFor('custom_js')).not.toContain('ctr');
   });
 
   it('shows the listener Splitcraft runs', () => {

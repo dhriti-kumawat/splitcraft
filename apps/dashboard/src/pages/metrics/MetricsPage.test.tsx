@@ -73,6 +73,25 @@ describe('click tracker', () => {
     });
   });
 
+  it('saves click-through rate and time to first click with what the SDK needs', async () => {
+    const user = userEvent.setup();
+    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=click');
+    await user.type(screen.getByLabelText('Name'), 'Banner CTR');
+    await user.type(screen.getByLabelText(/CSS selector/), '.promo-banner');
+    await user.click(screen.getByRole('radio', { name: /Click-through rate/ }));
+    await user.click(screen.getByRole('button', { name: 'Create metric' }));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+    );
+    expect(metricsNow().at(-1)).toMatchObject({
+      measure: 'ctr',
+      sourceConfig: { selector: '.promo-banner', views: true },
+    });
+
+    await user.click(screen.getByRole('radio', { name: /Time to first click/ }));
+    expect(screen.getByRole('radio', { name: /Decrease/ })).toHaveAttribute('aria-checked', 'true');
+  });
+
   it('validates the form', async () => {
     const user = userEvent.setup();
     await open('/p/trip-demo/metrics/new?source=click');
