@@ -95,7 +95,7 @@ A metric = **event source** + **how to measure**.
 | Source | Defined by | Notes |
 |---|---|---|
 | Click · selector | CSS selector list (comma = any) | Delegated listener on `document` so SPA re-renders work. Options: every click / first per page, keyboard Enter, elements added later. "Pick on page" picker. Selector health checks (warn on `:nth-child`, generated classes). |
-| Pageview · URL | URL rule | Retroactive |
+| Pageview · URL | URL rule | Matched in the browser in v1, counted from launch (not retroactive; see DECISIONS #19) |
 | Custom JS | Event key + tracker code that calls `splitly.trackEvent(key, props)` | Runs on chosen pages at DOM ready, sandboxed in try/catch. Checks: syntax, key present in code, selector exists, bad values (NaN). Live event log in preview. |
 | dataLayer | Event name + property filters | |
 | Transaction | Purchase event: value, currency, items, `transaction_id` for dedupe | |
@@ -204,8 +204,9 @@ events(id, project_id, visitor_id, experiment_id, variant_key, type, key, value,
   -- type: 'exposure' | 'goal' | 'ping'
 ```
 - Row Level Security: members can only see their workspace's rows.
-- SDK writes `events` with the project public key through an insert-only policy or an
-  Edge Function. Never expose the service role key.
+- SDK writes `events` through the `events` Edge Function, which validates the batch and
+  checks the page's domain against the project (DECISIONS #20). The SDK reads its config from
+  the `config` Edge Function by project public key. Never expose the service role key.
 - Results are computed with SQL views or an Edge Function that aggregates `events`.
 
 ## 11. Out of scope for v1

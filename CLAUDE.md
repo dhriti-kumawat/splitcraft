@@ -26,6 +26,7 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 - `npm install` — install all workspaces
 - `npm run dev -w apps/dashboard` — dashboard dev server
 - `npm run test -w packages/sdk` — SDK tests
+- `npm run test -w supabase` — database, RLS and Edge Function tests (PGlite, no Docker)
 - `npm run build` — build everything
 
 ## Working rules
