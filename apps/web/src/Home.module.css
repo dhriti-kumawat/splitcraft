@@ -1143,3 +1143,9 @@
     font-size: 12.5px;
   }
 }
+
+.devLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
