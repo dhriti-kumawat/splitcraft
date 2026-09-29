@@ -107,6 +107,18 @@ export const SearchIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const MenuIcon = (p: IconProps) => (
+  <Icon size={20} strokeWidth={1.8} {...p}>
+    <path d="M3 5.5h14M3 10h14M3 14.5h14" />
+  </Icon>
+);
+
+export const CloseIcon = (p: IconProps) => (
+  <Icon size={18} strokeWidth={1.8} {...p}>
+    <path d="M5 5l10 10M15 5L5 15" />
+  </Icon>
+);
+
 export const MoreIcon = (p: IconProps) => (
   <Icon size={18} stroke="none" fill="currentColor" {...p}>
     <circle cx="4.5" cy="10" r="1.6" />

@@ -287,3 +287,24 @@
   color: var(--muted);
   cursor: pointer;
 }
+
+@media (max-width: 1023px) {
+  .layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .aside {
+    width: 100%;
+  }
+}
+
+@media (max-width: 719px) {
+  .field {
+    min-width: 0;
+  }
+
+  .measures {
+    grid-template-columns: 1fr;
+  }
+}

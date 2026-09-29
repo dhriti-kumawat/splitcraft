@@ -253,3 +253,25 @@
   border: 1px dashed var(--line-strong);
   border-radius: 10px;
 }
+
+@media (max-width: 1023px) {
+  .banner {
+    flex-wrap: wrap;
+  }
+
+  .progress {
+    width: 100%;
+  }
+}
+
+@media (max-width: 719px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

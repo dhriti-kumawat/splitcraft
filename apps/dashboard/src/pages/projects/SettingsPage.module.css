@@ -164,3 +164,17 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+@media (max-width: 719px) {
+  .field {
+    min-width: 0;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 18px 16px;
+  }
+}

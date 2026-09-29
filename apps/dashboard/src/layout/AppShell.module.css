@@ -1,7 +1,7 @@
 .shell {
   display: flex;
   height: 100vh;
-  min-width: 1024px;
+  height: 100dvh;
   background: var(--ground);
 }
 
@@ -19,6 +19,10 @@
   padding: 28px 40px;
 }
 
+.backdrop {
+  display: none;
+}
+
 .skip {
   position: absolute;
   left: 12px;
@@ -33,4 +37,24 @@
 
 .skip:focus {
   top: 12px;
+}
+
+@media (max-width: 1023px) {
+  .content {
+    padding: 24px;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(21, 23, 26, 0.45);
+  }
+}
+
+@media (max-width: 719px) {
+  .content {
+    padding: 20px 16px 32px;
+  }
 }

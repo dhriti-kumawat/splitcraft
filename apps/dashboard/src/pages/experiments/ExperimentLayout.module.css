@@ -92,3 +92,36 @@
   background: var(--danger);
   color: #ffffff;
 }
+
+@media (max-width: 1023px) {
+  .band {
+    margin: -24px -24px 20px;
+    padding: 0 24px;
+  }
+
+  .steps {
+    overflow-x: auto;
+    gap: 22px;
+  }
+
+  .step {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 719px) {
+  .band {
+    margin: -20px -16px 20px;
+    padding: 0 16px;
+  }
+
+  .title {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .title h1 {
+    font-size: 20px;
+  }
+}

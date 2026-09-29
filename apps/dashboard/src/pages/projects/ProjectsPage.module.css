@@ -11,6 +11,76 @@
   flex-direction: column;
 }
 
+.nameCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid #b9d8cc;
+  background: var(--accent-soft);
+}
+
+.nameText {
+  flex: 1 1 260px;
+}
+
+.nameTitle {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.nameHint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.nameForm {
+  flex: 1 1 360px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.nameInput {
+  flex: 1 1 180px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font: 400 14px var(--font-ui);
+  color: var(--ink);
+}
+
+.later {
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-2);
+  font: 600 13px var(--font-ui);
+  cursor: pointer;
+}
+
+.later:hover {
+  color: var(--ink);
+}
+
+.nameError {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -205,4 +275,17 @@
 .addHint {
   font-size: 13px;
   color: var(--muted);
+}
+
+@media (max-width: 1023px) {
+  .layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 719px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
