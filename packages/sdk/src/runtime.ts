@@ -11,6 +11,8 @@ import {
   type VisitorState,
 } from './context';
 import { clearForcedVariants, getForcedVariants, withForce } from './qa/force';
+import { loadGlobal } from './load';
+import type { BrowsingKind, MetricsModule, Vital } from './metrics/types';
 import { loadQaPanel } from './qa/loader';
 import type { QaExperiment, QaSource, QaState } from './qa/types';
 import { injectStyles, onceInView, waitForElement } from './helpers';
@@ -61,6 +63,9 @@ export interface ProjectConfig {
     custom?: CustomGoal[];
     datalayer?: DataLayerGoal[];
     transactions?: TransactionGoal[];
+    /** Loaded from the separate metrics bundle, only when present. */
+    browsing?: BrowsingKind[];
+    vitals?: Vital[];
   };
   /** Visitor country from the edge (ISO 3166-1 alpha-2), if known. */
   country?: string;
@@ -76,6 +81,8 @@ export interface ProjectConfig {
 export interface StartOptions {
   /** URL of splitcraft-qa.iife.js, loaded only when variants are forced. */
   qaPanelUrl?: string;
+  /** URL of splitcraft-metrics.iife.js, loaded only for browsing / Web Vitals goals. */
+  metricsUrl?: string;
   /** Reveal function from an anti-flicker hide started before the config loaded. */
   reveal?: () => void;
 }
@@ -189,6 +196,23 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
     );
   }
 
+  const browsing = config.goals?.browsing ?? [];
+  const vitals = config.goals?.vitals ?? [];
+  if ((browsing.length || vitals.length) && opts.metricsUrl) {
+    loadGlobal<MetricsModule>(opts.metricsUrl, 'splitcraftMetrics')
+      .then((m) =>
+        stops.push(
+          m.start({
+            browsing,
+            vitals,
+            track: tracker.trackEvent,
+            session: () => ({ n: state.s?.n ?? 1, p: state.s?.p ?? 1 }),
+          }),
+        ),
+      )
+      .catch((err: unknown) => console.error(err));
+  }
+
   if (Object.keys(forced).length > 0 && opts.qaPanelUrl) {
     loadQaPanel(opts.qaPanelUrl)
       .then((panel) => stops.push(panel.mount(qaSource(qa, forced))))
@@ -217,12 +241,13 @@ export function boot(script: HTMLScriptElement): Promise<Runtime | null> {
   const configUrl =
     script.getAttribute('data-config') ?? new URL(`/v1/config/${project}.json`, base).href;
   const qaPanelUrl = new URL('splitcraft-qa.iife.js', base).href;
+  const metricsUrl = new URL('splitcraft-metrics.iife.js', base).href;
   return fetch(configUrl, { credentials: 'omit' })
     .then((res) => {
       if (!res.ok) throw new Error(`config ${res.status}`);
       return res.json() as Promise<ProjectConfig>;
     })
-    .then((config) => start(config, { qaPanelUrl, reveal }))
+    .then((config) => start(config, { qaPanelUrl, metricsUrl, reveal }))
     .catch((err: unknown) => {
       reveal();
       console.error('[splitcraft] Could not start:', err);

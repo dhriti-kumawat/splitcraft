@@ -5,6 +5,7 @@ import { gzipSync } from 'node:zlib';
 const budgets = [
   { file: 'dist/splitcraft.iife.js', maxBytes: 8000 },
   { file: 'dist/splitcraft-qa.iife.js', maxBytes: 3000 },
+  { file: 'dist/splitcraft-metrics.iife.js', maxBytes: 2000 },
 ];
 
 let failed = false;

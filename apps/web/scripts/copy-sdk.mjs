@@ -6,3 +6,7 @@ const to = new URL('../dist/sdk/', import.meta.url);
 mkdirSync(to, { recursive: true });
 copyFileSync(new URL('splitcraft.iife.js', from), new URL('v1.js', to));
 copyFileSync(new URL('splitcraft-qa.iife.js', from), new URL('splitcraft-qa.iife.js', to));
+copyFileSync(
+  new URL('splitcraft-metrics.iife.js', from),
+  new URL('splitcraft-metrics.iife.js', to),
+);
