@@ -5,8 +5,10 @@ import type {
   ExperimentGoal,
   ExperimentPatch,
   GuardrailLimit,
+  Invite,
   Metric,
   NewProject,
+  Role,
   VariantPatch,
 } from './api';
 import { useData } from './context';
@@ -27,6 +29,9 @@ export const keys = {
   segments: (projectId: string) => ['segments', projectId] as const,
   results: (experimentId: string) => ['results', experimentId] as const,
   daily: (experimentId: string) => ['daily', experimentId] as const,
+  people: (workspaceId: string) => ['people', workspaceId] as const,
+  invites: (workspaceId: string) => ['invites', workspaceId] as const,
+  invite: (token: string) => ['invite', token] as const,
 };
 
 export function useWorkspacesQuery(userId: string) {
@@ -328,4 +333,75 @@ export function useProjectMutations(workspaceId: string) {
     }),
     remove: useMutation({ mutationFn: (id: string) => api.deleteProject(id), onSuccess: refresh }),
   };
+}
+
+export function usePeopleQuery(workspaceId: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.people(workspaceId),
+    queryFn: () => api.listPeople(workspaceId),
+  });
+}
+
+export function useInvitesQuery(workspaceId: string, enabled: boolean) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.invites(workspaceId),
+    queryFn: () => api.listInvites(workspaceId),
+    enabled,
+  });
+}
+
+export function useTeamMutations(workspaceId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const people = () => void client.invalidateQueries({ queryKey: keys.people(workspaceId) });
+  const invites = () => void client.invalidateQueries({ queryKey: keys.invites(workspaceId) });
+  return {
+    setRole: useMutation({
+      mutationFn: ({ userId, role }: { userId: string; role: Role }) =>
+        api.setRole(workspaceId, userId, role),
+      onSuccess: people,
+    }),
+    remove: useMutation({
+      mutationFn: (userId: string) => api.removeMember(workspaceId, userId),
+      onSuccess: people,
+    }),
+    invite: useMutation({
+      mutationFn: ({ email, role }: { email: string; role: Invite['role'] }) =>
+        api.createInvite(workspaceId, email, role),
+      onSuccess: invites,
+    }),
+    revoke: useMutation({ mutationFn: (id: string) => api.revokeInvite(id), onSuccess: invites }),
+  };
+}
+
+/** Create, rename or delete workspaces; the workspace list refreshes afterwards. */
+export function useWorkspaceMutations(userId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => client.invalidateQueries({ queryKey: keys.workspaces(userId) });
+  return {
+    create: useMutation({
+      mutationFn: (name: string) => api.createWorkspace(name),
+      onSuccess: refresh,
+    }),
+    rename: useMutation({
+      mutationFn: ({ id, name }: { id: string; name: string }) => api.renameWorkspace(id, name),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({
+      mutationFn: (id: string) => api.deleteWorkspace(id),
+      onSuccess: refresh,
+    }),
+  };
+}
+
+export function useInviteQuery(token: string) {
+  const api = useData();
+  return useQuery({
+    queryKey: keys.invite(token),
+    queryFn: () => api.inviteDetails(token),
+    retry: false,
+  });
 }

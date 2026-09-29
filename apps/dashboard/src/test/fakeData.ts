@@ -1,6 +1,8 @@
 import type {
   DailyArm,
   DataApi,
+  Invite,
+  Person,
   Experiment,
   ExperimentGoal,
   Metric,
@@ -290,6 +292,30 @@ export const DAILY: Record<string, DailyArm[]> = {
   }).flat(),
 };
 
+export const PEOPLE: Person[] = [
+  {
+    userId: 'u_1',
+    email: 'dhriti@mytrips.dev',
+    name: 'Dhriti Kumawat',
+    role: 'owner',
+    joinedAt: '2026-09-01T09:00:00Z',
+  },
+  {
+    userId: 'u_2',
+    email: 'ada@mytrips.dev',
+    name: 'Ada Admin',
+    role: 'admin',
+    joinedAt: '2026-09-05T09:00:00Z',
+  },
+  {
+    userId: 'u_3',
+    email: 'max@mytrips.dev',
+    name: null,
+    role: 'member',
+    joinedAt: '2026-09-10T09:00:00Z',
+  },
+];
+
 /** In-memory DataApi seeded with the design's projects. */
 export function fakeData(
   opts: {
@@ -300,6 +326,7 @@ export function fakeData(
     lastEventAt?: string | null;
     segments?: Segment[];
     results?: Record<string, MetricArm[]>;
+    people?: Person[];
   } = {},
 ) {
   const projects = (opts.projects ?? PROJECTS).map((p) => ({
@@ -313,6 +340,10 @@ export function fakeData(
   const patches: Array<{ id: string; patch: unknown }> = [];
   const variantPatches: Array<{ id: string; patch: unknown }> = [];
   let metrics = METRICS.map((m) => ({ ...m }));
+  let workspaces = (opts.workspaces ?? [WORKSPACE]).map((w) => ({ ...w }));
+  let people = (opts.people ?? PEOPLE).map((p) => ({ ...p }));
+  let invites: Invite[] = [];
+  const invitesByToken: Record<string, { invite: Invite; workspaceName: string }> = {};
   const goals: Record<string, ExperimentGoal[]> = Object.fromEntries(
     Object.entries(GOALS).map(([k, v]) => [k, v.map((g) => ({ ...g }))]),
   );
@@ -326,7 +357,72 @@ export function fakeData(
   let installNext = false;
 
   const api: DataApi = {
-    listWorkspaces: async () => opts.workspaces ?? [WORKSPACE],
+    listWorkspaces: async () => workspaces.map((w) => ({ ...w })),
+    async createWorkspace(name) {
+      const id = `ws_${workspaces.length + 1}`;
+      workspaces.push({ id, name, plan: 'free', role: 'owner' });
+      return id;
+    },
+    async renameWorkspace(id, name) {
+      workspaces.find((w) => w.id === id)!.name = name;
+    },
+    async deleteWorkspace(id) {
+      workspaces = workspaces.filter((w) => w.id !== id);
+    },
+    listPeople: async () => people.map((p) => ({ ...p })),
+    async setRole(_ws, userId, role) {
+      if (
+        role !== 'owner' &&
+        people.filter((p) => p.role === 'owner' && p.userId !== userId).length === 0 &&
+        people.find((p) => p.userId === userId)!.role === 'owner'
+      ) {
+        throw new Error('A workspace needs at least one owner. Make someone else an owner first.');
+      }
+      people.find((p) => p.userId === userId)!.role = role;
+    },
+    async removeMember(_ws, userId) {
+      people = people.filter((p) => p.userId !== userId);
+    },
+    listInvites: async () => invites.map((i) => ({ ...i })),
+    async createInvite(workspaceId, email, role) {
+      const invite: Invite = {
+        id: `inv_${invites.length + 1}`,
+        email,
+        role,
+        token: `00000000-0000-0000-0000-00000000000${invites.length + 1}`,
+        createdAt: daysAgo(0),
+        expiresAt: new Date(Date.now() + 7 * DAY).toISOString(),
+        acceptedAt: null,
+      };
+      invites.unshift(invite);
+      invitesByToken[invite.token] = {
+        invite,
+        workspaceName: workspaces.find((w) => w.id === workspaceId)?.name ?? '',
+      };
+      return { ...invite };
+    },
+    async revokeInvite(id) {
+      invites = invites.filter((i) => i.id !== id);
+    },
+    async inviteDetails(token) {
+      const found = invitesByToken[token];
+      if (!found) return null;
+      return {
+        workspaceName: found.workspaceName,
+        email: found.invite.email,
+        role: found.invite.role,
+        expired: Date.parse(found.invite.expiresAt) < Date.now(),
+        accepted: found.invite.acceptedAt !== null,
+      };
+    },
+    async acceptInvite(token) {
+      const found = invitesByToken[token];
+      if (!found) throw new Error('This invite link is not valid.');
+      found.invite.acceptedAt = daysAgo(0);
+      const id = `ws_joined`;
+      workspaces.push({ id, name: found.workspaceName, plan: 'free', role: found.invite.role });
+      return id;
+    },
     listProjects: async (ws) => projects.filter((p) => p.workspaceId === ws).map((p) => ({ ...p })),
     getProject: async (id) => {
       const p = projects.find((x) => x.id === id) ?? null;
@@ -493,6 +589,25 @@ export function fakeData(
     segmentsNow: () => segments,
     metricsNow: () => metrics,
     projectsNow: () => projects,
+    workspacesNow: () => workspaces,
+    peopleNow: () => people,
+    /** Seed an invite as if another workspace had created it. */
+    seedInvite(
+      token: string,
+      invite: Partial<Invite> & { email: string },
+      workspaceName = 'Agency Clients',
+    ) {
+      const full: Invite = {
+        id: `inv_seed_${token}`,
+        role: 'member',
+        token,
+        createdAt: daysAgo(1),
+        expiresAt: new Date(Date.now() + 6 * DAY).toISOString(),
+        acceptedAt: null,
+        ...invite,
+      };
+      invitesByToken[token] = { invite: full, workspaceName };
+    },
     goalsNow: () => goals,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
