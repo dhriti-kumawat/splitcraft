@@ -18,6 +18,17 @@ import styles from './Sidebar.module.css';
 
 const numberFormat = new Intl.NumberFormat('en-US');
 
+/** "1 Oct": when the monthly event count resets (UTC). */
+function nextMonth(): string {
+  const now = new Date();
+  const first = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(first);
+}
+
 function Item(props: NavLinkProps) {
   return (
     <NavLink
@@ -133,6 +144,11 @@ export function Sidebar() {
               <span className={styles.usageLimit}> / {numberFormat.format(limit)}</span>
             )}
           </span>
+          {limit !== null && events.data >= limit && (
+            <span className={styles.limitNote} role="status">
+              Limit reached. Experiments are paused and events aren't stored until {nextMonth()}.
+            </span>
+          )}
           {limit !== null && (
             <div
               className={styles.meter}

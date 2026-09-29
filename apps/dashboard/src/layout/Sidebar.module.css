@@ -193,3 +193,9 @@
   color: #ffffff;
   border-color: #3a4044;
 }
+
+.limitNote {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--highlight);
+}
