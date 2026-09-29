@@ -24,10 +24,12 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 
 ## Commands
 - `npm install` — install all workspaces
-- `npm run dev -w apps/dashboard` — dashboard dev server
+- `npm run dev -w apps/dashboard` — dashboard dev server (http://localhost:5173; `/preview.html?path=…` renders any screen with fixtures)
+- `npm run dev -w apps/web` — marketing site (http://localhost:5174)
 - `npm run test -w packages/sdk` — SDK tests
 - `npm run test -w supabase` — database, RLS and Edge Function tests (PGlite, no Docker)
 - `npm run build` — build everything
+- `npm run simulate -w tools/simulator -- …` — demo traffic (see README)
 
 ## Working rules
 - Small, focused commits using Conventional Commits (`feat(sdk): add bucketing`, `fix(dashboard): …`, `test(sdk): …`).
