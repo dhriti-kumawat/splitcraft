@@ -107,10 +107,18 @@ screen with the design's example data (development only).
 
 ### Hosting the site and the SDK
 
-`.github/workflows/pages.yml` publishes the marketing site and the SDK to GitHub Pages on every push
-to `main` (enable it once under **Settings › Pages › Source: GitHub Actions**). The SDK is then at
-`https://<owner>.github.io/splitly/sdk/v1.js`; set that as `VITE_SDK_URL` for the dashboard so install
-snippets point at it.
+Both apps deploy to Vercel as two projects from this repo, configured by `apps/web/vercel.json` and
+`apps/dashboard/vercel.json`. Import the repo twice and set **Root Directory** to `apps/web` and
+`apps/dashboard`. The web project also serves the SDK at `https://<web-domain>/sdk/v1.js`.
+
+Environment variables:
+
+- `apps/dashboard`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SDK_URL` (the URL above) and
+  `VITE_SITE_URL` (the web domain).
+- `apps/web`: `VITE_DASHBOARD_URL` (the dashboard domain).
+
+Add the dashboard domain to Supabase under **Authentication › URL Configuration** (Site URL and
+`https://<dashboard-domain>/**` as a redirect URL).
 
 ### Demo data
 
