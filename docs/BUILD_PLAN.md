@@ -1,5 +1,9 @@
 # Build plan
 
+> **Status (2026-09-29):** Phases 0–4 are built and merged (PRs #1–#21). Phase 5: README, screenshots,
+> the traffic simulator and the GitHub Pages workflow are done; installing Splitly on a real demo site,
+> GIFs and the write-ups are still to do. Known gaps are listed at the end of the README.
+
 Order matters: each phase uses the previous one. One branch + PR per task.
 Prompts are written to paste into Claude Code as-is.
 
