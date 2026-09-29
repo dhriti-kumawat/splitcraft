@@ -276,6 +276,34 @@ describe('project switches', () => {
   });
 });
 
+describe('stay in audience', () => {
+  it('keeps showing the variant after the trigger stops matching, only when set', async () => {
+    const onlyFirstPage = {
+      how: [
+        {
+          mode: 'all' as const,
+          items: [{ type: 'pages_viewed_session' as const, op: 'eq' as const, value: 1 }],
+        },
+      ],
+    };
+    localStorage.clear();
+    runtime = start(config([exp({ targeting: { ...onlyFirstPage, stay: true } })]));
+    await settle();
+    history.pushState({}, '', '/trips/iceland');
+    await settle();
+    expect((await sentEvents()).filter((e) => e.type === 'exposure')).toHaveLength(2);
+
+    localStorage.clear();
+    beacon.mockClear();
+    history.replaceState({}, '', '/trips/norway');
+    runtime = start(config([exp({ targeting: onlyFirstPage })]));
+    await settle();
+    history.pushState({}, '', '/trips/iceland');
+    await settle();
+    expect((await sentEvents()).filter((e) => e.type === 'exposure')).toHaveLength(1);
+  });
+});
+
 describe('metrics bundle', () => {
   it('loads only when browsing or Web Vitals goals are live, and starts them', async () => {
     const started = vi.fn(() => () => {});

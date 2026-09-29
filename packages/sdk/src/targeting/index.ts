@@ -1,7 +1,7 @@
 import { waitForSelector } from '../dom';
-import { evaluateGroups } from './conditions';
+import { dataLayerValue, evaluateGroups } from './conditions';
 import { matchUrl } from './match';
-import type { Frequency, Targeting, TargetingContext, WhereRules } from './types';
+import type { ConditionGroup, Frequency, Targeting, TargetingContext, WhereRules } from './types';
 
 export * from './types';
 export { evaluateCondition, evaluateGroup, evaluateGroups } from './conditions';
@@ -55,4 +55,35 @@ export function matchFrequency(when: Frequency | undefined, ctx: TargetingContex
     default:
       return false;
   }
+}
+
+/**
+ * Evaluation setting "wait for dataLayer": resolve once every dataLayer key the rules use
+ * has a value, or after `ms` (then the rules see whatever is there).
+ */
+export function waitForDataLayer(
+  t: Targeting,
+  ms: number,
+  dataLayer: () => unknown[],
+): Promise<void> {
+  const keys: string[] = [];
+  const scan = (groups: ConditionGroup[] = []): void =>
+    groups.forEach((g) =>
+      g.items.forEach((i) =>
+        'mode' in i ? scan([i]) : i.type === 'data_layer' && keys.push(i.key),
+      ),
+    );
+  scan(t.who);
+  scan(t.how);
+  const ready = () => keys.every((k) => dataLayerValue(dataLayer(), k) !== undefined);
+  if (!keys.length || ms <= 0 || ready()) return Promise.resolve();
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const timer = setInterval(() => {
+      if (ready() || Date.now() - started >= ms) {
+        clearInterval(timer);
+        resolve();
+      }
+    }, 50);
+  });
 }

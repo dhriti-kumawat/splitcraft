@@ -221,3 +221,22 @@ describe('saved targeting', () => {
     });
   });
 });
+
+describe('evaluation settings', () => {
+  it('saves stay in audience and a dataLayer wait', async () => {
+    const user = userEvent.setup();
+    const { patches } = await open();
+    await user.click(screen.getByRole('checkbox', { name: /Once matched, stay in audience/ }));
+    const wait = screen.getByLabelText('Wait for dataLayer up to');
+    await user.clear(wait);
+    await user.type(wait, '9000');
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    expect(screen.getByText('Between 0 and 5,000 ms.')).toBeInTheDocument();
+    expect(patches).toHaveLength(0);
+    await user.clear(wait);
+    await user.type(wait, '1500');
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    await vi.waitFor(() => expect(patches).toHaveLength(1));
+    expect(saved(patches)).toMatchObject({ stay: true, waitForDataLayerMs: 1500 });
+  });
+});

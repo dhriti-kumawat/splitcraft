@@ -303,3 +303,13 @@ describe('toSdkConfig: browsing and Web Vitals goals', () => {
     expect(toSdkConfig(src([]), 'prj_x', '/e').goals).not.toHaveProperty('vitals');
   });
 });
+
+describe('toSdkTargeting: evaluation settings', () => {
+  it('passes stay in audience and a capped dataLayer wait', () => {
+    expect(toSdkTargeting({ stay: true, waitForDataLayerMs: 9000 }, {})).toEqual({
+      stay: true,
+      waitForDataLayerMs: 5000,
+    });
+    expect(toSdkTargeting({ stay: false, waitForDataLayerMs: 0 }, {})).toEqual({});
+  });
+});

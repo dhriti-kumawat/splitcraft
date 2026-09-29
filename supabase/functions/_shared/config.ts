@@ -129,6 +129,11 @@ export function toSdkTargeting(
   if (t.where) out.where = t.where;
   if (t.how && t.how.length > 0) out.how = t.how;
   if (t.when) out.when = t.when;
+  // Evaluation settings (PRODUCT_SPEC §4).
+  if (t.stay === true) out.stay = true;
+  if (typeof t.waitForDataLayerMs === 'number' && t.waitForDataLayerMs > 0) {
+    out.waitForDataLayerMs = Math.min(Math.round(t.waitForDataLayerMs), 5000);
+  }
   return out;
 }
 
