@@ -34,7 +34,7 @@ describe('experiments list', () => {
     expect(within(sticky).getByText('+9.7%')).toBeInTheDocument();
     expect(within(sticky).getByText('96%')).toBeInTheDocument();
     expect(within(sticky).getByText('14 days')).toBeInTheDocument();
-    expect(within(sticky).getByRole('img', { name: 'B 50%, Control 50%' })).toBeInTheDocument();
+    expect(within(sticky).getByRole('img', { name: 'Control 50%, B 50%' })).toBeInTheDocument();
     expect(within(sticky).getByRole('link')).toHaveAttribute(
       'href',
       '/p/trip-demo/experiments/sticky/results',

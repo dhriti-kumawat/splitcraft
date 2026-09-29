@@ -67,7 +67,7 @@ export interface Experiment {
   startedAt: string | null;
   endedAt: string | null;
   createdAt: string;
-  /** Ordered by key, like the SDK config. */
+  /** Control first, then by key. */
   variants: Variant[];
 }
 
@@ -137,6 +137,25 @@ export interface ExperimentGoal {
   limit: GuardrailLimit | null;
 }
 
+/** Raw counts for one metric and variant (experiment_results). */
+export interface MetricArm {
+  metricId: string;
+  variantKey: string;
+  visitors: number;
+  converters: number;
+  events: number;
+  eventsSumsq: number;
+  valueSum: number;
+  valueSumsq: number;
+}
+
+export interface DailyArm {
+  day: string;
+  variantKey: string;
+  visitors: number;
+  converters: number;
+}
+
 /** Monthly event allowance per plan. Only the free plan exists in v1. */
 export const EVENT_LIMIT: Record<Workspace['plan'], number | null> = {
   free: 100_000,
@@ -188,4 +207,6 @@ export interface DataApi {
     limit: GuardrailLimit | null,
   ): Promise<void>;
   removeExperimentGoal(experimentId: string, metricId: string): Promise<void>;
+  experimentResults(experimentId: string): Promise<MetricArm[]>;
+  experimentDaily(experimentId: string): Promise<DailyArm[]>;
 }

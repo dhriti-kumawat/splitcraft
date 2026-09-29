@@ -143,6 +143,7 @@ describe('editing', () => {
       'true',
     );
     expect(screen.getByRole('radio', { name: 'Click · selector' })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Pageview · URL' })).toBeEnabled();
     const url = screen.getByRole('textbox', { name: 'URL' });
     await user.clear(url);
     await user.type(url, '/checkout/thanks');

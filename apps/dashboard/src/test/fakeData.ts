@@ -1,8 +1,10 @@
 import type {
+  DailyArm,
   DataApi,
   Experiment,
   ExperimentGoal,
   Metric,
+  MetricArm,
   NewProject,
   Project,
   ProjectStats,
@@ -63,8 +65,8 @@ export const STATS: ProjectStats[] = [
 const DAY = 24 * 60 * 60 * 1000;
 const daysAgo = (n: number) => new Date(Date.now() - n * DAY).toISOString();
 const variants = (id: string) => [
-  { id: `${id}-b`, key: 'b', name: 'B', weight: 50, js: '', css: '', version: 1 },
   { id: `${id}-c`, key: 'control', name: 'Control', weight: 50, js: '', css: '', version: 1 },
+  { id: `${id}-b`, key: 'b', name: 'B', weight: 50, js: '', css: '', version: 1 },
 ];
 const experiment = (
   e: Partial<Experiment> & Pick<Experiment, 'id' | 'name' | 'status'>,
@@ -249,6 +251,45 @@ export const SEGMENTS: Segment[] = [
   },
 ];
 
+// Results for Sticky: the worked example on Book click, plus Purchase (guardrail) and the
+// confirmation page (secondary).
+const r = (
+  metricId: string,
+  variantKey: string,
+  visitors: number,
+  converters: number,
+  valueSum = 0,
+): MetricArm => ({
+  metricId,
+  variantKey,
+  visitors,
+  converters,
+  events: converters,
+  eventsSumsq: converters,
+  valueSum,
+  valueSumsq: valueSum * 50,
+});
+export const RESULTS: Record<string, MetricArm[]> = {
+  sticky: [
+    r('m-book', 'control', 12_480, 622),
+    r('m-book', 'b', 12_380, 677),
+    r('m-purchase', 'control', 12_480, 151, 18_000),
+    r('m-purchase', 'b', 12_380, 154, 18_500),
+    r('m-confirm', 'control', 12_480, 140),
+    r('m-confirm', 'b', 12_380, 146),
+  ],
+};
+
+export const DAILY: Record<string, DailyArm[]> = {
+  sticky: Array.from({ length: 14 }, (_, i) => {
+    const day = new Date(Date.now() - (13 - i) * DAY).toISOString().slice(0, 10);
+    return [
+      { day, variantKey: 'control', visitors: 891, converters: 44 },
+      { day, variantKey: 'b', visitors: 884, converters: 48 },
+    ];
+  }).flat(),
+};
+
 /** In-memory DataApi seeded with the design's projects. */
 export function fakeData(
   opts: {
@@ -258,6 +299,7 @@ export function fakeData(
     stats?: VariantStats[];
     lastEventAt?: string | null;
     segments?: Segment[];
+    results?: Record<string, MetricArm[]>;
   } = {},
 ) {
   const projects = [...(opts.projects ?? PROJECTS)];
@@ -343,6 +385,8 @@ export function fakeData(
       }
     },
     listVariantVersions: async (id) => versions[id] ?? [],
+    experimentResults: async (id) => opts.results?.[id] ?? RESULTS[id] ?? [],
+    experimentDaily: async (id) => DAILY[id] ?? [],
     async addVariant(experimentId, variant) {
       const e = experiments.find((x) => x.id === experimentId)!;
       e.variants.push({
@@ -352,7 +396,9 @@ export function fakeData(
         version: 1,
         ...variant,
       });
-      e.variants.sort((a, b) => a.key.localeCompare(b.key));
+      e.variants.sort((a, b) =>
+        a.key === 'control' ? -1 : b.key === 'control' ? 1 : a.key.localeCompare(b.key),
+      );
     },
     async deleteVariant(id) {
       for (const e of experiments) e.variants = e.variants.filter((v) => v.id !== id);

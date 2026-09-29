@@ -55,7 +55,7 @@ describe('describe', () => {
       { mode: 'none', items: [{ type: 'custom_js', code: 'return window.__user?.isStaff' }] },
     ];
     expect(describeGroups(groups)).toBe(
-      'On mobile or tablet, country is “IN” and session number is at least 2 and (viewed pages matches pattern /trips/* at least 3 times in 7 days, first-touch utm_campaign contains “summer-sale” or cookie loyalty_tier is “gold”) but not custom JavaScript returns true.',
+      'On mobile or tablet, country is “IN” and session number is at least 2 and (viewed pages matching /trips/* at least 3 times in 7 days, first-touch utm_campaign contains “summer-sale” or cookie loyalty_tier is “gold”) but not custom JavaScript returns true.',
     );
   });
 

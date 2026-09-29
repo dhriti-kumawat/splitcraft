@@ -192,7 +192,7 @@ function Form({
                   role="radio"
                   aria-checked={source === s.id}
                   className={styles.source}
-                  disabled={!s.available || Boolean(metric)}
+                  disabled={!s.available || (Boolean(metric) && s.id !== source)}
                   title={s.available ? undefined : "Coming later: the SDK doesn't collect this yet"}
                   onClick={() => setSource(s.id)}
                 >

@@ -80,7 +80,10 @@ export function toExperiment(row: ExperimentRow): Experiment {
     createdAt: row.created_at,
     variants: (row.variants ?? [])
       .map((v) => ({ ...v, weight: Number(v.weight) }))
-      .sort((a, b) => a.key.localeCompare(b.key)),
+      // Control first, then by key. (Display only: the SDK config orders by key in SQL.)
+      .sort((a, b) =>
+        a.key === 'control' ? -1 : b.key === 'control' ? 1 : a.key.localeCompare(b.key),
+      ),
   };
 }
 
@@ -365,6 +368,48 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
           .eq('experiment_id', experimentId)
           .eq('metric_id', metricId),
       );
+    },
+
+    async experimentResults(experimentId) {
+      const rows = check(
+        await supabase.rpc('experiment_results', { p_experiment: experimentId }),
+      ) as Array<{
+        metric_id: string;
+        variant_key: string;
+        visitors: number;
+        converters: number;
+        events: number;
+        events_sumsq: number;
+        value_sum: number;
+        value_sumsq: number;
+      }>;
+      return rows.map((r) => ({
+        metricId: r.metric_id,
+        variantKey: r.variant_key,
+        visitors: r.visitors,
+        converters: r.converters,
+        events: r.events,
+        eventsSumsq: r.events_sumsq,
+        valueSum: r.value_sum,
+        valueSumsq: r.value_sumsq,
+      }));
+    },
+
+    async experimentDaily(experimentId) {
+      const rows = check(
+        await supabase.rpc('experiment_daily', { p_experiment: experimentId }),
+      ) as Array<{
+        day: string;
+        variant_key: string;
+        visitors: number;
+        converters: number;
+      }>;
+      return rows.map((r) => ({
+        day: r.day,
+        variantKey: r.variant_key,
+        visitors: r.visitors,
+        converters: r.converters,
+      }));
     },
 
     async listVariantVersions(variantId) {

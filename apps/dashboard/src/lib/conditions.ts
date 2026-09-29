@@ -178,6 +178,13 @@ function numberPhrase(subject: string, op: NumberOperator, value: number, unit =
   return `${subject} ${NUMBER_OPS.find((o) => o.op === op)?.label ?? op} ${value}${unit}`;
 }
 
+const PAGE_VERB: Record<UrlRule['op'], string> = {
+  is: 'at',
+  contains: 'containing',
+  matches: 'matching',
+  regex: 'matching regex',
+};
+
 export function describeCondition(c: Condition): string {
   switch (c.type) {
     case 'visitor_type':
@@ -187,7 +194,7 @@ export function describeCondition(c: Condition): string {
     case 'pages_viewed_session':
       return numberPhrase('pages viewed this visit', c.op, c.value);
     case 'page_views_matching':
-      return `viewed pages ${URL_OPS.find((o) => o.op === c.url.op)?.label ?? c.url.op} ${c.url.value} at least ${c.count} ${c.count === 1 ? 'time' : 'times'} in ${c.days} ${c.days === 1 ? 'day' : 'days'}`;
+      return `viewed pages ${PAGE_VERB[c.url.op]} ${c.url.value} at least ${c.count} ${c.count === 1 ? 'time' : 'times'} in ${c.days} ${c.days === 1 ? 'day' : 'days'}`;
     case 'device_type':
       return `on ${listText(c.value.map((v) => DEVICES.find((d) => d.value === v)?.label.toLowerCase() ?? v))}`;
     case 'screen_width':
