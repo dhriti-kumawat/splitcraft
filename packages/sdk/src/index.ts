@@ -6,7 +6,7 @@ import {
   type StartOptions,
 } from './runtime';
 
-export const VERSION = '0.0.0';
+export const VERSION = '1.0.0';
 
 // Public API. In the CDN build these become `window.splitcraft.*`.
 export { injectStyles, onceInView, onRouteChange, waitForElement } from './helpers';
@@ -32,7 +32,55 @@ export function start(config: ProjectConfig, opts?: StartOptions): Runtime {
 function attach(rt: Runtime): Runtime {
   runtime = rt;
   for (const args of pending.splice(0)) rt.trackEvent(...args);
+  rt.subscribe(notify);
+  notify();
   return rt;
+}
+
+// A store that exists before the runtime does, so React can subscribe right away.
+const listeners = new Set<() => void>();
+function notify(): void {
+  for (const fn of listeners) fn();
+}
+
+/** Get told when variants or readiness change (the React hook uses this). */
+export function subscribe(fn: () => void): () => void {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
+/** The variant key this visitor sees, or null (not in the test, or not decided yet). */
+export function variant(experimentKey: string): string | null {
+  return runtime?.variant(experimentKey) ?? null;
+}
+
+/** True once the first page's experiments have been decided. */
+export function ready(): boolean {
+  return runtime?.ready() ?? false;
+}
+
+export interface InitOptions {
+  /** The project's public key, `prj_…`. */
+  project: string;
+  /** Where the SDK files are served; the config URL is derived from it. */
+  base?: string;
+  /** Config URL, when it isn't next to the SDK files (e.g. the Supabase function URL). */
+  configUrl?: string;
+  /** Hide the page until variants apply (max 400 ms). Off by default for npm use. */
+  antiFlicker?: boolean;
+}
+
+/**
+ * npm use: fetch the project's config and start, as the script tag does.
+ * Resolves with the runtime, or null when the config can't load.
+ */
+export function init(opts: InitOptions): Promise<Runtime | null> {
+  const s = document.createElement('script');
+  s.setAttribute('src', new URL('v1.js', opts.base ?? 'https://splitcraft.vercel.app/sdk/').href);
+  s.setAttribute('data-project', opts.project);
+  if (opts.configUrl) s.setAttribute('data-config', opts.configUrl);
+  if (!opts.antiFlicker) s.setAttribute('data-antiflicker', 'off');
+  return boot(s).then((rt) => rt && attach(rt));
 }
 
 const script = typeof document !== 'undefined' ? document.currentScript : null;

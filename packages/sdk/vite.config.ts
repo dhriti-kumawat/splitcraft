@@ -3,11 +3,10 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   build: {
     lib: {
+      // ES module for npm consumers. The CDN <script> build is vite.cdn.config.ts.
       entry: 'src/index.ts',
-      name: 'splitcraft',
-      // ES module for npm consumers, IIFE for the CDN <script> tag.
-      formats: ['es', 'iife'],
-      fileName: (format) => (format === 'es' ? 'splitcraft.js' : 'splitcraft.iife.js'),
+      formats: ['es'],
+      fileName: () => 'splitcraft.js',
     },
     target: 'es2019',
     sourcemap: true,
