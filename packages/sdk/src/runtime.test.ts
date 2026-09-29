@@ -36,10 +36,15 @@ const ran = () => (window as unknown as { __ran?: number }).__ran ?? 0;
 let beacon: ReturnType<typeof vi.fn>;
 let runtime: Runtime | undefined;
 
-async function sentEvents(): Promise<Array<Record<string, unknown>>> {
+async function allSentEvents(): Promise<Array<Record<string, unknown>>> {
   runtime?.stop();
   const bodies = await Promise.all(beacon.mock.calls.map(([, blob]) => (blob as Blob).text()));
   return bodies.flatMap((b) => JSON.parse(b).events);
+}
+
+/** Exposures and goals (the session ping has its own test). */
+async function sentEvents(): Promise<Array<Record<string, unknown>>> {
+  return (await allSentEvents()).filter((e) => e.type !== 'ping');
 }
 
 const settle = () => new Promise((r) => setTimeout(r, 0));
@@ -313,5 +318,27 @@ describe('boot', () => {
     ))!;
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock.mock.calls[0]).toEqual(['https://api.test/c.json', { credentials: 'omit' }]);
+  });
+});
+
+describe('session ping', () => {
+  it('sends one ping per session with what reach estimates need', async () => {
+    localStorage.clear();
+    history.replaceState({}, '', '/trips/norway?utm_source=news&utm_medium=email');
+    runtime = start({ projectKey: 'prj_test', eventsUrl: 'https://e.test', experiments: [] });
+    await settle();
+    history.pushState({}, '', '/trips/iceland');
+    await settle();
+    const pings = (await allSentEvents()).filter((e) => e.type === 'ping');
+    expect(pings).toHaveLength(1);
+    expect(pings[0]).toMatchObject({
+      url: expect.stringContaining('/trips/norway'),
+      props: {
+        d: 'desktop',
+        s: 'email',
+        n: 1,
+        uf: { source: 'news', medium: 'email' },
+      },
+    });
   });
 });

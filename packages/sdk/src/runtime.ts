@@ -7,6 +7,7 @@ import {
   recordExposure,
   recordPageview,
   saveState,
+  sessionPing,
   type VisitorState,
 } from './context';
 import { clearForcedVariants, getForcedVariants, withForce } from './qa/force';
@@ -145,6 +146,10 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
 
   const run = async (referrer: string): Promise<void> => {
     recordPageview(state, location.href, referrer, Date.now());
+    // First page of a session: one ping so the dashboard can estimate reach.
+    if (state.s?.p === 1) {
+      tracker.ping(sessionPing(state, navigator.userAgent, screen.width));
+    }
     qa.newPage(clickGoals.map((g) => g.key));
     await Promise.all(config.experiments.map((exp) => runExperiment(exp, state)));
     saveState(state);

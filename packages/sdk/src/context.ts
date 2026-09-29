@@ -163,3 +163,24 @@ function readCookies(): Record<string, string> {
   }
   return cookies;
 }
+
+/**
+ * What the session ping carries: the traits reach estimates can check without the page
+ * (device, screen, source, new / returning, session number, first- and last-touch UTMs).
+ * Short keys keep the event small.
+ */
+export function sessionPing(
+  state: VisitorState,
+  userAgent: string,
+  screenWidth: number,
+): Record<string, unknown> {
+  const s = state.s;
+  return {
+    d: deviceType(userAgent),
+    w: screenWidth,
+    s: s?.src ?? 'direct',
+    n: s?.n ?? 1,
+    ...(Object.keys(state.u.f).length && { uf: state.u.f }),
+    ...(Object.keys(state.u.l).length && { ul: state.u.l }),
+  };
+}

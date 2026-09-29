@@ -1,5 +1,6 @@
 export interface TrackedEvent {
-  type: 'exposure' | 'goal';
+  /** `ping`: one per session, with what reach estimates need (see sessionPing). */
+  type: 'exposure' | 'goal' | 'ping';
   /** Goal / event key. */
   key?: string;
   experimentKey?: string;
