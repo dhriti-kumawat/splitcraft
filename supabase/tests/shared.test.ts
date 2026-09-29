@@ -50,6 +50,18 @@ describe('parseBatch', () => {
 });
 
 describe('cleanEvent', () => {
+  it('keeps a session ping with its traits, and drops one without them', () => {
+    const ping = {
+      type: 'ping',
+      visitorId: goal.visitorId,
+      url: goal.url,
+      props: { d: 'mobile', n: 2 },
+    };
+    expect(cleanEvent(ping)).toEqual(ping);
+    expect(cleanEvent({ ...ping, props: undefined })).toBeNull();
+    expect(cleanEvent({ ...ping, props: { big: 'x'.repeat(3000) } })).toBeNull();
+  });
+
   it('keeps exposure fields', () => {
     expect(
       cleanEvent({

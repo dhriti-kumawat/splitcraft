@@ -67,7 +67,7 @@ export interface SdkProjectConfig {
 
 /** One event as the SDK sends it (packages/sdk/src/tracking/transport.ts). */
 export interface IncomingEvent {
-  type: 'exposure' | 'goal';
+  type: 'exposure' | 'goal' | 'ping';
   key?: string;
   experimentKey?: string;
   variantKey?: string;
