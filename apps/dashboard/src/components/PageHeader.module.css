@@ -1,0 +1,19 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+.title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
