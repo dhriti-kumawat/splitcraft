@@ -185,8 +185,8 @@ export function GoalsPage() {
             onAdd={(id) => set.mutate({ metricId: id, role: 'guardrail', limit: { maxPct: 2 } })}
           />
           <span className={styles.note}>
-            Results flag a guardrail when it is crossed with 95% confidence. Automatic pausing needs
-            a scheduled job that isn't built yet, so pause by hand.
+            When a guardrail is crossed with 95% confidence, the experiment pauses automatically
+            (checked every 15 minutes). If you resume it, guardrails won't pause it again.
           </span>
         </section>
       </div>

@@ -115,9 +115,21 @@ export interface Experiment {
   endedAt: string | null;
   /** Archived experiments are stopped and hidden from the list's usual filters. */
   archivedAt: string | null;
+  /** Set when a crossed guardrail paused it automatically (it isn't paused again after). */
+  autoPaused: AutoPause | null;
   createdAt: string;
   /** Control first, then by key. */
   variants: Variant[];
+}
+
+export interface AutoPause {
+  at: string;
+  metricId: string;
+  variantKey: string;
+  uplift: number;
+  upliftLow: number;
+  upliftHigh: number;
+  maxPct: number;
 }
 
 export interface VariantStats {

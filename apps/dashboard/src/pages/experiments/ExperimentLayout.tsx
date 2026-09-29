@@ -10,6 +10,7 @@ import {
   useDeleteExperiment,
   useDuplicateExperiment,
   useExperimentQuery,
+  useMetricsQuery,
   useUpdateExperiment,
 } from '../../data/queries';
 import { useCurrentProject, useWorkspace } from '../../data/workspace';
@@ -22,6 +23,7 @@ import {
   qaDone,
   variantsReady,
 } from '../../lib/launch';
+import { percent } from '../../lib/experiments';
 import { NotFoundPage } from '../NotFoundPage';
 import type { ExperimentContext } from './experimentContext';
 import styles from './ExperimentLayout.module.css';
@@ -65,6 +67,9 @@ export function ExperimentLayout() {
           <Pill tone={experiment.status}>{STATUS[experiment.status]}</Pill>
           {experiment.archivedAt && <Pill tone="draft">Archived</Pill>}
         </div>
+        {experiment.status === 'paused' && experiment.autoPaused && (
+          <AutoPauseNote experiment={experiment} projectId={project.id} />
+        )}
         <nav aria-label="Experiment steps">
           <ol className={styles.steps}>
             {steps.map((step, i) => (
@@ -268,5 +273,29 @@ function DeleteDialog({
         </button>
       </div>
     </Dialog>
+  );
+}
+
+function AutoPauseNote({
+  experiment,
+  projectId,
+}: {
+  experiment: ExperimentContext['experiment'];
+  projectId: string;
+}) {
+  const metrics = useMetricsQuery(projectId);
+  const p = experiment.autoPaused!;
+  const metric = metrics.data?.find((m) => m.id === p.metricId)?.name ?? 'A guardrail';
+  const variant = experiment.variants.find((v) => v.key === p.variantKey)?.name ?? p.variantKey;
+  const date = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(
+    new Date(p.at),
+  );
+  return (
+    <p className={styles.autoPause} role="status">
+      <strong>Paused automatically on {date}.</strong> {metric} in {variant} changed{' '}
+      {percent(p.uplift)} (95% range {percent(p.upliftLow)} to {percent(p.upliftHigh)}), past its{' '}
+      {p.maxPct}% limit. Check the results before resuming; once resumed, guardrails won't pause it
+      again.
+    </p>
   );
 }
