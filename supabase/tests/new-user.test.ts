@@ -51,7 +51,9 @@ describe('backfill', () => {
     // Apply everything up to the new-user migration, add an account, then apply it.
     const { readdirSync, readFileSync } = await import('node:fs');
     const dir = new URL('../migrations/', import.meta.url);
-    const files = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
+    const files = readdirSync(dir)
+      .filter((f) => f.endsWith('.sql'))
+      .sort();
     const stub = (await import('./db')).SUPABASE_STUB;
     await fresh.exec(stub);
     for (const f of files.filter((f) => f < '20260929130000')) {
