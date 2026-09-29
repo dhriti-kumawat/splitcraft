@@ -89,6 +89,12 @@ export interface StartOptions {
 
 export interface Runtime {
   trackEvent(key: string, props?: { value?: number; [k: string]: unknown }): void;
+  /** The variant key this visitor sees on this page, or null (not in the test). */
+  variant(experimentKey: string): string | null;
+  /** True once the first page's experiments have been decided. */
+  ready(): boolean;
+  /** Called whenever a variant or readiness changes (e.g. after an SPA navigation). */
+  subscribe(fn: () => void): () => void;
   stop(): void;
 }
 
@@ -185,7 +191,12 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
   };
 
   let lastUrl = location.href;
-  void run(document.referrer).finally(() => opts.reveal?.());
+  let isReady = false;
+  void run(document.referrer).finally(() => {
+    opts.reveal?.();
+    isReady = true;
+    for (const fn of qa.listeners) fn();
+  });
   if (config.options?.spa !== false) {
     stops.push(
       onRouteChange((url) => {
@@ -221,6 +232,12 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
 
   return {
     trackEvent: tracker.trackEvent,
+    variant: (key) => qa.experiments.get(key)?.variantKey ?? null,
+    ready: () => isReady,
+    subscribe(fn) {
+      qa.listeners.add(fn);
+      return () => qa.listeners.delete(fn);
+    },
     stop() {
       for (const stop of stops) stop();
       queue.stop();
@@ -268,6 +285,7 @@ function createQaState() {
 
   return {
     listeners,
+    experiments,
     get: (): QaState => ({
       experiments: [...experiments.values()],
       events: [...events, ...waiting.map((label) => ({ label, sent: false }))],
