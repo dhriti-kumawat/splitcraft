@@ -7,6 +7,10 @@ metrics and read results with honest statistics.
 It is a portfolio project, built to understand how tools like Optimizely and AB Tasty work inside:
 the bucketing, targeting, anti-flicker, tracking, QA mode and statistics are written from scratch.
 
+**Live:** [splitcraft.vercel.app](https://splitcraft.vercel.app) · dashboard at
+[splitcraft-app.vercel.app](https://splitcraft-app.vercel.app) · **developer docs** at
+[splitcraft.vercel.app/docs](https://splitcraft.vercel.app/docs/) (sources in `docs/developer/`).
+
 ![Results for an experiment: verdict, uplift with its 95% range, chance to win, sample ratio check, and the cumulative conversion chart](docs/images/results.png)
 
 ## What it does
@@ -15,14 +19,22 @@ the bucketing, targeting, anti-flicker, tracking, QA mode and statistics are wri
   helpers, templates, a live syntax check and version history. Preview any variant on your site with
   `?splitcraft_force=experiment:variant`, which also opens a QA panel.
 - **Targeting without limits.** WHO (saved segments) / WHERE (URL and element rules) / HOW (session
-  triggers) / WHEN (frequency), built from nested ALL / ANY / NONE groups, with a plain-English summary
-  and a URL tester that runs the SDK's own matcher.
-- **Metrics from an event source.** Click trackers from CSS selectors (with selector health checks),
-  pageview rules and custom JS trackers, measured as unique conversions, totals, sums or value per
-  conversion, with a direction and a counting window.
+  triggers) / WHEN (frequency), built from nested ALL / ANY / NONE groups, with a plain-English summary,
+  saved triggers and page sets, visitor country, reach estimates per group, and a URL tester that runs
+  the SDK's own matcher.
+- **Metrics from an event source.** Clicks (CSS selectors with health checks), pageviews, custom JS,
+  dataLayer events, transactions, browsing and Web Vitals, measured as unique conversions, totals,
+  sums, value per conversion, click-through rate or time to first click, with a direction and a
+  counting window.
 - **Honest statistics.** Two-proportion z-test, Bayesian chance to win, uplift with its 95% range, a
   sample ratio mismatch check on every experiment, a sample-size planner, guardrails, and per-visitor
-  values capped at the 99th percentile. The verdict says in plain words when a result is not ready.
+  values capped at the 99th percentile. The verdict says in plain words when a result is not ready,
+  and a crossed guardrail pauses the experiment automatically.
+- **Teams and workflow.** Workspaces with owners, admins and members, invite links, ⌘K search, recent
+  activity, duplicate / archive / delete, a test page per experiment, and a dashboard that works on
+  phones.
+- **Install your way.** Script tag, Next.js, GTM, or `npm install @splitcraft/sdk` with a
+  `useExperiment` React hook; per-project anti-flicker, SPA and GA4 switches.
 
 |                                                                                   |                                                                                                    |
 | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -35,22 +47,26 @@ the bucketing, targeting, anti-flicker, tracking, QA mode and statistics are wri
 ```mermaid
 flowchart LR
   subgraph Site["Customer site"]
-    SDK["SDK (6.6 KB gzip)<br/>visitor id · targeting · bucketing<br/>anti-flicker · apply · tracking"]
+    SDK["SDK (7.9 KB gzip)<br/>visitor id · targeting · bucketing<br/>anti-flicker · apply · tracking"]
     QA["QA panel<br/>(separate 2 KB file,<br/>only with ?splitcraft_force)"]
+    MET["Metrics file<br/>(1.2 KB, browsing + Web Vitals,<br/>only when used)"]
   end
   subgraph Supabase
     CFG["Edge Function<br/>GET /config/:key.json"]
     EVT["Edge Function<br/>POST /events"]
     DB[("Postgres + RLS<br/>projects · experiments · variants<br/>segments · metrics · events")]
-    SQL["SQL functions<br/>results · daily · overview"]
+    SQL["SQL functions<br/>results · guardrails · reach · activity"]
+    CRON["pg_cron<br/>guardrail auto-pause"]
   end
   DASH["Dashboard (React)<br/>Supabase Auth"]
 
   SDK -- "fetch config" --> CFG --> DB
   SDK -- "sendBeacon batches" --> EVT --> DB
   SDK -. "loads when forced" .-> QA
+  SDK -. "loads when used" .-> MET
   DASH -- "anon key + RLS" --> DB
   DASH --> SQL --> DB
+  CRON --> DB
 ```
 
 - **SDK** (`packages/sdk`): reads a visitor id (cookie, localStorage fallback), fetches the project's
@@ -67,10 +83,11 @@ flowchart LR
 
 |                                     |                                                                          |
 | ----------------------------------- | ------------------------------------------------------------------------ |
-| SDK, main bundle                    | **6.9 KB** gzipped (budget 8 KB, checked in CI), no runtime dependencies |
+| SDK, main bundle                    | **7.9 KB** gzipped (budget 8 KB, checked in CI), no runtime dependencies |
 | QA panel                            | 2.0 KB gzipped, a separate file loaded only in QA mode                   |
+| Metrics file (browsing, Web Vitals) | 1.2 KB gzipped, loaded only when a live experiment uses it               |
 | Marketing site, Lighthouse (mobile) | Performance 100 · Accessibility 100 · Best practices 100 · SEO 100       |
-| Tests                               | ~500 across SDK, dashboard, site, database and simulator                 |
+| Tests                               | ~670 across SDK, dashboard, site, database and simulator                 |
 
 The statistics are tested against the worked example in `docs/PRODUCT_SPEC.md` §6: Control
 12,480 / 622 and B 12,380 / 677 give an uplift of +9.7% (95% range −1.4% to +20.8%), a 96% chance to
@@ -151,7 +168,8 @@ docs                product spec, decisions, build plan
 
 Things the designs or spec describe that are not built yet:
 
-- The visitor's country in the config.
-- "Pick on page" and a Chrome preview extension (planned as v1.1).
+- "Pick on page" and a Chrome preview extension (planned as v1.1). Until then, previews on pages
+  without the snippet use an opt-in bookmark (decision #25).
+- SSO (needs a paid Supabase plan).
 
 `docs/DECISIONS.md` explains the choices behind these and the rest of the design.
