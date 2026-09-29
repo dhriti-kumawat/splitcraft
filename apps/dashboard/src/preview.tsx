@@ -17,6 +17,24 @@ const path = params.get('path') ?? '/projects';
 const signedIn = !/^\/(login|signup|forgot-password)/.test(path);
 // &workspaces=none shows the first-run screen for an account without a workspace.
 const data = fakeData(params.get('workspaces') === 'none' ? { workspaces: [] } : {});
+// Example variant code for the Sticky Book Now bar, so the code editor isn't empty.
+void data.api.updateVariant('sticky-b', {
+  js: `// Keep the Book button in view on mobile trip pages.
+splitcraft.waitForElement('.book-now-btn', (btn) => {
+  const bar = document.createElement('div');
+  bar.className = 'sc-sticky-bar';
+  bar.innerHTML = '<span>From ₹18,400</span>';
+  bar.appendChild(btn.cloneNode(true));
+  document.body.appendChild(bar);
+
+  splitcraft.onceInView(bar, () => splitcraft.trackEvent('sticky_bar_seen'));
+});`,
+  css: `.sc-sticky-bar {
+  position: fixed; inset: auto 0 0 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: #fff; box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+}`,
+});
 const router = createMemoryRouter(routes, { initialEntries: [path] });
 
 createRoot(document.getElementById('root')!).render(

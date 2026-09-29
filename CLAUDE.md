@@ -41,5 +41,6 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 - `docs/PRODUCT_SPEC.md` — full behaviour spec: IA, experiment steps, targeting, metrics, stats, SDK API, auth, data model.
 - `docs/DECISIONS.md` — why things are the way they are. Don't reverse a decision without asking.
 - `docs/BUILD_PLAN.md` — phase order and the next task.
+- `docs/developer/` — developer docs (published at /docs/ on the marketing site). Update them when behaviour changes.
 - `design/README.md` — screen → route map. `design/screens/*.html` are the exact designs; `design/tokens.css` holds colours and type.
 - Before building any screen, open its file in `design/screens/` and match spacing, sizes and copy.

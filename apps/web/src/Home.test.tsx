@@ -28,8 +28,23 @@ describe('home page', () => {
     for (const link of within(nav).getAllByRole('link')) {
       const href = link.getAttribute('href')!;
       if (href.startsWith('#')) expect(container.querySelector(href), href).not.toBeNull();
-      else expect(href).toBe(GITHUB_URL);
+      else expect([GITHUB_URL, '/docs/']).toContain(href);
     }
+  });
+
+  it('links to the developer docs from the nav, the developer section and the footer', () => {
+    render(<Home />);
+    const nav = screen.getByRole('navigation', { name: 'Main' });
+    expect(within(nav).getByRole('link', { name: 'Docs' })).toHaveAttribute('href', '/docs/');
+    expect(screen.getByRole('link', { name: 'Read the developer docs' })).toHaveAttribute(
+      'href',
+      '/docs/',
+    );
+    const footer = screen.getByRole('navigation', { name: 'Footer' });
+    expect(within(footer).getByRole('link', { name: 'SDK reference' })).toHaveAttribute(
+      'href',
+      '/docs/sdk/',
+    );
   });
 
   it('sends Start free and Log in to the dashboard', () => {

@@ -8,6 +8,7 @@ const NAV = [
   { href: '#stats', label: 'Statistics' },
   { href: '#how', label: 'How it works' },
   { href: '#pricing', label: 'Pricing' },
+  { href: '/docs/', label: 'Docs' },
 ];
 
 function Logo({ size = 26 }: { size?: number }) {
@@ -498,9 +499,14 @@ function Developers() {
               </span>
             </li>
           </ul>
-          <a className={`${styles.secondary} ${styles.ghost}`} href={GITHUB_URL}>
-            Read the code on GitHub
-          </a>
+          <div className={styles.devLinks}>
+            <a className={`${styles.secondary} ${styles.ghost}`} href="/docs/">
+              Read the developer docs
+            </a>
+            <a className={`${styles.secondary} ${styles.ghost}`} href={GITHUB_URL}>
+              Read the code on GitHub
+            </a>
+          </div>
         </div>
         <div className={styles.code}>
           <div className={styles.codeTabs} role="tablist" aria-label="Install examples">
@@ -672,7 +678,8 @@ function Footer() {
     {
       title: 'Developers',
       links: [
-        ['SDK', '#developers'],
+        ['Documentation', '/docs/'],
+        ['SDK reference', '/docs/sdk/'],
         ['Source on GitHub', GITHUB_URL],
         ['How it works', '#how'],
       ],
