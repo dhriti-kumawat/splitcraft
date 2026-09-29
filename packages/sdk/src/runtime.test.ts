@@ -266,6 +266,16 @@ describe('QA mode', () => {
   });
 });
 
+describe('project switches', () => {
+  it('runs on the first page only when SPA support is off', async () => {
+    runtime = start({ ...config([exp()]), options: { spa: false } });
+    await settle();
+    history.pushState({}, '', '/trips/iceland');
+    await settle();
+    expect((await sentEvents()).filter((e) => e.type === 'exposure')).toHaveLength(1);
+  });
+});
+
 describe('boot', () => {
   const script = (attrs: Record<string, string>) => {
     const s = document.createElement('script');
@@ -297,6 +307,21 @@ describe('boot', () => {
     runtime = (await booting)!;
     await settle();
     expect(document.getElementById('splitcraft-antiflicker')).toBeNull();
+  });
+
+  it("doesn't hide the page when the snippet turns anti-flicker off", async () => {
+    let resolveFetch: (r: Response) => void = () => {};
+    vi.stubGlobal('fetch', () => new Promise<Response>((r) => (resolveFetch = r)));
+    const booting = boot(
+      script({
+        src: 'https://splitcraft.vercel.app/sdk/v1.js',
+        'data-project': 'prj_1',
+        'data-antiflicker': 'off',
+      }),
+    );
+    expect(document.getElementById('splitcraft-antiflicker')).toBeNull();
+    resolveFetch(new Response(JSON.stringify(config([exp()]))));
+    runtime = (await booting)!;
   });
 
   it('shows the page and gives up when the config cannot load', async () => {

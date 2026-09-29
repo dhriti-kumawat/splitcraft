@@ -32,3 +32,13 @@ describe('snippet', () => {
     expect(snippet('html', values)).toMatch(/<script\n[\s\S]*async\n><\/script>$/);
   });
 });
+
+describe('anti-flicker switch', () => {
+  it('adds data-antiflicker="off" only when switched off', () => {
+    expect(snippet('html', values)).not.toContain('data-antiflicker');
+    expect(snippet('html', { ...values, antiFlicker: false })).toContain('data-antiflicker="off"');
+    expect(snippet('nextjs', { ...values, antiFlicker: false })).toContain(
+      '  data-antiflicker="off"',
+    );
+  });
+});

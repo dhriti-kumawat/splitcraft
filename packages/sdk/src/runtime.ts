@@ -55,6 +55,13 @@ export interface ProjectConfig {
   goals?: { clicks?: ClickGoal[]; pageviews?: PageviewGoal[]; custom?: CustomGoal[] };
   /** Visitor country from the edge (ISO 3166-1 alpha-2), if known. */
   country?: string;
+  /**
+   * Per-project switches, present only when turned off: `spa: false` runs experiments on
+   * the first page only (no re-check on route changes); `ga4: false` stops dataLayer pushes.
+   * Anti-flicker is switched off on the snippet (`data-antiflicker="off"`), because it
+   * starts before the config loads.
+   */
+  options?: { spa?: false; ga4?: false };
 }
 
 export interface StartOptions {
@@ -89,6 +96,7 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
       },
     },
     visitorId,
+    config.options?.ga4 !== false,
   );
   const clickGoals = config.goals?.clicks ?? [];
   const stops = [
@@ -157,13 +165,15 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
 
   let lastUrl = location.href;
   void run(document.referrer).finally(() => opts.reveal?.());
-  stops.push(
-    onRouteChange((url) => {
-      const from = lastUrl;
-      lastUrl = url;
-      void run(from);
-    }),
-  );
+  if (config.options?.spa !== false) {
+    stops.push(
+      onRouteChange((url) => {
+        const from = lastUrl;
+        lastUrl = url;
+        void run(from);
+      }),
+    );
+  }
 
   if (Object.keys(forced).length > 0 && opts.qaPanelUrl) {
     loadQaPanel(opts.qaPanelUrl)
@@ -183,12 +193,12 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
 /**
  * Bootstrap for the CDN script tag:
  * `<script src="https://splitcraft.vercel.app/sdk/v1.js" data-project="prj_xxx" async>`.
- * Hides the page at once, then fetches the config and starts.
+ * Hides the page at once (unless `data-antiflicker="off"`), then fetches the config and starts.
  */
 export function boot(script: HTMLScriptElement): Promise<Runtime | null> {
   const project = script.getAttribute('data-project');
   if (!project) return Promise.resolve(null);
-  const reveal = hidePage();
+  const reveal = script.getAttribute('data-antiflicker') === 'off' ? () => {} : hidePage();
   const base = new URL(script.src, location.href);
   const configUrl =
     script.getAttribute('data-config') ?? new URL(`/v1/config/${project}.json`, base).href;

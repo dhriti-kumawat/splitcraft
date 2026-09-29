@@ -54,6 +54,17 @@ export interface Project {
   /** When the SDK sent its first event; null means "Waiting for first ping". */
   installedAt: string | null;
   createdAt: string;
+  settings: ProjectSettings;
+}
+
+/** SDK switches per project (10-projects.html). All on by default. */
+export interface ProjectSettings {
+  /** Hide the page until variants apply (max 400 ms). Set on the snippet. */
+  antiFlicker: boolean;
+  /** Re-check targeting on every route change of a single-page app. */
+  spa: boolean;
+  /** Push exposures and events to window.dataLayer for GTM / GA4. */
+  ga4: boolean;
 }
 
 export interface ProjectStats {
@@ -296,7 +307,7 @@ export interface DataApi {
   createProject(project: NewProject): Promise<Project>;
   updateProject(
     projectId: string,
-    patch: Partial<Pick<Project, 'name' | 'mainDomain' | 'allowedDomains'>>,
+    patch: Partial<Pick<Project, 'name' | 'mainDomain' | 'allowedDomains' | 'settings'>>,
   ): Promise<Project>;
   /** Deletes the project with its experiments, audiences, metrics and events. */
   deleteProject(projectId: string): Promise<void>;

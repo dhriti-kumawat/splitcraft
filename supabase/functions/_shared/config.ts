@@ -63,6 +63,7 @@ export function toSdkConfig(
     })),
     goals: { clicks, pageviews, custom },
     ...(country && { country }),
+    ...(options(source.settings) && { options: options(source.settings) }),
   };
 }
 
@@ -80,6 +81,16 @@ export function toSdkTargeting(
   if (t.how && t.how.length > 0) out.how = t.how;
   if (t.when) out.when = t.when;
   return out;
+}
+
+/** Switches that are off, for the SDK; undefined when all are on (the default). */
+function options(settings: ConfigSource['settings']): SdkProjectConfig['options'] {
+  const s = (settings ?? {}) as Record<string, unknown>;
+  const out: NonNullable<SdkProjectConfig['options']> = {
+    ...(s.spa === false && { spa: false as const }),
+    ...(s.ga4 === false && { ga4: false as const }),
+  };
+  return Object.keys(out).length ? out : undefined;
 }
 
 function isUrlRule(value: unknown): value is UrlRule {

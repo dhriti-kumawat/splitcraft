@@ -9,7 +9,8 @@ export interface Tracker {
   ping(props: Record<string, unknown>): void;
 }
 
-export function createTracker(queue: EventQueue, visitorId: string): Tracker {
+/** `dataLayer`: push exposures and events to window.dataLayer for GTM / GA4 (default on). */
+export function createTracker(queue: EventQueue, visitorId: string, dataLayer = true): Tracker {
   const exposed = new Set<string>();
   const base = () => ({ url: location.href, visitorId, at: Date.now() });
 
@@ -19,7 +20,9 @@ export function createTracker(queue: EventQueue, visitorId: string): Tracker {
       if (exposed.has(once)) return false;
       exposed.add(once);
       queue.push({ type: 'exposure', experimentKey, variantKey, ...base() });
-      pushDataLayer({ event: 'splitcraft_exposure', splitcraft: { experimentKey, variantKey } });
+      if (dataLayer) {
+        pushDataLayer({ event: 'splitcraft_exposure', splitcraft: { experimentKey, variantKey } });
+      }
       return true;
     },
 
@@ -35,7 +38,8 @@ export function createTracker(queue: EventQueue, visitorId: string): Tracker {
       if (typeof value === 'number' && Number.isFinite(value)) event.value = value;
       if (Object.keys(rest).length > 0) event.props = rest;
       queue.push(event);
-      pushDataLayer({ event: 'splitcraft_event', splitcraft: { key, value: event.value } });
+      if (dataLayer)
+        pushDataLayer({ event: 'splitcraft_event', splitcraft: { key, value: event.value } });
     },
   };
 }
