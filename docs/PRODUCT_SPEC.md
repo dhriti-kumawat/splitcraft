@@ -134,7 +134,7 @@ A metric = **event source** + **how to measure**.
 
 ## 7. SDK (packages/sdk)
 
-- Loaded by `<script src="https://splitcraft.app/sdk/v1.js" data-project="prj_xxx" async>`,
+- Loaded by `<script src="https://splitcraft.vercel.app/sdk/v1.js" data-project="prj_xxx" async>`,
   or npm + `useExperiment(key)` React hook.
 - < 7 KB gzipped (QA panel loaded separately, < 3 KB), no runtime dependencies.
 - Flow: read/create visitor id cookie → fetch project config → evaluate targeting →

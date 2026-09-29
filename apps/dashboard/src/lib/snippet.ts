@@ -15,7 +15,7 @@ export interface SnippetValues {
 
 /** Where the SDK file is served from. Placeholder until the SDK is hosted (see Install page). */
 export const SDK_URL =
-  (import.meta.env.VITE_SDK_URL as string | undefined) ?? 'https://splitcraft.app/sdk/v1.js';
+  (import.meta.env.VITE_SDK_URL as string | undefined) ?? 'https://splitcraft.vercel.app/sdk/v1.js';
 export const SDK_URL_IS_PLACEHOLDER = !import.meta.env.VITE_SDK_URL;
 
 export function configUrl(supabaseUrl: string, publicKey: string): string {
