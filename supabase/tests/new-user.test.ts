@@ -44,3 +44,30 @@ describe('new user', () => {
     expect(result.workspaces).toEqual([{ name: "Alex's Workspace" }]);
   });
 });
+
+describe('backfill', () => {
+  it('gives accounts created before the migration a workspace', async () => {
+    const fresh = await (await import('@electric-sql/pglite')).PGlite.create();
+    // Apply everything up to the new-user migration, add an account, then apply it.
+    const { readdirSync, readFileSync } = await import('node:fs');
+    const dir = new URL('../migrations/', import.meta.url);
+    const files = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
+    const stub = (await import('./db')).SUPABASE_STUB;
+    await fresh.exec(stub);
+    for (const f of files.filter((f) => f < '20260929130000')) {
+      await fresh.exec(readFileSync(new URL(f, dir), 'utf8'));
+    }
+    await fresh.query(
+      `insert into auth.users (id, email, raw_user_meta_data) values ($1, 'early@example.com', '{"full_name":"Early Bird"}')`,
+      ['00000000-0000-0000-0000-00000000e001'],
+    );
+    await fresh.exec(readFileSync(new URL('20260929130000_new_user_workspace.sql', dir), 'utf8'));
+    const rows = (
+      await fresh.query<{ name: string; role: string }>(
+        `select w.name, m.role from workspaces w join workspace_members m on m.workspace_id = w.id`,
+      )
+    ).rows;
+    expect(rows).toEqual([{ name: "Early's Workspace", role: 'owner' }]);
+    await fresh.close();
+  });
+});
