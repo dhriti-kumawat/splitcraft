@@ -1,4 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { MAX_VARIANTS } from '../lib/chartColors';
+import { evenWeights } from '../lib/experiments';
 import type { ConditionGroup } from '../lib/targeting';
 import type {
   Experiment,
@@ -324,16 +326,19 @@ export function useEditVariants(experiment: Experiment) {
     void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
   };
   const add = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (name: string) => {
       const used = new Set(experiment.variants.map((v) => v.key));
-      const letter = 'bcdefghijklmnopqrstuvwxyz'.split('').find((l) => !used.has(l))!;
-      const even = Math.round((100 / (experiment.variants.length + 1)) * 100) / 100;
+      const letter = 'bcdefghijklmnopqrstuvwxyz'.split('').find((l) => !used.has(l));
+      if (!letter) throw new Error(`An experiment can have at most ${MAX_VARIANTS} variants.`);
+      const weights = evenWeights(experiment.variants.length + 1);
       await api.addVariant(experiment.id, {
         key: letter,
-        name: letter.toUpperCase(),
-        weight: even,
+        name: name.trim() || `Variant ${letter.toUpperCase()}`,
+        weight: weights[weights.length - 1]!,
       });
-      await Promise.all(experiment.variants.map((v) => api.updateVariant(v.id, { weight: even })));
+      await Promise.all(
+        experiment.variants.map((v, i) => api.updateVariant(v.id, { weight: weights[i]! })),
+      );
       return letter;
     },
     onSuccess: refresh,
@@ -341,9 +346,9 @@ export function useEditVariants(experiment: Experiment) {
   const remove = useMutation({
     mutationFn: async (variantId: string) => {
       const rest = experiment.variants.filter((v) => v.id !== variantId);
-      const even = Math.round((100 / rest.length) * 100) / 100;
+      const weights = evenWeights(rest.length);
       await api.deleteVariant(variantId);
-      await Promise.all(rest.map((v) => api.updateVariant(v.id, { weight: even })));
+      await Promise.all(rest.map((v, i) => api.updateVariant(v.id, { weight: weights[i]! })));
     },
     onSuccess: refresh,
   });

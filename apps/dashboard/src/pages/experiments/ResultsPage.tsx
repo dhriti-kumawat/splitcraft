@@ -82,8 +82,8 @@ export function ResultsPage() {
   const best = primary.best;
   const control = primary.arms.find((a) => a.variantKey === controlKey(experiment))!;
   const others = primary.arms.filter((a) => a !== control);
-  // MVT: best combinations first, and only the top ones in the chart.
-  if (experiment.type === 'mvt')
+  // Many variants (or MVT combinations): best first, and only the top ones in the chart.
+  if (experiment.type === 'mvt' || others.length >= SERIES.length)
     others.sort((a, b) => (b.chanceBetter ?? 0) - (a.chanceBetter ?? 0));
   const orderedArms = [control, ...others];
   const series = orderedArms
@@ -247,6 +247,11 @@ export function ResultsPage() {
           <h2 className={styles.title} id="chart-h">
             Cumulative conversion rate
           </h2>
+          {orderedArms.length > SERIES.length && (
+            <p className={styles.note}>
+              Control and the {SERIES.length - 1} leading variants. The table has every variant.
+            </p>
+          )}
           <CumulativeChart
             data={chart}
             series={series}

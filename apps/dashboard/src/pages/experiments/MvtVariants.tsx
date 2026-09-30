@@ -26,6 +26,15 @@ export function MvtVariants() {
       : null,
   );
   const [file, setFile] = useState<'js' | 'css'>('js');
+  // Name field to focus after adding a section or version, so it gets a real name.
+  const [focusName, setFocusName] = useState<'section' | 'version' | null>(null);
+  const selectOnMount = (el: HTMLInputElement | null) => {
+    if (el && document.activeElement !== el) {
+      el.focus();
+      el.select();
+      setFocusName(null);
+    }
+  };
   const tabId = useId();
   const isDraft = experiment.status === 'draft';
   const readOnly = experiment.status === 'ended';
@@ -60,6 +69,7 @@ export function MvtVariants() {
       },
     ]);
     setSel({ f: factors.length, l: 1 });
+    setFocusName('section');
   };
   const addLevel = (fi: number) => {
     const f = factors[fi]!;
@@ -69,6 +79,7 @@ export function MvtVariants() {
       levels: [...x.levels, { key, name: `Version ${key.toUpperCase()}`, js: '', css: '' }],
     }));
     setSel({ f: fi, l: f.levels.length });
+    setFocusName('version');
   };
   const removeLevel = (fi: number, li: number) => {
     edit(fi, (x) => ({
@@ -111,6 +122,9 @@ export function MvtVariants() {
                   Section name
                 </label>
                 <input
+                  ref={
+                    focusName === 'section' && fi === factors.length - 1 ? selectOnMount : undefined
+                  }
                   id={`${tabId}-f${fi}`}
                   className={own.sectionName}
                   value={f.name}
@@ -190,6 +204,7 @@ export function MvtVariants() {
               Version name
             </label>
             <input
+              ref={focusName === 'version' ? selectOnMount : undefined}
               id={`${tabId}-lname`}
               className={own.levelName}
               value={level.name}

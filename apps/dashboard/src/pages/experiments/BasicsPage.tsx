@@ -1,18 +1,14 @@
 import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router';
 import type { Experiment, Project } from '../../data/api';
-import {
-  useGoalsQuery,
-  useOverviewQuery,
-  useUpdateExperiment,
-  useUpdateVariants,
-} from '../../data/queries';
+import { useGoalsQuery, useOverviewQuery, useUpdateExperiment } from '../../data/queries';
 import { useWorkspace } from '../../data/workspace';
 import { matchWhereUrl } from '../../../../../packages/sdk/src/targeting';
 import { launchChecks, qaDone, testPageUrl } from '../../lib/launch';
 import { sampleSizePerVariant } from '../../lib/stats';
 import { useExperiment } from './experimentContext';
 import styles from './BasicsPage.module.css';
+import { TrafficSplit } from './TrafficSplit';
 
 const number = new Intl.NumberFormat('en-US');
 const COLORS = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
@@ -203,38 +199,19 @@ function TargetingSummary({ experiment, base }: { experiment: Experiment; base: 
 
 function Traffic({ experiment }: { experiment: Experiment }) {
   const update = useUpdateExperiment(experiment);
-  const updateVariants = useUpdateVariants(experiment);
   const [traffic, setTraffic] = useState(String(experiment.trafficPct));
   const total = experiment.variants.reduce((s, v) => s + v.weight, 0) || 1;
-  const [weights, setWeights] = useState(() =>
-    experiment.variants.map((v) => String(Math.round((v.weight / total) * 1000) / 10)),
-  );
-  const ids = { traffic: useId(), split: useId() };
-  const locked = experiment.status !== 'draft';
+  const id = useId();
 
   const trafficNum = Number(traffic);
   const trafficError =
     traffic.trim() === '' || !Number.isFinite(trafficNum) || trafficNum < 0 || trafficNum > 100
       ? 'Enter a percentage from 0 to 100.'
       : '';
-  const weightNums = weights.map(Number);
-  const sum = weightNums.reduce((a, b) => a + b, 0);
-  const splitError =
-    weightNums.some((w) => !Number.isFinite(w) || w < 0) || Math.abs(sum - 100) > 0.01
-      ? `The split must add up to 100% (now ${Math.round(sum * 10) / 10}%).`
-      : '';
 
   const saveTraffic = () => {
     if (!trafficError && trafficNum !== experiment.trafficPct)
       update.mutate({ trafficPct: trafficNum });
-  };
-  const saveSplit = () => {
-    if (splitError || locked) return;
-    const changed = experiment.variants
-      .map((v, i) => ({ id: v.id, weight: weightNums[i]!, old: (v.weight / total) * 100 }))
-      .filter((v) => Math.abs(v.weight - v.old) > 0.01);
-    if (changed.length)
-      updateVariants.mutate(changed.map((c) => ({ id: c.id, patch: { weight: c.weight } })));
   };
 
   return (
@@ -244,22 +221,22 @@ function Traffic({ experiment }: { experiment: Experiment }) {
           Traffic
         </h2>
         <div className={styles.trafficRow}>
-          <label htmlFor={ids.traffic}>Include</label>
+          <label htmlFor={id}>Include</label>
           <input
-            id={ids.traffic}
+            id={id}
             className={styles.small}
             inputMode="decimal"
             value={traffic}
             onChange={(e) => setTraffic(e.target.value)}
             onBlur={saveTraffic}
             aria-invalid={Boolean(trafficError)}
-            aria-describedby={trafficError ? `${ids.traffic}-err` : undefined}
+            aria-describedby={trafficError ? `${id}-err` : undefined}
           />
           <span>% of matching visitors</span>
         </div>
       </div>
       {trafficError && (
-        <span id={`${ids.traffic}-err`} className={styles.error}>
+        <span id={`${id}-err`} className={styles.error}>
           {trafficError}
         </span>
       )}
@@ -267,38 +244,14 @@ function Traffic({ experiment }: { experiment: Experiment }) {
         {experiment.variants.map((v, i) => (
           <div
             key={v.id}
+            title={`${v.name} · ${Math.round((v.weight / total) * 100)}%`}
             style={{ width: `${(v.weight / total) * 100}%`, background: COLORS[i % COLORS.length] }}
           >
             {v.name} · {Math.round((v.weight / total) * 100)}%
           </div>
         ))}
       </div>
-      <fieldset style={{ border: 0, margin: 0, padding: 0 }} aria-describedby={`${ids.split}-note`}>
-        <legend className="visually-hidden">Split between variants</legend>
-        <div className={styles.weights}>
-          {experiment.variants.map((v, i) => (
-            <label key={v.id} className={styles.weight}>
-              {v.name}
-              <input
-                className={styles.small}
-                inputMode="decimal"
-                value={weights[i]}
-                disabled={locked}
-                onChange={(e) => setWeights((w) => w.map((x, j) => (j === i ? e.target.value : x)))}
-                onBlur={saveSplit}
-                aria-invalid={Boolean(splitError)}
-              />
-              %
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <span id={`${ids.split}-note`} className={splitError ? styles.error : styles.hint}>
-        {splitError ||
-          (locked
-            ? 'The split is locked once an experiment has started: changing it would move visitors between variants.'
-            : 'Traffic can be raised later without moving anyone already in the test.')}
-      </span>
+      <TrafficSplit experiment={experiment} />
     </section>
   );
 }

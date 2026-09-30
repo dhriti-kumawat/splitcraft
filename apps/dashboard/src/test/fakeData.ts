@@ -643,7 +643,8 @@ export function fakeData(
     async addVariant(experimentId, variant) {
       const e = experiments.find((x) => x.id === experimentId)!;
       e.variants.push({
-        id: `${experimentId}-${variant.key}`,
+        // Not `${id}-c`: that is Control's id in these fixtures.
+        id: `${experimentId}-added-${variant.key}`,
         js: '',
         css: '',
         url: null,

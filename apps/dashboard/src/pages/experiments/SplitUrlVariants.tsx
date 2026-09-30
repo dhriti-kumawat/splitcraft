@@ -1,10 +1,11 @@
 import { useId, useState } from 'react';
 import type { Experiment, Project, Variant } from '../../data/api';
 import { useEditVariants, useUpdateVariants } from '../../data/queries';
-import { MAX_VARIANTS } from '../../lib/chartColors';
 import { controlKey } from '../../lib/experiments';
 import { previewUrl, testPageUrl } from '../../lib/launch';
+import { AddVariant } from './AddVariant';
 import { useExperiment } from './experimentContext';
+import { TrafficSplit } from './TrafficSplit';
 import styles from './SplitUrlVariants.module.css';
 
 const COLORS = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
@@ -39,20 +40,15 @@ export function SplitUrlVariants() {
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        className={styles.add}
-        disabled={!isDraft || experiment.variants.length >= MAX_VARIANTS || edits.add.isPending}
-        onClick={() => edits.add.mutate(undefined)}
-        title={isDraft ? undefined : 'Variants can only be added before launch'}
-      >
-        + Add variant page
-      </button>
-      {edits.add.isError && (
-        <p role="alert" className={styles.error}>
-          {edits.add.error.message}
-        </p>
-      )}
+      <AddVariant
+        experiment={experiment}
+        buttonClassName={styles.add}
+        label="+ Add variant page"
+        placeholder="e.g. Redesigned landing page"
+      />
+      <section className={styles.row} aria-label="Traffic split">
+        <TrafficSplit experiment={experiment} />
+      </section>
     </div>
   );
 }
