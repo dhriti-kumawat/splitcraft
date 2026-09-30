@@ -6,16 +6,6 @@
   overflow-x: clip;
 }
 
-/* Even line breaks: headings split into lines of similar length, and paragraphs avoid a
-   single word on their last line. */
-.page :is(h1, h2, h3) {
-  text-wrap: balance;
-}
-
-.page p {
-  text-wrap: pretty;
-}
-
 .wrap {
   width: 100%;
   max-width: 1440px;
