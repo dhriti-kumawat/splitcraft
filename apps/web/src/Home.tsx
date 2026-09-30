@@ -267,18 +267,30 @@ function ProductShot() {
 }
 
 function Stack() {
-  // Integrations as text only (DECISIONS #14). Each works through the snippet or dataLayer.
+  // Integrations as text only (DECISIONS #14), in a slow loop. Four copies keep the track
+  // wider than any screen, so the loop is seamless; screen readers get the first only.
+  const names = ['React', 'Next.js', 'Vue', 'Shopify', 'Google Tag Manager', 'GA4'];
+  const row = (hidden: boolean) => (
+    <ul className={styles.marqueeRow} aria-hidden={hidden || undefined}>
+      {names.map((n) => (
+        <li key={n}>{n}</li>
+      ))}
+    </ul>
+  );
   return (
     <section className={styles.stack} aria-labelledby="stack-title">
       <div className={`${styles.wrap} ${styles.stackInner}`}>
-        <h2 className={styles.stackLabel} id="stack-title" style={{ margin: 0, fontWeight: 400 }}>
+        <h2 className={styles.stackLabel} id="stack-title">
           Works with your stack
         </h2>
-        <ul className={styles.stackList}>
-          {['React', 'Next.js', 'Vue', 'Shopify', 'Google Tag Manager', 'GA4'].map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ul>
+        <div className={styles.marquee}>
+          <div className={styles.marqueeTrack}>
+            {row(false)}
+            {row(true)}
+            {row(true)}
+            {row(true)}
+          </div>
+        </div>
       </div>
     </section>
   );
