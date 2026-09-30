@@ -53,7 +53,9 @@ Add `?splitcraft_force=<experimentKey>:<variantKey>` (several pairs separated by
 - the variant is forced, skipping WHO / HOW / WHEN and traffic, but still only on its pages;
 - a QA panel opens (a separate 2 KB file) with the active experiments, how each was assigned
   (forced or bucketed), the events sent, and buttons to switch variant, reset or hide;
-- forced variants are remembered for the browser tab (`sessionStorage`).
+- forced variants are remembered for the browser tab (`sessionStorage`);
+- with `splitcraft_preview=<token>` (added by **Preview on site**) the SDK asks the config for that
+  experiment even before launch, with no targeting, and remembers the token for the tab.
 
 The dashboard's **Preview on site** button opens this link.
 

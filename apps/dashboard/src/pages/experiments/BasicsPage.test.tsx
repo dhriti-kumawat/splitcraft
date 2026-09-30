@@ -201,7 +201,7 @@ describe('launching', () => {
     const preview = screen.getByRole('link', { name: 'Preview on site' });
     expect(preview).toHaveAttribute(
       'href',
-      `https://${PROJECTS[0]!.mainDomain}/?splitcraft_force=trust%3Ab`,
+      `https://${PROJECTS[0]!.mainDomain}/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust`,
     );
     expect(preview).toHaveAttribute('target', '_blank');
     preview.addEventListener('click', (e) => e.preventDefault());
@@ -248,7 +248,7 @@ describe('test page', () => {
     );
     expect(screen.getByRole('link', { name: 'Preview on site' })).toHaveAttribute(
       'href',
-      'https://mytrips.dev/trips/norway?splitcraft_force=trust%3Ab',
+      'https://mytrips.dev/trips/norway?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
     );
   });
 

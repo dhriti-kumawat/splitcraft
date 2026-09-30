@@ -8,6 +8,7 @@ import type {
   Invite,
   Metric,
   NewProject,
+  Project,
   Role,
   SavedKind,
   SavedRules,
@@ -454,7 +455,13 @@ export function useProjectMutations(workspaceId: string) {
     update: useMutation({
       mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof api.updateProject>[1] }) =>
         api.updateProject(id, patch),
-      onSuccess: refresh,
+      onSuccess: (updated) => {
+        // Show the saved values at once, so switches don't flick back while the list reloads.
+        client.setQueryData<Project[]>(keys.projects(workspaceId), (list) =>
+          list?.map((p) => (p.id === updated.id ? updated : p)),
+        );
+        refresh();
+      },
     }),
     remove: useMutation({ mutationFn: (id: string) => api.deleteProject(id), onSuccess: refresh }),
   };
