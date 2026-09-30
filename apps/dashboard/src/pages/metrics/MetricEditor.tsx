@@ -6,7 +6,12 @@ import { Dialog } from '../../components/Dialog';
 import dialogStyles from '../../components/Dialog.module.css';
 import { PageHeader } from '../../components/PageHeader';
 import type { Metric } from '../../data/api';
-import { useExperimentsQuery, useMetricMutations, useMetricsQuery } from '../../data/queries';
+import {
+  useAttachGoal,
+  useExperimentsQuery,
+  useMetricMutations,
+  useMetricsQuery,
+} from '../../data/queries';
 import { useCurrentProject } from '../../data/workspace';
 import { URL_OPS } from '../../lib/conditions';
 import { syntaxError } from '../../lib/launch';
@@ -94,6 +99,17 @@ function Form({
   const navigate = useNavigate();
   const { create, update, remove } = useMetricMutations(projectId);
   const experiments = useExperimentsQuery(projectId);
+  const attach = useAttachGoal(projectId);
+  // ?experiment=<id>&role=primary|secondary: opened from that experiment's Goals step.
+  const [params] = useSearchParams();
+  const forId = params.get('experiment');
+  const goalFor =
+    !metric && forId && experiments.data?.some((e) => e.id === forId)
+      ? {
+          experimentId: forId,
+          role: params.get('role') === 'primary' ? ('primary' as const) : ('secondary' as const),
+        }
+      : null;
   const cfg = metric?.sourceConfig ?? {};
   const [source, setSource] = useState<Metric['source']>(initialSource);
   const [name, setName] = useState(metric?.name ?? '');
@@ -238,7 +254,21 @@ function Form({
     } else {
       create.mutate(
         { projectId, ...body },
-        { onSuccess: (m) => navigate(`/p/${projectId}/metrics/${m.id}`, { replace: true }) },
+        {
+          onSuccess: (m) => {
+            if (!goalFor) return navigate(`/p/${projectId}/metrics/${m.id}`, { replace: true });
+            // Opened from an experiment's Goals step: use it there and go back.
+            attach.mutate(
+              { experimentId: goalFor.experimentId, metricId: m.id, role: goalFor.role },
+              {
+                onSettled: () =>
+                  navigate(`/p/${projectId}/experiments/${goalFor.experimentId}/goals`, {
+                    replace: true,
+                  }),
+              },
+            );
+          },
+        },
       );
     }
   };
@@ -775,8 +805,15 @@ function Form({
           </section>
 
           <div className={styles.actions}>
-            <Button onClick={save} disabled={create.isPending || update.isPending}>
-              {metric ? 'Save metric' : 'Create metric'}
+            <Button
+              onClick={save}
+              disabled={create.isPending || update.isPending || attach.isPending}
+            >
+              {metric
+                ? 'Save metric'
+                : goalFor
+                  ? `Create and use as ${goalFor.role} goal`
+                  : 'Create metric'}
             </Button>
             <span
               role="status"

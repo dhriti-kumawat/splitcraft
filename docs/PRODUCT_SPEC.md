@@ -50,7 +50,7 @@ versions; every combination becomes a variant and results add a main effect per 
    `variant.css` in a Monaco editor, a template picker, built-in helpers list, save,
    version history, syntax check, "Preview on site" (opens the site with `?splitcraft_force=`).
 3. **Targeting**: WHO / WHERE / HOW / WHEN (see §4).
-4. **Goals**: one primary goal (locks at launch), any number of secondary goals,
+4. **Goals**: one primary goal (can change at any time; results are recalculated), any number of secondary goals,
    guardrails with auto-pause.
 5. **Results**: see §6.
 

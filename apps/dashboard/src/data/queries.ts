@@ -235,9 +235,45 @@ export function useUpdateExperiment(experiment: Pick<Experiment, 'id' | 'project
   const client = useQueryClient();
   return useMutation({
     mutationFn: (patch: ExperimentPatch) => api.updateExperiment(experiment.id, patch),
-    onSuccess: (updated) => {
+    onSuccess: (updated, patch) => {
       client.setQueryData(keys.experiment(experiment.id), updated);
       void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
+      // A new primary goal changes what the results are measured on.
+      if ('primaryMetricId' in patch) {
+        void client.invalidateQueries({ queryKey: keys.results(experiment.id) });
+        void client.invalidateQueries({ queryKey: keys.experimentStats(experiment.projectId) });
+      }
+    },
+  });
+}
+
+/** Use a metric just created from an experiment's Goals step as its primary or a secondary goal. */
+export function useAttachGoal(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      experimentId,
+      metricId,
+      role,
+    }: {
+      experimentId: string;
+      metricId: string;
+      role: 'primary' | 'secondary';
+    }) => {
+      if (role === 'primary')
+        await api.updateExperiment(experimentId, { primaryMetricId: metricId });
+      else await api.setExperimentGoal(experimentId, metricId, 'secondary', null);
+    },
+    onSuccess: (_, { experimentId }) => {
+      for (const key of [
+        keys.experiment(experimentId),
+        keys.goals(experimentId),
+        keys.results(experimentId),
+        keys.experiments(projectId),
+        keys.experimentStats(projectId),
+      ])
+        void client.invalidateQueries({ queryKey: key });
     },
   });
 }
