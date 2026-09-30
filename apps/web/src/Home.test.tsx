@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Home } from './Home';
-import { GITHUB_URL } from './links';
+import { CONTACT_URL, GITHUB_URL } from './links';
 
 describe('home page', () => {
   it('has one h1 and the sections from the spec in order', () => {
@@ -74,6 +74,52 @@ describe('home page', () => {
       'href',
       '/docs/sdk/',
     );
+  });
+
+  it('takes questions through a contact form beside the FAQ', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true })));
+    vi.stubGlobal('fetch', fetchMock);
+    render(<Home />);
+    const form = screen.getByRole('form', { name: 'Ask us anything' });
+    await user.type(within(form).getByLabelText('Your email'), 'ana@shop.test');
+    await user.type(within(form).getByLabelText('Your question'), 'Does it work with Vue?');
+    await user.click(within(form).getByRole('button', { name: 'Send question' }));
+    expect(await screen.findByText('Thanks, your question is on its way.')).toBeInTheDocument();
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe(CONTACT_URL);
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      email: 'ana@shop.test',
+      message: 'Does it work with Vue?',
+      website: '',
+    });
+    const footer = screen.getByRole('navigation', { name: 'Footer' });
+    expect(within(footer).getByRole('link', { name: 'Contact us' })).toHaveAttribute(
+      'href',
+      '#contact',
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('shows why a question could not be sent', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({ error: 'Too many messages. Please try again in an hour.' }),
+            { status: 429 },
+          ),
+      ),
+    );
+    render(<Home />);
+    const form = screen.getByRole('form', { name: 'Ask us anything' });
+    await user.type(within(form).getByLabelText('Your email'), 'ana@shop.test');
+    await user.type(within(form).getByLabelText('Your question'), 'Hi');
+    await user.click(within(form).getByRole('button', { name: 'Send question' }));
+    expect(await within(form).findByRole('alert')).toHaveTextContent('Too many messages');
+    vi.unstubAllGlobals();
   });
 
   it('sends Start free and Log in to the dashboard', () => {

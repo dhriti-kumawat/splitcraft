@@ -121,6 +121,7 @@ screen with the design's example data (development only).
    npx supabase db push
    npx supabase functions deploy config --use-api
    npx supabase functions deploy events --use-api
+   npx supabase functions deploy contact --use-api
    ```
 4. In Supabase, set **Authentication › URL Configuration** to your dashboard URL.
 

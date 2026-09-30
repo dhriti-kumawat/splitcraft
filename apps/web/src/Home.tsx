@@ -1,6 +1,14 @@
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import styles from './Home.module.css';
-import { DASHBOARD_URL, GITHUB_URL } from './links';
+import { CONTACT_URL, DASHBOARD_URL, GITHUB_URL } from './links';
 
 const NAV = [
   { href: '#why', label: 'Why CRO' },
@@ -827,6 +835,7 @@ function Faq() {
                 </a>
               </li>
             </ul>
+            <ContactForm />
           </div>
         </div>
         <ol className={styles.faq}>
@@ -846,6 +855,112 @@ function Faq() {
         </ol>
       </div>
     </section>
+  );
+}
+
+type SendState = { status: 'idle' | 'sending' | 'sent' } | { status: 'error'; message: string };
+
+/**
+ * "Ask us anything": email and question, sent to the contact Edge Function. A hidden
+ * field and the time since the form appeared keep most bots out.
+ */
+function ContactForm() {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [trap, setTrap] = useState('');
+  const [state, setState] = useState<SendState>({ status: 'idle' });
+  const shownAt = useRef(0);
+  const id = useId();
+  useEffect(() => {
+    shownAt.current = Date.now();
+  }, []);
+
+  if (state.status === 'sent') {
+    return (
+      <div id="contact" className={styles.contactDone} role="status">
+        <b>Thanks, your question is on its way.</b>
+        <span>We’ll reply to {email}.</span>
+      </div>
+    );
+  }
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setState({ status: 'sending' });
+    try {
+      const res = await fetch(CONTACT_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          message,
+          website: trap,
+          elapsedMs: Date.now() - shownAt.current,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(body.error ?? 'Could not send your message.');
+      setState({ status: 'sent' });
+    } catch (err) {
+      setState({
+        status: 'error',
+        message: err instanceof Error ? err.message : 'Could not send your message.',
+      });
+    }
+  };
+
+  return (
+    <form id="contact" className={styles.contact} onSubmit={submit} aria-labelledby={`${id}-t`}>
+      <h4 className={styles.contactTitle} id={`${id}-t`}>
+        Ask us anything
+      </h4>
+      <label className={styles.contactLabel} htmlFor={`${id}-email`}>
+        Your email
+      </label>
+      <input
+        id={`${id}-email`}
+        className={styles.contactInput}
+        type="email"
+        required
+        maxLength={254}
+        autoComplete="email"
+        placeholder="you@company.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <label className={styles.contactLabel} htmlFor={`${id}-msg`}>
+        Your question
+      </label>
+      <textarea
+        id={`${id}-msg`}
+        className={styles.contactInput}
+        required
+        maxLength={2000}
+        rows={3}
+        placeholder="What would you like to know?"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      {/* Hidden from people; bots fill it in. */}
+      <input
+        className={styles.contactTrap}
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={trap}
+        onChange={(e) => setTrap(e.target.value)}
+      />
+      {state.status === 'error' && (
+        <p className={styles.contactError} role="alert">
+          {state.message}
+        </p>
+      )}
+      <button type="submit" className={styles.contactSend} disabled={state.status === 'sending'}>
+        {state.status === 'sending' ? 'Sending…' : 'Send question'}
+      </button>
+    </form>
   );
 }
 
@@ -1175,6 +1290,7 @@ function Footer() {
       links: [
         ['Start free', `${DASHBOARD_URL}/signup`],
         ['Log in', `${DASHBOARD_URL}/login`],
+        ['Contact us', '#contact'],
       ],
     },
   ];

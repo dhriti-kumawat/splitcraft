@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.events]
 verify_jwt = false
 
+[functions.contact]
+verify_jwt = false
+
 # Where Supabase Auth sends people after login, sign-up and password reset.
 # Pushed with `npx supabase config push`; only the keys declared here change.
 [auth]
