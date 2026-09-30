@@ -372,6 +372,24 @@ describe('boot', () => {
     runtime = (await booting)!;
   });
 
+  it('asks the config for the previewed experiment when the page has a preview token', async () => {
+    sessionStorage.clear();
+    history.replaceState({}, '', '/trips/norway?splitcraft_preview=tok-1');
+    const fetchMock = vi.fn<(url: string) => Promise<Response>>(() =>
+      Promise.resolve(new Response(JSON.stringify(config([])))),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    runtime = (await boot(
+      script({
+        src: 'https://splitcraft.vercel.app/sdk/v1.js',
+        'data-project': 'prj_1',
+        'data-config': 'https://api.test/config/prj_1.json',
+      }),
+    ))!;
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.test/config/prj_1.json?preview=tok-1');
+    sessionStorage.clear();
+  });
+
   it('shows the page and gives up when the config cannot load', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.stubGlobal('fetch', () => Promise.resolve(new Response('', { status: 404 })));

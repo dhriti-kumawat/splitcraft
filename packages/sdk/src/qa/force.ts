@@ -1,5 +1,21 @@
 export const FORCE_PARAM = 'splitcraft_force';
 const STORAGE_KEY = 'splitcraft_force';
+export const PREVIEW_PARAM = 'splitcraft_preview';
+
+/**
+ * The preview token from `?splitcraft_preview=` ("Preview on site"), remembered for the
+ * tab like forced variants. The config then includes that experiment even as a draft.
+ */
+export function getPreviewToken(search = location.search): string | null {
+  let token = new URLSearchParams(search).get(PREVIEW_PARAM);
+  try {
+    if (token) sessionStorage.setItem(PREVIEW_PARAM, token);
+    else token = sessionStorage.getItem(PREVIEW_PARAM);
+  } catch {
+    // Storage blocked: the token only works on the page that has it.
+  }
+  return token;
+}
 
 /** experimentKey → variantKey */
 export type ForcedVariants = Record<string, string>;
@@ -46,6 +62,7 @@ export function getForcedVariants(search = location.search): ForcedVariants {
 export function clearForcedVariants(): void {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(PREVIEW_PARAM);
   } catch {
     // Nothing to clear.
   }

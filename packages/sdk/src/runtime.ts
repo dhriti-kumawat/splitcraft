@@ -10,7 +10,7 @@ import {
   sessionPing,
   type VisitorState,
 } from './context';
-import { clearForcedVariants, getForcedVariants, withForce } from './qa/force';
+import { clearForcedVariants, getForcedVariants, getPreviewToken, withForce } from './qa/force';
 import { loadGlobal } from './load';
 import type { BrowsingKind, MetricsModule, Vital } from './metrics/types';
 import { loadQaPanel } from './qa/loader';
@@ -267,8 +267,10 @@ export function boot(script: HTMLScriptElement): Promise<Runtime | null> {
   if (!project) return Promise.resolve(null);
   const reveal = script.getAttribute('data-antiflicker') === 'off' ? () => {} : hidePage();
   const base = new URL(script.src, location.href);
-  const configUrl =
-    script.getAttribute('data-config') ?? new URL(`/v1/config/${project}.json`, base).href;
+  const config = new URL(script.getAttribute('data-config') ?? `/v1/config/${project}.json`, base);
+  const preview = getPreviewToken();
+  if (preview) config.searchParams.set('preview', preview);
+  const configUrl = config.href;
   const qaPanelUrl = new URL('splitcraft-qa.iife.js', base).href;
   const metricsUrl = new URL('splitcraft-metrics.iife.js', base).href;
   return fetch(configUrl, { credentials: 'omit' })
