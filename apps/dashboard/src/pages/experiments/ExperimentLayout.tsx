@@ -40,9 +40,9 @@ import { PreviewDialog } from './PreviewDialog';
 import { TypeTag } from './TypeTag';
 
 const VARIANTS_STEP = {
-  ab: 'Variants & code',
-  split_url: 'Variant pages',
-  mvt: 'Sections',
+  ab: 'Variations & code',
+  split_url: 'Variation pages',
+  mvt: 'Variations',
 } as const;
 
 const STATUS = { draft: 'Draft', live: 'Live', paused: 'Paused', ended: 'Ended' } as const;

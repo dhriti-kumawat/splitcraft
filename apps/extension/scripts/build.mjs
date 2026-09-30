@@ -3,6 +3,7 @@
 import { build } from 'esbuild';
 import {
   copyFileSync,
+  cpSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -27,8 +28,7 @@ await build({
   target: 'chrome120',
   minify: false,
 });
-for (const f of readdirSync(new URL('../static/', import.meta.url)))
-  copyFileSync(new URL(`../static/${f}`, import.meta.url), new URL(f, unpacked));
+cpSync(new URL('../static/', import.meta.url), unpacked, { recursive: true });
 // The preview itself is the SDK's preview bundle: build packages/sdk first.
 copyFileSync(
   new URL('../../../packages/sdk/dist/splitcraft-preview.iife.js', import.meta.url),
@@ -38,11 +38,18 @@ copyFileSync(
 writeFileSync(new URL('splitcraft-preview.zip', out), zip(unpacked));
 console.log('Built apps/extension/dist/unpacked and dist/splitcraft-preview.zip');
 
+/** Paths of all files under `dir`, relative to it. */
+function walk(dir, prefix = '') {
+  return readdirSync(new URL(prefix, dir))
+    .sort()
+    .flatMap((f) =>
+      statSync(new URL(prefix + f, dir)).isDirectory() ? walk(dir, `${prefix}${f}/`) : [prefix + f],
+    );
+}
+
 /** A minimal zip (deflate) of the files in `dir`, inside a splitcraft-preview/ folder. */
 function zip(dir) {
-  const files = readdirSync(dir)
-    .filter((f) => statSync(new URL(f, dir)).isFile())
-    .sort();
+  const files = walk(dir);
   const locals = [];
   const centrals = [];
   let offset = 0;

@@ -401,7 +401,7 @@ function FactorEffects({
         {result.metric.name} by section
       </h2>
       <p className={styles.note}>
-        Each version pooled over every combination that shows it, compared with the section's
+        Each variation pooled over every combination that shows it, compared with the section's
         original.
       </p>
       {effects.map((levels) => {
@@ -411,7 +411,7 @@ function FactorEffects({
             <caption className={styles.caption}>{factor.name}</caption>
             <thead>
               <tr>
-                <th scope="col">Version</th>
+                <th scope="col">Variation</th>
                 <th scope="col" className={styles.r}>
                   Visitors
                 </th>

@@ -51,7 +51,8 @@ export function bootBookmark(api: PreviewApi, o: BookmarkOptions): () => void {
     const d = e.data as { source?: string; type?: string; state?: PreviewState } | null;
     if (e.origin !== o.dashboard || e.source !== opener || d?.source !== 'splitcraft-dashboard')
       return;
-    if (d.type === 'state' && d.state) {
+    if (d.type === 'stop') stop();
+    else if (d.type === 'state' && d.state) {
       clearTimeout(timer);
       show({ ...d.state, source: 'live' }, toDashboard);
     }

@@ -14,6 +14,7 @@ import { useExperiment } from './experimentContext';
 import { AddVariant } from './AddVariant';
 import { MvtVariants } from './MvtVariants';
 import { SplitUrlVariants } from './SplitUrlVariants';
+import { RenamableItem } from './RenamableItem';
 import { TemplatePicker } from './TemplatePicker';
 import { TrafficSplit } from './TrafficSplit';
 import styles from './VariantsPage.module.css';
@@ -64,6 +65,7 @@ function CodeVariants() {
     experiment.variants.find((v) => v.id === selectedId) ||
     experiment.variants[0]!;
   const edits = useEditVariants(experiment);
+  const rename = useUpdateVariants(experiment);
   const preview = usePreviewSession();
   const live = preview?.experimentKey === experiment.key;
   // The editor's variants as they are now, unsaved edits included.
@@ -102,7 +104,7 @@ function CodeVariants() {
     <div className={styles.layout}>
       <section className={styles.variants} aria-labelledby="variants-label">
         <span className={styles.lbl} id="variants-label">
-          Variants
+          Variations
         </span>
         <ul className={styles.variantList}>
           {experiment.variants.map((v, i) => {
@@ -110,26 +112,33 @@ function CodeVariants() {
             const isControl = v.key === control;
             return (
               <li key={v.id}>
-                <button
-                  type="button"
-                  className={styles.variant}
-                  aria-current={v.id === selected.id ? 'true' : undefined}
-                  onClick={() => select(v.id)}
+                <RenamableItem
+                  name={v.name}
+                  label={isControl ? 'Original name' : 'Variation name'}
+                  canRename={experiment.status !== 'ended'}
+                  onRename={(name) => rename.mutate([{ id: v.id, patch: { name } }])}
                 >
-                  <span className={styles.variantName}>
-                    <span
-                      className={styles.swatch}
-                      style={{ background: COLORS[i % COLORS.length] }}
-                    />
-                    {v.name}
-                    {dirty(v) && <span className={styles.muted}> · unsaved</span>}
-                  </span>
-                  <span className={styles.variantMeta}>
-                    {isControl
-                      ? 'Original page, no code'
-                      : `${lines(code.js)} lines JS · ${lines(code.css)} lines CSS`}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    className={styles.variant}
+                    aria-current={v.id === selected.id ? 'true' : undefined}
+                    onClick={() => select(v.id)}
+                  >
+                    <span className={styles.variantName}>
+                      <span
+                        className={styles.swatch}
+                        style={{ background: COLORS[i % COLORS.length] }}
+                      />
+                      {v.name}
+                      {dirty(v) && <span className={styles.muted}> · unsaved</span>}
+                    </span>
+                    <span className={styles.variantMeta}>
+                      {isControl
+                        ? 'Original page, no code'
+                        : `${lines(code.js)} lines JS · ${lines(code.css)} lines CSS`}
+                    </span>
+                  </button>
+                </RenamableItem>
               </li>
             );
           })}
@@ -160,20 +169,18 @@ function CodeVariants() {
       />
 
       <aside className={styles.aside} aria-label="Variant details">
-        {selected.key !== control && (
-          <VariantSettings
-            key={selected.id}
-            experiment={experiment}
-            variant={selected}
-            onDeleted={() =>
-              select(
-                experiment.variants.find((v) => v.key !== control && v.id !== selected.id)?.id ??
-                  experiment.variants[0]!.id,
-              )
-            }
-            remove={edits.remove}
-          />
-        )}
+        <VariantSettings
+          key={`${selected.id}:${selected.name}`}
+          experiment={experiment}
+          variant={selected}
+          onDeleted={() =>
+            select(
+              experiment.variants.find((v) => v.key !== control && v.id !== selected.id)?.id ??
+                experiment.variants[0]!.id,
+            )
+          }
+          remove={edits.remove}
+        />
         <section className={styles.card} aria-label="Traffic split">
           <TrafficSplit experiment={experiment} />
         </section>
@@ -254,9 +261,10 @@ function Editor({
     return (
       <section className={styles.editor} aria-label="Control">
         <div className={styles.control}>
-          <strong style={{ color: '#fff' }}>Control is the original page</strong>
+          <strong style={{ color: '#fff' }}>{variant.name} is the page as it is</strong>
           <span>
-            Visitors in Control see your site unchanged. Pick another variant to edit its code.
+            Visitors here see your site unchanged, so it has no code. Rename it on the right, or
+            pick a variation to edit its code.
           </span>
         </div>
       </section>
@@ -388,7 +396,7 @@ function VariantSettings({
   return (
     <section className={styles.card} aria-labelledby={`${id}-h`}>
       <h2 className={styles.cardTitle} id={`${id}-h`}>
-        Variant
+        {variant.key === controlKey(experiment) ? 'Original' : 'Variation'}
       </h2>
       <div className={styles.field}>
         <label htmlFor={id} className={styles.fieldLabel}>
@@ -410,16 +418,18 @@ function VariantSettings({
           Key: {variant.key}
         </span>
       </div>
-      {experiment.status === 'draft' && nonControl > 1 && (
-        <button
-          type="button"
-          className={styles.danger}
-          disabled={remove.isPending}
-          onClick={() => remove.mutate(variant.id, { onSuccess: onDeleted })}
-        >
-          Delete variant
-        </button>
-      )}
+      {experiment.status === 'draft' &&
+        variant.key !== controlKey(experiment) &&
+        nonControl > 1 && (
+          <button
+            type="button"
+            className={styles.danger}
+            disabled={remove.isPending}
+            onClick={() => remove.mutate(variant.id, { onSuccess: onDeleted })}
+          >
+            Delete variant
+          </button>
+        )}
     </section>
   );
 }

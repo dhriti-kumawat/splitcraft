@@ -36,7 +36,7 @@ export function variantsReady(exp: Experiment): boolean {
 const CODE_LABEL: Record<Experiment['type'], [done: string, todo: string]> = {
   ab: ['Variant code saved, no errors', 'Add variant code that runs without errors'],
   split_url: ['Every variant has a page URL', 'Give every variant a page URL'],
-  mvt: ['Sections and combinations saved', 'Add sections with at least one new version'],
+  mvt: ['Sections and combinations saved', 'Add sections with at least one variation'],
 };
 
 export function launchChecks(exp: Experiment, project: Project, qaDone: boolean): Check[] {

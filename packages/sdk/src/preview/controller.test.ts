@@ -19,6 +19,7 @@ const sheets = () => [...document.querySelectorAll('style[data-splitcraft-previe
 const owned = () => (window as unknown as Record<string, Record<string, boolean>>)[OWNED];
 
 afterEach(() => {
+  history.replaceState({}, '', '/');
   document.head.innerHTML = '';
   document.body.innerHTML = '';
   delete document.body.dataset.b;
@@ -68,7 +69,21 @@ describe('preview controller', () => {
     expect(onAction).toHaveBeenCalledWith({ type: 'switch', variantKey: 'control' });
     [...panel().querySelectorAll('button')].find((b) => b.textContent === 'Stop preview')!.click();
     expect(onAction).toHaveBeenCalledWith({ type: 'stop' });
-    p.stop();
+  });
+
+  it('stop from the panel removes it at once and forgets the preview link', () => {
+    history.replaceState({}, '', '/p?splitcraft_force=hero:b&x=1#splitcraft_preview=tok');
+    sessionStorage.setItem('splitcraft_preview', 'tok');
+    const onAction = vi.fn();
+    const p = createPreview();
+    p.start(state(), { onAction });
+    [...panel().querySelectorAll('button')].find((b) => b.textContent === 'Stop preview')!.click();
+    expect(onAction).toHaveBeenCalledWith({ type: 'stop' });
+    expect(document.getElementById('splitcraft-preview')).toBeNull();
+    expect(sheets().some((s) => s.textContent === '.hero{color:red}')).toBe(false);
+    expect(owned()?.hero).toBeUndefined();
+    expect(location.pathname + location.search + location.hash).toBe('/p?x=1');
+    expect(sessionStorage.getItem('splitcraft_preview')).toBeNull();
   });
 
   it('shows JS errors and leaves JS to the extension when it runs it', () => {
