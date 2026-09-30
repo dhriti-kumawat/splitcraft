@@ -1,6 +1,14 @@
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import styles from './Home.module.css';
-import { DASHBOARD_URL, GITHUB_URL } from './links';
+import { CONTACT_URL, DASHBOARD_URL, GITHUB_URL } from './links';
 
 const NAV = [
   { href: '#why', label: 'Why CRO' },
@@ -41,6 +49,7 @@ export function Home() {
         <HowItWorks />
         <Pricing />
         <Faq />
+        <Contact />
         <Cta />
       </main>
       <Footer />
@@ -796,56 +805,174 @@ function Faq() {
       className={`${styles.wrap} ${styles.section} ${styles.faqSection}`}
       aria-labelledby="faq-title"
     >
-      <div className={styles.faqLayout}>
-        <div className={styles.faqSide}>
-          <div className={styles.stackCol}>
-            <span className={styles.eyebrow}>Questions</span>
-            <h2 className={styles.h2} id="faq-title">
-              Before you install.
-            </h2>
-            <p className={styles.lede}>Short answers to what people ask first.</p>
-          </div>
-          <div className={styles.faqHelp}>
-            <h3 className={styles.faqHelpTitle}>Still deciding?</h3>
-            <ul>
-              <li>
-                <a href="/docs/">
-                  <span>Browse the documentation</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-              </li>
-              <li>
-                <a href={GITHUB_URL}>
-                  <span>Look through the code on GitHub</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-              </li>
-              <li>
-                <a href={`${DASHBOARD_URL}/signup`}>
-                  <span>Try it with demo data</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <ol className={styles.faq}>
-          {faqs.map(([q, a], i) => (
-            <li key={q}>
-              <details className={styles.faqItem} open={i === 0}>
-                <summary>
-                  <span className={styles.faqNum} aria-hidden="true">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span className={styles.faqQ}>{q}</span>
-                </summary>
-                <p>{a}</p>
-              </details>
+      <div className={`${styles.stackCol} ${styles.intro}`}>
+        <span className={styles.eyebrow}>Questions</span>
+        <h2 className={styles.h2} id="faq-title">
+          Before you install.
+        </h2>
+        <p className={styles.lede}>Short answers to what people ask first.</p>
+      </div>
+      <ol className={styles.faq}>
+        {faqs.map(([q, a], i) => (
+          <li key={q}>
+            <details className={styles.faqItem} open={i === 0}>
+              <summary>
+                <span className={styles.faqNum} aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className={styles.faqQ}>{q}</span>
+              </summary>
+              <p>{a}</p>
+            </details>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+/** "Still have a question?": next steps on the left, the contact form on the right. */
+function Contact() {
+  return (
+    <section className={`${styles.wrap} ${styles.contactSection}`} aria-labelledby="contact-title">
+      <div className={styles.contactCard}>
+        <div className={styles.contactIntro}>
+          <h2 className={styles.contactHeading} id="contact-title">
+            Still have a question?
+          </h2>
+          <p className={styles.contactLede}>
+            Send it here and we’ll reply by email. Or find the answer yourself:
+          </p>
+          <ul className={styles.contactLinks}>
+            <li>
+              <a href="/docs/">
+                <span>Browse the documentation</span>
+                <span aria-hidden="true">→</span>
+              </a>
             </li>
-          ))}
-        </ol>
+            <li>
+              <a href={GITHUB_URL}>
+                <span>Look through the code on GitHub</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </li>
+            <li>
+              <a href={`${DASHBOARD_URL}/signup`}>
+                <span>Try it with demo data</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <ContactForm />
       </div>
     </section>
+  );
+}
+
+type SendState = { status: 'idle' | 'sending' | 'sent' } | { status: 'error'; message: string };
+
+/**
+ * "Ask us anything": email and question, sent to the contact Edge Function. A hidden
+ * field and the time since the form appeared keep most bots out.
+ */
+function ContactForm() {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [trap, setTrap] = useState('');
+  const [state, setState] = useState<SendState>({ status: 'idle' });
+  const shownAt = useRef(0);
+  const id = useId();
+  useEffect(() => {
+    shownAt.current = Date.now();
+  }, []);
+
+  if (state.status === 'sent') {
+    return (
+      <div id="contact" className={styles.contactDone} role="status">
+        <b>Thanks, your question is on its way.</b>
+        <span>We’ll reply to {email}.</span>
+      </div>
+    );
+  }
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setState({ status: 'sending' });
+    try {
+      const res = await fetch(CONTACT_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          message,
+          website: trap,
+          elapsedMs: Date.now() - shownAt.current,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(body.error ?? 'Could not send your message.');
+      setState({ status: 'sent' });
+    } catch (err) {
+      setState({
+        status: 'error',
+        message: err instanceof Error ? err.message : 'Could not send your message.',
+      });
+    }
+  };
+
+  return (
+    <form id="contact" className={styles.contact} onSubmit={submit} aria-labelledby={`${id}-t`}>
+      <h3 className={styles.contactTitle} id={`${id}-t`}>
+        Ask us anything
+      </h3>
+      <label className={styles.contactLabel} htmlFor={`${id}-email`}>
+        Your email
+      </label>
+      <input
+        id={`${id}-email`}
+        className={styles.contactInput}
+        type="email"
+        required
+        maxLength={254}
+        autoComplete="email"
+        placeholder="you@company.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <label className={styles.contactLabel} htmlFor={`${id}-msg`}>
+        Your question
+      </label>
+      <textarea
+        id={`${id}-msg`}
+        className={styles.contactInput}
+        required
+        maxLength={2000}
+        rows={3}
+        placeholder="What would you like to know?"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      {/* Hidden from people; bots fill it in. */}
+      <input
+        className={styles.contactTrap}
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={trap}
+        onChange={(e) => setTrap(e.target.value)}
+      />
+      {state.status === 'error' && (
+        <p className={styles.contactError} role="alert">
+          {state.message}
+        </p>
+      )}
+      <button type="submit" className={styles.contactSend} disabled={state.status === 'sending'}>
+        {state.status === 'sending' ? 'Sending…' : 'Send question'}
+      </button>
+    </form>
   );
 }
 
@@ -1175,6 +1302,7 @@ function Footer() {
       links: [
         ['Start free', `${DASHBOARD_URL}/signup`],
         ['Log in', `${DASHBOARD_URL}/login`],
+        ['Contact us', '#contact'],
       ],
     },
   ];

@@ -43,6 +43,7 @@ npx supabase link --project-ref <ref>
 npx supabase db push
 npx supabase functions deploy config --use-api
 npx supabase functions deploy events --use-api
+npx supabase functions deploy contact --use-api
 ```
 
 - **Authentication › URL Configuration**: Site URL = the dashboard URL; redirect URLs =
