@@ -12,11 +12,13 @@ migrations on PGlite (`npm run test -w supabase`, no Docker).
 
 `workspaces`, `workspace_members`, `workspace_invites`, `projects` (with `settings` for the SDK
 switches), `experiments`, `variants`, `variant_versions`, `experiment_metrics` (secondary and
-guardrail goals), `metrics`, `segments`, `triggers`, `page_sets`, `events` and `rate_limits`.
+guardrail goals), `metrics`, `segments`, `triggers`, `page_sets`, `events`, `rate_limits` and
+`contact_messages` (questions from the site's contact form).
 
 **Row Level Security is on for every table.** Users see workspaces they belong to and everything
 inside them. Deleting projects and experiments is limited to owners and admins; `events` can only be
-read by members and only written by the events function (service role).
+read by members and only written by the events function (service role). `contact_messages` has no
+policies at all: only the contact function writes it, and you read it in the Supabase dashboard.
 
 ## SQL functions
 
@@ -55,6 +57,12 @@ Limits: the free plan stores 100,000 events a month per workspace (after that th
 experiments, so visitors see the original site); at most 3,000 events a minute per project and 300
 per visitor.
 
+**`POST /functions/v1/contact`**: the marketing site's "Ask us anything" form (`{ email, message }`
+as JSON). It validates both and stores them with `submit_contact_message`. A hidden `website` field
+and forms sent within 2 seconds of loading are treated as spam and silently dropped. Each sender
+(an HMAC of their IP, which is not stored) can send 5 messages an hour, and the form as a whole 200.
+Read messages in the Supabase dashboard's table editor under `contact_messages`.
+
 ## Migrations
 
 Files in `supabase/migrations/` run in name order. Add a new file for every change (never edit an
@@ -64,4 +72,5 @@ applied one), and a test in `supabase/tests/`. Apply with `npx supabase db push`
 ```sh
 npx supabase functions deploy config --use-api
 npx supabase functions deploy events --use-api
+npx supabase functions deploy contact --use-api
 ```
