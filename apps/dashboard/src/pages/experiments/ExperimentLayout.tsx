@@ -40,8 +40,8 @@ import { PreviewDialog } from './PreviewDialog';
 import { TypeTag } from './TypeTag';
 
 const VARIANTS_STEP = {
-  ab: 'Variants & code',
-  split_url: 'Variant pages',
+  ab: 'Variations & code',
+  split_url: 'Variation pages',
   mvt: 'Variations',
 } as const;
 

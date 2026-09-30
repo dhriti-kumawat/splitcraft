@@ -556,7 +556,7 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
               ? [{ experiment_id: id, key: 'control', name: 'Original', weight: 100 }]
               : [
                   { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
-                  { experiment_id: id, key: 'b', name: 'B', weight: 50 },
+                  { experiment_id: id, key: 'b', name: 'Variation 1', weight: 50 },
                 ],
           ),
         );

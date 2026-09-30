@@ -16,15 +16,44 @@ const type = (label: string, value: string) =>
 describe('variants list', () => {
   it('lists Control and the variants, starting on the first variant', async () => {
     await open();
-    const list = screen.getByRole('region', { name: 'Variants' });
+    const list = screen.getByRole('region', { name: 'Variations' });
     const buttons = within(list)
       .getAllByRole('button')
-      .filter((b) => b.closest('li'));
+      .filter((b) => b.closest('li') && !b.getAttribute('aria-label')?.startsWith('Rename'));
     expect(buttons.map((b) => b.textContent)).toEqual([
       'ControlOriginal page, no code',
       'B0 lines JS · 0 lines CSS',
     ]);
     expect(buttons[1]).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('renames the original and variations with the pencil in the list', async () => {
+    const user = userEvent.setup();
+    const { variantPatches } = await open();
+    const list = screen.getByRole('region', { name: 'Variations' });
+    await user.click(within(list).getByRole('button', { name: 'Rename Control' }));
+    const original = within(list).getByRole('textbox', { name: 'Original name' });
+    await user.clear(original);
+    await user.type(original, 'Original{Enter}');
+    await user.click(within(list).getByRole('button', { name: 'Rename B' }));
+    const b = within(list).getByRole('textbox', { name: 'Variation name' });
+    await user.clear(b);
+    await user.type(b, 'Trust row{Escape}');
+    await user.click(within(list).getByRole('button', { name: 'Rename B' }));
+    await user.clear(within(list).getByRole('textbox', { name: 'Variation name' }));
+    await user.type(
+      within(list).getByRole('textbox', { name: 'Variation name' }),
+      'Trust row{Enter}',
+    );
+    await vi.waitFor(() =>
+      expect(variantPatches).toEqual([
+        { id: 'trust-c', patch: { name: 'Original' } },
+        { id: 'trust-b', patch: { name: 'Trust row' } },
+      ]),
+    );
+    expect(
+      await within(list).findByRole('button', { name: /^Trust row0 lines/ }),
+    ).toBeInTheDocument();
   });
 
   it('explains the original has no code and lets it be renamed', async () => {

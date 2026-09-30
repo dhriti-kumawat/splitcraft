@@ -94,7 +94,9 @@ A step shows a tick when it's done.
 
 ## Variant code
 
-- New tests call the unchanged page **Original** (key `control`); rename it like any variation.
+- New tests call the unchanged page **Original** (key `control`) and the first change
+  **Variation 1**. Rename any of them with the pencil next to its name in the list (all test
+  types), or in the card beside the editor.
   It has no code. Each other variant gets JS and CSS, with `splitcraft.*` helpers in scope
   (see [SDK reference](sdk#variant-code)).
 - **Template** opens a gallery of working starting points (headline swap, button copy and colour,

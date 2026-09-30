@@ -46,7 +46,7 @@ Each experiment has a type, picked when it's created: **A/B** (code changes), **
 (each variant is its own page and the SDK redirects to it) or **Multivariate** (sections with
 versions; every combination becomes a variant and results add a main effect per section).
 
-2. **Variants & code**: Control (no code) + variants. Each variant has `variant.js` and
+2. **Variations & code**: the Original (no code) + variations, each renamable in the list. Each variant has `variant.js` and
    `variant.css` in a Monaco editor, a template picker, built-in helpers list, save,
    version history, syntax check, "Preview on site" (opens the site with `?splitcraft_force=`).
 3. **Targeting**: WHO / WHERE / HOW / WHEN (see §4).

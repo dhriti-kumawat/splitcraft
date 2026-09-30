@@ -7,6 +7,7 @@ import { combinationCount, combinations, MVT_LIMITS } from '../../lib/mvt';
 import { previewState, updatePreview, usePreviewSession } from '../../lib/previewBridge';
 import { useExperiment } from './experimentContext';
 import own from './MvtVariants.module.css';
+import { RenamableItem } from './RenamableItem';
 import styles from './VariantsPage.module.css';
 
 const LEVEL_KEYS = 'abcdefgh';
@@ -321,7 +322,7 @@ export function MvtVariants() {
   );
 }
 
-/** One entry in a section: select it to edit its code; variations can be renamed here. */
+/** One entry in a section: select it to edit its code, or rename it with the pencil. */
 function LevelRow({
   level,
   isOriginal,
@@ -337,44 +338,13 @@ function LevelRow({
   onSelect(): void;
   onRename(name: string): void;
 }) {
-  const [renaming, setRenaming] = useState(false);
-  const [name, setName] = useState(level.name);
-  const id = useId();
-
-  if (renaming) {
-    const done = () => {
-      if (name.trim()) onRename(name.trim());
-      else setName(level.name);
-      setRenaming(false);
-    };
-    return (
-      <div className={own.renameRow}>
-        <label htmlFor={id} className="visually-hidden">
-          {isOriginal ? 'Original name' : 'Variation name'}
-        </label>
-        <input
-          id={id}
-          className={own.renameInput}
-          value={name}
-          maxLength={40}
-          autoFocus
-          onFocus={(e) => e.target.select()}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={done}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') done();
-            if (e.key === 'Escape') {
-              setName(level.name);
-              setRenaming(false);
-            }
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className={own.levelRow}>
+    <RenamableItem
+      name={level.name}
+      label={isOriginal ? 'Original name' : 'Variation name'}
+      canRename={canRename}
+      onRename={onRename}
+    >
       <button
         type="button"
         className={styles.variant}
@@ -390,33 +360,7 @@ function LevelRow({
               : 'No code yet'}
         </span>
       </button>
-      {canRename && (
-        <button
-          type="button"
-          className={own.rename}
-          aria-label={`Rename ${level.name}`}
-          title="Rename"
-          onClick={() => {
-            setName(level.name);
-            setRenaming(true);
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M13.5 3.5l3 3L7 16H4v-3z" />
-          </svg>
-        </button>
-      )}
-    </div>
+    </RenamableItem>
   );
 }
 
@@ -445,7 +389,7 @@ function AddVariation({ onAdd }: { onAdd(name: string): void }) {
       </label>
       <input
         id={id}
-        className={own.renameInput}
+        className={own.nameInput}
         value={name}
         maxLength={40}
         placeholder="e.g. Shorter headline"

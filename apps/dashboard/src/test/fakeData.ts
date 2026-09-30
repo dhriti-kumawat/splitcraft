@@ -789,7 +789,10 @@ export function fakeData(
         variants:
           type === 'mvt'
             ? [{ ...variants(id)[0]!, name: 'Original', weight: 100 }]
-            : variants(id).map((v) => (v.key === 'control' ? { ...v, name: 'Original' } : v)),
+            : variants(id).map((v) => ({
+                ...v,
+                name: v.key === 'control' ? 'Original' : 'Variation 1',
+              })),
         status: 'draft',
         projectId,
         primaryMetricId: null,
