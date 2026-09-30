@@ -3,6 +3,7 @@ import styles from './Home.module.css';
 import { DASHBOARD_URL, GITHUB_URL } from './links';
 
 const NAV = [
+  { href: '#why', label: 'Why CRO' },
   { href: '#product', label: 'Product' },
   { href: '#developers', label: 'Developers' },
   { href: '#stats', label: 'Statistics' },
@@ -32,6 +33,7 @@ export function Home() {
       <main id="main">
         <Hero />
         <Stack />
+        <WhyCro />
         <Product />
         <Capabilities />
         <Developers />
@@ -278,6 +280,146 @@ function Stack() {
           ))}
         </ul>
       </div>
+    </section>
+  );
+}
+
+/**
+ * Why conversion rate optimization matters, and why it should be decided by data. The
+ * calculator only does arithmetic on the visitor's own numbers: no invented statistics
+ * (decision #14).
+ */
+function WhyCro() {
+  const points: Array<[string, string]> = [
+    [
+      'Traffic is expensive. Conversions are yours to improve.',
+      'Ads, SEO and email all bring people to the site. Conversion rate optimization (CRO) makes more of them buy, sign up or book, and it lifts every channel at once.',
+    ],
+    [
+      'Opinions disagree. Visitors decide.',
+      'A redesign that everyone in the room likes can still lose sales. An A/B test shows what real visitors do, so the loudest idea doesn’t win by default.',
+    ],
+    [
+      'Small wins add up.',
+      'A few percent on the product page, the cart and the sign-up form multiply along the funnel, and they keep paying every month after you ship them.',
+    ],
+    [
+      'Knowing what not to ship is a win too.',
+      'Many good-looking ideas change nothing or make things worse. Testing catches them on a slice of traffic, before they reach everyone.',
+    ],
+  ];
+  return (
+    <section id="why" className={`${styles.wrap} ${styles.section}`} aria-labelledby="why-title">
+      <div className={styles.whyGrid}>
+        <div className={styles.stackCol}>
+          <span className={styles.eyebrow}>Why conversion rate optimization</span>
+          <h2 className={styles.h2} id="why-title">
+            More customers from the visitors you already have.
+          </h2>
+          <p className={styles.lede}>
+            Your conversion rate is the share of visitors who do what the page is for: buy, sign up,
+            book, get in touch. Every site has one, and nearly every site can raise it. The sites
+            that do it well stop guessing and let data decide.
+          </p>
+          <ul className={styles.whyList}>
+            {points.map(([title, text]) => (
+              <li key={title} className={styles.whyItem}>
+                <h3 className={styles.cardTitle}>{title}</h3>
+                <p className={styles.cardText}>{text}</p>
+              </li>
+            ))}
+          </ul>
+          <p className={styles.whyClose}>
+            Splitcraft exists to make that routine for any website: add one snippet, change the page
+            in code, and get results with the statistics checks built in.{' '}
+            <a href="#how" className={styles.textLink}>
+              See how it works
+            </a>
+          </p>
+        </div>
+        <ConversionMath />
+      </div>
+    </section>
+  );
+}
+
+const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+
+/** "Try your numbers": what a relative lift in conversion rate is worth, as plain arithmetic. */
+function ConversionMath() {
+  const [visitors, setVisitors] = useState('20000');
+  const [rate, setRate] = useState('2');
+  const [lift, setLift] = useState('10');
+  const id = useId();
+  const v = Math.max(0, Number(visitors) || 0);
+  const r = Math.min(100, Math.max(0, Number(rate) || 0));
+  const l = Math.max(0, Number(lift) || 0);
+  const now = (v * r) / 100;
+  const next = now * (1 + l / 100);
+  const extra = next - now;
+  const newRate = Math.min(100, r * (1 + l / 100));
+
+  const field = (
+    key: string,
+    label: string,
+    value: string,
+    set: (v: string) => void,
+    unit: string,
+  ) => (
+    <div className={styles.mathField}>
+      <label htmlFor={`${id}-${key}`}>{label}</label>
+      <span className={styles.mathInputWrap}>
+        <input
+          id={`${id}-${key}`}
+          className={styles.mathInput}
+          inputMode="decimal"
+          value={value}
+          onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ''))}
+        />
+        {/* Always there, so the boxes line up. */}
+        <span className={styles.mathUnit} aria-hidden="true">
+          {unit}
+        </span>
+      </span>
+    </div>
+  );
+
+  return (
+    <section className={styles.mathCard} aria-labelledby={`${id}-title`}>
+      <h3 className={styles.mathTitle} id={`${id}-title`}>
+        Try your numbers
+      </h3>
+      <div className={styles.mathFields}>
+        {field('visitors', 'Visitors a month', visitors, setVisitors, '')}
+        {field('rate', 'Conversion rate', rate, setRate, '%')}
+        {field('lift', 'Improvement from testing', lift, setLift, '%')}
+      </div>
+      <dl className={styles.mathResults} aria-live="polite">
+        <div>
+          <dt>Conversions a month</dt>
+          <dd>
+            {whole.format(now)} → <b>{whole.format(next)}</b>
+          </dd>
+        </div>
+        <div>
+          <dt>Extra conversions a year</dt>
+          <dd>
+            <b>+{whole.format(extra * 12)}</b>
+          </dd>
+        </div>
+        <div>
+          <dt>Traffic you’d need to buy for the same result</dt>
+          <dd>
+            <b>+{whole.format((v * l) / 100)}</b> visitors a month
+          </dd>
+        </div>
+      </dl>
+      <p className={styles.mathNote}>
+        A {whole.format(l)}% improvement takes a {r}% conversion rate to{' '}
+        {newRate.toFixed(2).replace(/\.?0+$/, '')}%. Multiply the extra conversions by your average
+        order value to see the revenue. This is arithmetic on your numbers, not a promise: tests
+        find out which changes really help.
+      </p>
     </section>
   );
 }
