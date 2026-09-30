@@ -33,10 +33,15 @@ interface Props {
   label: string;
   readOnly?: boolean;
   onSave?(): void;
+  /**
+   * Fill a positioned parent that only has a min-height. Monaco sizes itself to 100% of
+   * its parent's height, which a min-height alone leaves undefined (it collapses to 5 px).
+   */
+  fill?: boolean;
 }
 
 /** Monaco editor, themed to the design. Monaco itself is loaded from a CDN on first use. */
-export function CodeEditor({ language, value, onChange, label, readOnly, onSave }: Props) {
+export function CodeEditor({ language, value, onChange, label, readOnly, onSave, fill }: Props) {
   // Monaco keeps the first command it is given, so route Cmd/Ctrl+S through a ref.
   const save = useRef(onSave);
   useEffect(() => {
@@ -45,7 +50,7 @@ export function CodeEditor({ language, value, onChange, label, readOnly, onSave 
   const onMount: OnMount = (editor, monaco) => {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => save.current?.());
   };
-  return (
+  const editor = (
     <Editor
       language={language}
       value={value}
@@ -68,4 +73,5 @@ export function CodeEditor({ language, value, onChange, label, readOnly, onSave 
       }}
     />
   );
+  return fill ? <div style={{ position: 'absolute', inset: 0 }}>{editor}</div> : editor;
 }
