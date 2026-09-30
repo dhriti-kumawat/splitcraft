@@ -290,20 +290,25 @@ function Stack() {
  * (decision #14).
  */
 function WhyCro() {
-  const points: Array<[string, string]> = [
+  // [icon path, title, text]
+  const points: Array<[string, string, string]> = [
     [
+      'M10 2.5v15M13.5 5.5H8.3a2.3 2.3 0 000 4.6h3.4a2.3 2.3 0 010 4.6H6',
       'Traffic is expensive. Conversions are yours to improve.',
       'Ads, SEO and email all bring people to the site. Conversion rate optimization (CRO) makes more of them buy, sign up or book, and it lifts every channel at once.',
     ],
     [
+      'M7 9a3 3 0 100-6 3 3 0 000 6zM2 17c0-2.8 2.2-5 5-5s5 2.2 5 5M14 8.5a2.5 2.5 0 100-5M15 12c1.9.5 3 2.3 3 4.5',
       'Opinions disagree. Visitors decide.',
       'A redesign that everyone in the room likes can still lose sales. An A/B test shows what real visitors do, so the loudest idea doesn’t win by default.',
     ],
     [
+      'M3 14l4.5-4.5 3 3L17 6M12.5 6H17v4.5',
       'Small wins add up.',
       'A few percent on the product page, the cart and the sign-up form multiply along the funnel, and they keep paying every month after you ship them.',
     ],
     [
+      'M10 2.5l6 2.2v4.6c0 3.9-2.6 6.9-6 8.2-3.4-1.3-6-4.3-6-8.2V4.7l6-2.2zM7.5 7.5l5 5M12.5 7.5l-5 5',
       'Knowing what not to ship is a win too.',
       'Many good-looking ideas change nothing or make things worse. Testing catches them on a slice of traffic, before they reach everyone.',
     ],
@@ -322,8 +327,22 @@ function WhyCro() {
             that do it well stop guessing and let data decide.
           </p>
           <ul className={styles.whyList}>
-            {points.map(([title, text]) => (
+            {points.map(([icon, title, text]) => (
               <li key={title} className={styles.whyItem}>
+                <span className={styles.whyIcon} aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d={icon} />
+                  </svg>
+                </span>
                 <h3 className={styles.cardTitle}>{title}</h3>
                 <p className={styles.cardText}>{text}</p>
               </li>
@@ -1061,23 +1080,29 @@ function HowItWorks() {
 function Cta() {
   // 00-home.html: a green banner, text left and buttons right.
   return (
-    <section id="start" className={styles.wrap} aria-labelledby="cta-title">
-      <div className={styles.cta}>
-        <div className={`${styles.stackCol} ${styles.ctaText}`}>
-          <h2 className={`${styles.h2} ${styles.ctaTitle}`} id="cta-title">
-            Run your first test today.
-          </h2>
-          <p className={`${styles.lede} ${styles.ctaLede}`}>
-            Free up to 100,000 events a month. No card needed.
-          </p>
-        </div>
-        <div className={styles.ctaActions}>
-          <a className={`${styles.primary} ${styles.ctaPrimary}`} href={`${DASHBOARD_URL}/signup`}>
-            Start free
-          </a>
-          <a className={`${styles.secondary} ${styles.ctaSecondary}`} href={GITHUB_URL}>
-            View on GitHub
-          </a>
+    // Sits on the edge of the dark footer, so there is no empty band around it.
+    <section id="start" className={styles.ctaBand} aria-labelledby="cta-title">
+      <div className={`${styles.wrap} ${styles.ctaWrap}`}>
+        <div className={styles.cta}>
+          <div className={`${styles.stackCol} ${styles.ctaText}`}>
+            <h2 className={`${styles.h2} ${styles.ctaTitle}`} id="cta-title">
+              Run your first test today.
+            </h2>
+            <p className={`${styles.lede} ${styles.ctaLede}`}>
+              Free up to 100,000 events a month. No card needed.
+            </p>
+          </div>
+          <div className={styles.ctaActions}>
+            <a
+              className={`${styles.primary} ${styles.ctaPrimary}`}
+              href={`${DASHBOARD_URL}/signup`}
+            >
+              Start free
+            </a>
+            <a className={`${styles.secondary} ${styles.ctaSecondary}`} href={GITHUB_URL}>
+              View on GitHub
+            </a>
+          </div>
         </div>
       </div>
     </section>

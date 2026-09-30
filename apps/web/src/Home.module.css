@@ -847,7 +847,7 @@
 .whyList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px 28px;
+  gap: 12px;
   margin: 12px 0 0;
   padding: 0;
   list-style: none;
@@ -856,9 +856,21 @@
 .whyItem {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 16px;
-  border-top: 2px solid var(--ink);
+  gap: 10px;
+  padding: 20px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.whyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .whyClose {
@@ -1123,7 +1135,7 @@
   display: flex;
   flex-direction: column;
   gap: 56px;
-  padding-top: 72px;
+  padding-top: 64px;
   padding-bottom: 48px;
 }
 
@@ -2156,5 +2168,37 @@
   .footerBottom {
     flex-direction: column;
     gap: 6px;
+  }
+}
+
+/* ------------------------------------------------------------ call to action on the footer edge */
+.ctaBand {
+  position: relative;
+  z-index: 1;
+  /* Overlap the footer by a pixel, so no hairline shows at fractional positions. */
+  margin-bottom: -1px;
+  background: linear-gradient(to bottom, transparent 50%, var(--ink) 50%);
+}
+
+.faqSection {
+  padding-bottom: 72px;
+}
+
+.ctaBand .cta {
+  margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+  .faqSection {
+    padding-bottom: 48px;
+  }
+  .whyList {
+    gap: 10px;
+  }
+  .whyItem {
+    padding: 18px;
+  }
+  .footerInner {
+    padding-top: 48px;
   }
 }
