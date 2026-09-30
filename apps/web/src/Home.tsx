@@ -376,10 +376,11 @@ function ConversionMath() {
           value={value}
           onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ''))}
         />
-        {/* Always there, so the boxes line up. */}
-        <span className={styles.mathUnit} aria-hidden="true">
-          {unit}
-        </span>
+        {unit && (
+          <span className={styles.mathUnit} aria-hidden="true">
+            {unit}
+          </span>
+        )}
       </span>
     </div>
   );
@@ -391,8 +392,10 @@ function ConversionMath() {
       </h3>
       <div className={styles.mathFields}>
         {field('visitors', 'Visitors a month', visitors, setVisitors, '')}
-        {field('rate', 'Conversion rate', rate, setRate, '%')}
-        {field('lift', 'Improvement from testing', lift, setLift, '%')}
+        <div className={styles.mathPair}>
+          {field('rate', 'Conversion rate', rate, setRate, '%')}
+          {field('lift', 'Improvement', lift, setLift, '%')}
+        </div>
       </div>
       <dl className={styles.mathResults} aria-live="polite">
         <div>
@@ -408,17 +411,17 @@ function ConversionMath() {
           </dd>
         </div>
         <div>
-          <dt>Traffic you’d need to buy for the same result</dt>
+          <dt>Or buy this many more visitors a month</dt>
           <dd>
-            <b>+{whole.format((v * l) / 100)}</b> visitors a month
+            <b>+{whole.format((v * l) / 100)}</b>
           </dd>
         </div>
       </dl>
       <p className={styles.mathNote}>
         A {whole.format(l)}% improvement takes a {r}% conversion rate to{' '}
         {newRate.toFixed(2).replace(/\.?0+$/, '')}%. Multiply the extra conversions by your average
-        order value to see the revenue. This is arithmetic on your numbers, not a promise: tests
-        find out which changes really help.
+        order value to see the revenue. Arithmetic on your numbers, not a promise: tests find out
+        which changes really help.
       </p>
     </section>
   );

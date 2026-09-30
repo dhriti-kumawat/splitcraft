@@ -888,70 +888,81 @@
 .mathFields {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+}
+
+.mathPair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
+/* Label above a full-width box; the unit sits inside the box. */
 .mathField {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 14px;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--muted);
 }
 
 .mathInputWrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  position: relative;
+  display: block;
 }
 
 .mathInput {
-  width: 110px;
-  height: 38px;
-  padding: 0 10px;
+  width: 100%;
+  height: 44px;
+  padding: 0 34px 0 14px;
   border: 1px solid var(--line-strong, #c8cec6);
-  border-radius: 8px;
-  font: 500 15px var(--font-mono);
-  text-align: right;
+  border-radius: 10px;
+  font: 500 16px var(--font-mono);
   color: var(--ink);
   background: var(--ground);
 }
 
 .mathUnit {
-  width: 1ch;
-  font: 500 14px var(--font-mono);
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  font: 500 15px var(--font-mono);
   color: var(--muted);
+  pointer-events: none;
 }
 
 .mathResults {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   margin: 0;
-  padding: 16px;
   border-radius: 12px;
   background: var(--accent-soft);
 }
 
 .mathResults div {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+}
+
+.mathResults div + div {
+  border-top: 1px solid rgba(15, 107, 87, 0.15);
 }
 
 .mathResults dt {
-  font-size: 14px;
-  color: var(--ink);
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .mathResults dd {
   margin: 0;
-  font: 400 15px var(--font-mono);
+  font: 500 22px var(--font-mono);
+  letter-spacing: -0.02em;
   color: var(--ink);
-  text-align: right;
-  white-space: nowrap;
 }
 
 .mathResults b {
@@ -979,14 +990,6 @@
 @media (max-width: 700px) {
   .whyList {
     grid-template-columns: 1fr;
-  }
-  .mathResults div {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
-  .mathResults dd {
-    text-align: left;
   }
 }
 
@@ -1050,17 +1053,19 @@
   position: relative;
   margin-bottom: 96px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 48px;
-  padding: 64px;
+  gap: 32px;
+  padding: 64px 48px;
   border-radius: 24px;
+  text-align: center;
   background:
-    radial-gradient(circle at 85% 20%, rgba(242, 179, 122, 0.22), transparent 45%), var(--accent);
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.12), transparent 60%), var(--accent);
   overflow: hidden;
 }
 
 .ctaText {
+  align-items: center;
   max-width: 640px;
 }
 
@@ -1070,29 +1075,36 @@
 }
 
 .ctaLede {
-  color: #cfe6dd;
+  color: #d7ebe3;
 }
 
 .ctaPoints {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 4px 0 0;
+  justify-content: center;
+  gap: 8px 20px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .ctaPoints li {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+}
+
+.ctaPoints li::before {
+  content: '✓';
+  color: var(--highlight, #f2b37a);
 }
 
 .ctaActions {
   display: flex;
+  justify-content: center;
   gap: 12px;
   flex-shrink: 0;
   flex-wrap: wrap;
@@ -2015,10 +2027,8 @@
     position: static;
   }
   .cta {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 48px 40px;
-    gap: 32px;
+    padding: 48px 32px;
+    gap: 28px;
   }
 }
 
@@ -2032,15 +2042,51 @@
     font-size: 14px;
   }
   .cta {
-    padding: 32px 20px;
+    padding: 40px 20px;
     gap: 24px;
     border-radius: 20px;
   }
+  .ctaTitle {
+    font-size: 34px;
+  }
+  .ctaLede {
+    font-size: 16px;
+  }
+  /* A centred block whose ticks line up. */
+  .ctaPoints {
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: center;
+    gap: 6px;
+  }
   .ctaActions {
     width: 100%;
+    flex-direction: row;
   }
-  .ctaPoints li {
-    font-size: 12px;
+  .ctaActions a {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .stackInner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .stackList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stackList li {
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--ink);
   }
   .footerTop {
     gap: 32px;

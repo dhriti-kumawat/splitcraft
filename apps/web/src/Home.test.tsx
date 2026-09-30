@@ -38,12 +38,12 @@ describe('home page', () => {
       within(calc).getByText(term).parentElement!.querySelector('dd')!.textContent;
     expect(result('Conversions a month')).toBe('400 → 440');
     expect(result('Extra conversions a year')).toBe('+480');
-    expect(result('Traffic you’d need to buy for the same result')).toBe('+2,000 visitors a month');
+    expect(result('Or buy this many more visitors a month')).toBe('+2,000');
 
     const rate = within(calc).getByLabelText('Conversion rate');
     await user.clear(rate);
     await user.type(rate, '3');
-    const lift = within(calc).getByLabelText('Improvement from testing');
+    const lift = within(calc).getByLabelText('Improvement');
     await user.clear(lift);
     await user.type(lift, '20');
     expect(result('Conversions a month')).toBe('600 → 720');
