@@ -766,26 +766,53 @@ function Faq() {
       aria-labelledby="faq-title"
     >
       <div className={styles.faqLayout}>
-        <div className={`${styles.stackCol} ${styles.faqIntro}`}>
-          <span className={styles.eyebrow}>Questions</span>
-          <h2 className={styles.h2} id="faq-title">
-            Before you install.
-          </h2>
-          <p className={styles.lede}>
-            Short answers to what people ask first. The developer docs have the details.
-          </p>
-          <a href="/docs/" className={styles.textLink}>
-            Read the docs
-          </a>
+        <div className={styles.faqSide}>
+          <div className={styles.stackCol}>
+            <span className={styles.eyebrow}>Questions</span>
+            <h2 className={styles.h2} id="faq-title">
+              Before you install.
+            </h2>
+            <p className={styles.lede}>Short answers to what people ask first.</p>
+          </div>
+          <div className={styles.faqHelp}>
+            <h3 className={styles.faqHelpTitle}>Still deciding?</h3>
+            <ul>
+              <li>
+                <a href="/docs/">
+                  <span>Browse the documentation</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a href={GITHUB_URL}>
+                  <span>Look through the code on GitHub</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a href={`${DASHBOARD_URL}/signup`}>
+                  <span>Try it with demo data</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div className={styles.faq}>
-          {faqs.map(([q, a]) => (
-            <details key={q} className={styles.faqItem}>
-              <summary>{q}</summary>
-              <p>{a}</p>
-            </details>
+        <ol className={styles.faq}>
+          {faqs.map(([q, a], i) => (
+            <li key={q}>
+              <details className={styles.faqItem} open={i === 0}>
+                <summary>
+                  <span className={styles.faqNum} aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className={styles.faqQ}>{q}</span>
+                </summary>
+                <p>{a}</p>
+              </details>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
@@ -1032,6 +1059,7 @@ function HowItWorks() {
 }
 
 function Cta() {
+  // 00-home.html: a green banner, text left and buttons right.
   return (
     <section id="start" className={styles.wrap} aria-labelledby="cta-title">
       <div className={styles.cta}>
@@ -1042,11 +1070,6 @@ function Cta() {
           <p className={`${styles.lede} ${styles.ctaLede}`}>
             Free up to 100,000 events a month. No card needed.
           </p>
-          <ul className={styles.ctaPoints}>
-            <li>Every feature included</li>
-            <li>Snippet under 8 KB</li>
-            <li>Live in an afternoon</li>
-          </ul>
         </div>
         <div className={styles.ctaActions}>
           <a className={`${styles.primary} ${styles.ctaPrimary}`} href={`${DASHBOARD_URL}/signup`}>

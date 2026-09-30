@@ -149,6 +149,20 @@
   font-weight: 500;
   color: var(--text-2);
   text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Narrower desktops: tighter menu, so it stays on one line. */
+@media (max-width: 1320px) {
+  .nav {
+    gap: 20px;
+  }
+  .navLeft {
+    gap: 28px;
+  }
+  .navLink {
+    font-size: 14px;
+  }
 }
 
 .navLink:hover {
@@ -1050,61 +1064,31 @@
 /* ------------------------------------------------------------ cta + footer */
 
 .cta {
-  position: relative;
   margin-bottom: 96px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 32px;
-  padding: 64px 48px;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 56px 64px;
   border-radius: 24px;
-  text-align: center;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.12), transparent 60%), var(--accent);
-  overflow: hidden;
+  background: var(--accent);
 }
 
 .ctaText {
-  align-items: center;
   max-width: 640px;
 }
 
 .ctaTitle {
   color: #ffffff;
-  font-size: 52px;
+  font-size: 48px;
 }
 
 .ctaLede {
-  color: #d7ebe3;
-}
-
-.ctaPoints {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 20px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ctaPoints li {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.ctaPoints li::before {
-  content: '✓';
-  color: var(--highlight, #f2b37a);
+  color: #cfe6dd;
 }
 
 .ctaActions {
   display: flex;
-  justify-content: center;
   gap: 12px;
   flex-shrink: 0;
   flex-wrap: wrap;
@@ -1711,33 +1695,108 @@
 
 .faqLayout {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 64px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: 56px;
   align-items: start;
 }
 
-.faqIntro {
+.faqSide {
   position: sticky;
   top: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-/* One list with dividers, rather than a box per question. */
+/* A small dark card with next steps, so the column beside the answers has a job. */
+.faqHelp {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--ink);
+  color: #ffffff;
+}
+
+.faqHelpTitle {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.faqHelp ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.faqHelp li + li {
+  border-top: 1px solid #2e3337;
+}
+
+.faqHelp a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  color: #d8dcd5;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.faqHelp a span:last-child {
+  color: var(--highlight, #f2b37a);
+  transition: transform 0.15s ease;
+}
+
+.faqHelp a:hover {
+  color: #ffffff;
+}
+
+.faqHelp a:hover span:last-child {
+  transform: translateX(3px);
+}
+
+.faqHelp a:focus-visible {
+  outline: 2px solid var(--highlight, #f2b37a);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* One numbered list with dividers. */
 .faq {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
   overflow: hidden;
 }
 
-.faqItem + .faqItem {
+.faq > li + li {
   border-top: 1px solid var(--line);
+}
+
+.faqNum {
+  flex-shrink: 0;
+  width: 28px;
+  font: 500 13px var(--font-mono);
+  color: var(--accent);
+}
+
+.faqQ {
+  flex-grow: 1;
+}
+
+.faqItem[open] {
+  background: #fbfcfa;
 }
 
 .faqItem summary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   padding: 20px 24px;
   font-size: 16px;
   font-weight: 600;
@@ -1773,7 +1832,7 @@
 
 .faqItem p {
   margin: 0;
-  padding: 0 24px 20px;
+  padding: 0 24px 22px 64px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
@@ -1790,8 +1849,7 @@
   .capGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .pricing,
-  .faq {
+  .pricing {
     grid-template-columns: minmax(0, 1fr);
   }
   .pricing {
@@ -2021,47 +2079,47 @@
 @media (max-width: 1100px) {
   .faqLayout {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
   }
-  .faqIntro {
+  .faqSide {
     position: static;
   }
   .cta {
-    padding: 48px 32px;
-    gap: 28px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 40px;
+    gap: 24px;
   }
 }
 
 @media (max-width: 700px) {
   .faqItem summary {
+    align-items: flex-start;
     padding: 18px 20px;
     font-size: 15px;
   }
   .faqItem p {
-    padding: 0 20px 18px;
+    padding: 0 20px 18px 60px;
     font-size: 14px;
   }
+  .faqHelp {
+    padding: 20px;
+  }
   .cta {
-    padding: 40px 20px;
-    gap: 24px;
+    padding: 28px 20px;
+    gap: 20px;
     border-radius: 20px;
   }
   .ctaTitle {
-    font-size: 34px;
+    font-size: 30px;
   }
   .ctaLede {
-    font-size: 16px;
-  }
-  /* A centred block whose ticks line up. */
-  .ctaPoints {
-    flex-direction: column;
-    align-items: flex-start;
-    align-self: center;
-    gap: 6px;
+    font-size: 15px;
   }
   .ctaActions {
     width: 100%;
     flex-direction: row;
+    flex-wrap: nowrap;
   }
   .ctaActions a {
     flex: 1 1 0;
