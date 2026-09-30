@@ -78,6 +78,8 @@ flowchart LR
   results, and two Edge Functions for the SDK (the service role key never leaves the server).
 - **Dashboard** (`apps/dashboard`): React, React Router, TanStack Query, Monaco, Recharts.
 - **Marketing site** (`apps/web`): pre-rendered at build time.
+- **Preview extension** (`apps/extension`): Manifest V3 Chrome extension that shows variants,
+  with live edits, on any page of a project's site (decision #29).
 
 ## Numbers
 
@@ -168,8 +170,8 @@ docs                product spec, decisions, build plan
 
 Things the designs or spec describe that are not built yet:
 
-- "Pick on page" and a Chrome preview extension (planned as v1.1). Until then, previews on pages
-  without the snippet use an opt-in bookmark (decision #25).
+- "Pick on page" (a point-and-click element picker).
+- The Splitcraft Preview extension is installed unpacked; it isn't in the Chrome Web Store yet.
 - SSO (needs a paid Supabase plan).
 
 `docs/DECISIONS.md` explains the choices behind these and the rest of the design.

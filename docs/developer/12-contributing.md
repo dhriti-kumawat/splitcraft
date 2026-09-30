@@ -33,7 +33,10 @@ Before a pull request: `npm run lint && npm run format:check && npm run typechec
 | Variant doesn't show                            | Experiment live; test page matched by WHERE (Basics warns); visitor in WHO / HOW; traffic below 100%?; try `?splitcraft_force=` |
 | Variant code does nothing                       | Browser console shows `[splitcraft]` errors; use `waitForElement` for elements rendered later |
 | Page flashes the original                       | Install the script directly in `<head>` (not via GTM) with anti-flicker on |
-| Preview bookmark does nothing                   | The site's Content-Security-Policy blocks inline scripts or the SDK domain |
+| Preview bookmark does nothing                   | The site's Content-Security-Policy blocks the preview file; use the extension |
+| Preview panel says the site blocks running JS   | Turn on **Allow user scripts** for Splitcraft Preview in `chrome://extensions` |
+| Preview shows saved code, not edits             | Bookmark mode lost its link to the dashboard tab (closed, or the site sets Cross-Origin-Opener-Policy); use the extension |
+| Extension not found in Preview on site          | Reload the dashboard after installing; the dashboard must be `splitcraft-app.vercel.app` or `localhost:5173` |
 | Results say "not ready"                         | Planned sample not reached, or chance to win not decisive; keep it running |
 | SRM warning                                     | Redirects or targeting that differ by variant, bots, or caching |
 | Login fails with a provider error               | Callback URL and client secret in the provider and in Supabase |
