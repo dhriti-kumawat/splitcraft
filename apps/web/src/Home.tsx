@@ -650,7 +650,7 @@ function Capabilities() {
       className={`${styles.wrap} ${styles.section} ${styles.capabilities}`}
       aria-labelledby="cap-title"
     >
-      <div className={styles.stackCol} style={{ maxWidth: 720, marginBottom: 40 }}>
+      <div className={`${styles.stackCol} ${styles.intro}`} style={{ maxWidth: 720 }}>
         <span className={styles.eyebrow}>And everything around it</span>
         <h2 className={styles.h2} id="cap-title">
           The details that make testing safe.
@@ -762,7 +762,7 @@ function Faq() {
       className={`${styles.wrap} ${styles.section} ${styles.faqSection}`}
       aria-labelledby="faq-title"
     >
-      <div className={styles.stackCol} style={{ marginBottom: 32 }}>
+      <div className={`${styles.stackCol} ${styles.introSm}`}>
         <span className={styles.eyebrow}>Questions</span>
         <h2 className={styles.h2} id="faq-title">
           Before you install.
@@ -918,7 +918,7 @@ function Statistics() {
       className={`${styles.wrap} ${styles.section}`}
       aria-labelledby="stats-title"
     >
-      <div className={styles.stackCol} style={{ maxWidth: 760, marginBottom: 40 }}>
+      <div className={`${styles.stackCol} ${styles.intro}`} style={{ maxWidth: 760 }}>
         <span className={styles.eyebrow}>Statistics</span>
         <h2 className={styles.h2} id="stats-title">
           Results you can defend in any review.
@@ -996,7 +996,7 @@ function HowItWorks() {
       className={`${styles.wrap} ${styles.section} ${styles.how}`}
       aria-labelledby="how-title"
     >
-      <div className={styles.stackCol} style={{ marginBottom: 40 }}>
+      <div className={`${styles.stackCol} ${styles.intro}`}>
         <span className={styles.eyebrow}>How it works</span>
         <h2 className={styles.h2} id="how-title">
           Live in an afternoon.

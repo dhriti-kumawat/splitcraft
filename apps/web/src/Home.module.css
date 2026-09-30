@@ -560,6 +560,15 @@
   gap: 16px;
 }
 
+/* Section introduction (eyebrow, heading, lede) above its content. */
+.intro {
+  margin-bottom: 40px;
+}
+
+.introSm {
+  margin-bottom: 32px;
+}
+
 .cards3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1914,5 +1923,79 @@
     flex-direction: column;
     gap: 6px;
     font-size: 12px;
+  }
+}
+
+/* ------------------------------------------------------------ phone spacing scale
+   One set of spacings for phones, last in the file so it wins over the rules above:
+   16 px side gutters, 56 px between sections, 32 px from a section's introduction to its
+   content and between blocks, 12 px between cards, 20 px inside cards. */
+@media (max-width: 700px) {
+  .section {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+  .section + .section {
+    padding-top: 0;
+  }
+  .heroInner {
+    padding-top: 32px;
+    padding-bottom: 56px;
+    gap: 32px;
+  }
+  .stackInner {
+    padding-top: 28px;
+    padding-bottom: 28px;
+  }
+  .stackCol {
+    gap: 12px;
+  }
+  .intro,
+  .introSm,
+  .sectionHead {
+    margin-bottom: 32px;
+  }
+  .sectionHead {
+    gap: 12px;
+  }
+  .devInner {
+    gap: 32px;
+  }
+  .devText {
+    gap: 20px;
+  }
+  .whyGrid {
+    gap: 32px;
+  }
+  .whyList {
+    gap: 24px;
+  }
+  .resultCard {
+    margin-bottom: 32px;
+    padding: 20px;
+  }
+  .cards3,
+  .capGrid,
+  .faq {
+    gap: 12px;
+  }
+  .stats {
+    gap: 24px;
+  }
+  .card,
+  .cap,
+  .mathCard {
+    padding: 20px;
+  }
+  .card {
+    gap: 12px;
+  }
+  .priceCard {
+    padding: 24px 20px;
+  }
+  .cta {
+    margin-bottom: 56px;
+    padding: 32px 20px;
+    gap: 24px;
   }
 }
