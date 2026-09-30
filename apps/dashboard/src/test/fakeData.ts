@@ -528,6 +528,26 @@ export function fakeData(
     },
     projectOverview: async () => STATS,
     sessionSample: async () => opts.sessionSample ?? SESSION_SAMPLE,
+    // Sticky's totals (control 12,480 / 622, B 12,380 / 677) split by device and source.
+    experimentBreakdown: async (id, dimension) =>
+      id.replace(/^demo-/, '') !== 'sticky'
+        ? []
+        : dimension === 'device'
+          ? [
+              { segment: 'desktop', variantKey: 'b', visitors: 3960, converters: 198 },
+              { segment: 'desktop', variantKey: 'control', visitors: 4000, converters: 204 },
+              { segment: 'mobile', variantKey: 'b', visitors: 7920, converters: 460 },
+              { segment: 'mobile', variantKey: 'control', visitors: 7990, converters: 395 },
+              { segment: 'tablet', variantKey: 'b', visitors: 500, converters: 19 },
+              { segment: 'tablet', variantKey: 'control', visitors: 490, converters: 23 },
+              { segment: 'unknown', variantKey: 'b', visitors: 0, converters: 0 },
+            ]
+          : [
+              { segment: 'organic', variantKey: 'b', visitors: 6190, converters: 340 },
+              { segment: 'organic', variantKey: 'control', visitors: 6240, converters: 312 },
+              { segment: 'paid', variantKey: 'b', visitors: 6190, converters: 337 },
+              { segment: 'paid', variantKey: 'control', visitors: 6240, converters: 310 },
+            ],
     workspaceActivity: async (_ws, limit) => (opts.activity ?? ACTIVITY).slice(0, limit),
     eventsThisMonth: async () => 48_210,
     async createDemoProject(workspaceId) {
