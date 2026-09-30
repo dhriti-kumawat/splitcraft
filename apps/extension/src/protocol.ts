@@ -14,7 +14,7 @@ export interface PreviewState {
 export type DashboardRequest =
   | { type: 'ping' }
   | { type: 'open'; url: string; hosts: string[]; state: PreviewState }
-  | { type: 'update'; state: PreviewState }
+  | { type: 'update'; state: PreviewState; select?: boolean }
   | { type: 'stop'; experimentKey: string };
 
 /** From a previewed page's panel, through preview-bridge.ts. Never carries code. */

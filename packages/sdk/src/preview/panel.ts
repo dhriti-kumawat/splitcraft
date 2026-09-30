@@ -9,8 +9,8 @@ const CSS = `
 *{box-sizing:border-box}
 section{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:12px;background:#15171A;color:#D8DCD5;box-shadow:0 16px 40px rgba(21,23,26,.35);font:13px/1.4 'Instrument Sans',system-ui,-apple-system,sans-serif}
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.brand{font-weight:700;color:#FFF}
-.src{font:11px 'JetBrains Mono',ui-monospace,monospace;color:#F2B37A}
+.brand{font-weight:700;color:#FFF;white-space:nowrap}
+.src{flex:1;font:11px 'JetBrains Mono',ui-monospace,monospace;color:#F2B37A}
 .name{color:#FFF;font-weight:600}
 .vars{display:flex;flex-wrap:wrap;gap:6px}
 .vars button{height:30px;padding:0 10px}

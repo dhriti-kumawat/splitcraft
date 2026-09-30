@@ -121,8 +121,9 @@ async function fromDashboard(msg: DashboardRequest, dashboardTabId: number): Pro
           s.state.experimentKey !== msg.state.experimentKey
         )
           continue;
-        // The panel's variant choice wins over the dashboard's selection.
-        const state = { ...msg.state, variantKey: s.state.variantKey };
+        // Keep the variant the tab shows, unless the dashboard picked one.
+        const variantKey = msg.select ? msg.state.variantKey : s.state.variantKey;
+        const state = { ...msg.state, variantKey };
         await setSession(tabId, { ...s, state });
         const [res] = await chrome.scripting
           .executeScript({
