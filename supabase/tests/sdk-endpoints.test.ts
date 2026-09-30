@@ -146,6 +146,25 @@ describe('sdk_config_source + toSdkConfig', () => {
     });
   });
 
+  it('passes on split URL variant URLs', async () => {
+    await as(db, owner, () =>
+      rows(
+        `update variants set url = 'https://shop.test/b' where experiment_id = $1 and key = 'b' returning id`,
+        [experimentId],
+      ),
+    );
+    const config = toSdkConfig((await configSource(publicKey))!, publicKey, '/e');
+    expect(config.experiments[0]!.variants.find((v) => v.key === 'b')).toMatchObject({
+      url: 'https://shop.test/b',
+    });
+    expect(config.experiments[0]!.variants.find((v) => v.key === 'control')).not.toHaveProperty(
+      'url',
+    );
+    await as(db, owner, () =>
+      rows(`update variants set url = null where experiment_id = $1 returning id`, [experimentId]),
+    );
+  });
+
   it('includes only goals that live experiments use', async () => {
     const config = toSdkConfig((await configSource(publicKey))!, publicKey, '/e');
     expect(config.goals).toEqual({
