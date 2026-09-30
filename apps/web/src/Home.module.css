@@ -1657,47 +1657,69 @@
   padding-top: 0;
 }
 
-.faqLayout {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
-  gap: 32px;
-  /* Both columns share the same top and bottom edges. */
-  align-items: stretch;
-}
-
-.faqSide {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-/* A dark card with next steps and the contact form, as tall as the list beside it. */
-.faqHelp {
-  flex-grow: 1;
-  padding: 24px;
+/* One numbered list with dividers. */
+.faq {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
   border-radius: 16px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.faq > li + li {
+  border-top: 1px solid var(--line);
+}
+
+/* ------------------------------------------------------------ Still have a question?
+   Its own block below the FAQ, so opening an answer never pushes it out of line. */
+.contactSection {
+  padding-bottom: 72px;
+}
+
+.contactCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 56px;
+  padding: 40px;
+  border-radius: 20px;
   background: var(--ink);
   color: #ffffff;
 }
 
-.faqHelpTitle {
-  margin: 0 0 8px;
-  font-size: 17px;
-  font-weight: 700;
+.contactIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.faqHelp ul {
+.contactHeading {
   margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.contactLede {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #aeb4ac;
+}
+
+.contactLinks {
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.faqHelp li + li {
+.contactLinks li + li {
   border-top: 1px solid #2e3337;
 }
 
-.faqHelp a {
+.contactLinks a {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1709,27 +1731,30 @@
   text-decoration: none;
 }
 
-.faqHelp a span:last-child {
+.contactLinks a span:last-child {
   color: var(--highlight, #f2b37a);
   transition: transform 0.15s ease;
 }
 
-.faqHelp a:hover {
+.contactLinks a:hover {
   color: #ffffff;
 }
 
-.faqHelp a:hover span:last-child {
+.contactLinks a:hover span:last-child {
   transform: translateX(3px);
 }
 
-/* The contact form inside the dark card. */
+.contactLinks a:focus-visible {
+  outline: 2px solid var(--highlight, #f2b37a);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* The form: the right half of the card. */
 .contact {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 14px;
-  padding-top: 18px;
-  border-top: 1px solid #2e3337;
 }
 
 .contactTitle {
@@ -1812,8 +1837,8 @@ textarea.contactInput {
 .contactDone {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 4px;
-  margin-top: 14px;
   padding: 14px;
   border-radius: 10px;
   background: rgba(242, 179, 122, 0.12);
@@ -1825,42 +1850,25 @@ textarea.contactInput {
   color: #ffffff;
 }
 
-.faqHelp a:focus-visible {
-  outline: 2px solid var(--highlight, #f2b37a);
-  outline-offset: 2px;
-  border-radius: 6px;
+@media (max-width: 1100px) {
+  .contactCard {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 32px;
+  }
 }
 
-/* One numbered list with dividers; its rows share out the height of the card beside it. */
-.faq {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.faq > li {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-}
-
-.faq > li > details {
-  width: 100%;
-}
-
-.faq > li + li {
-  border-top: 1px solid var(--line);
-}
-
-/* The open answer's row takes its natural height, the others share the rest. */
-.faq > li:has(details[open]) {
-  flex: 0 0 auto;
+@media (max-width: 700px) {
+  .contactSection {
+    padding-bottom: 48px;
+  }
+  .contactCard {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+  .contactHeading {
+    font-size: 24px;
+  }
 }
 
 .faqNum {
@@ -2154,13 +2162,6 @@ textarea.contactInput {
 /* ------------------------------------------------------------ FAQ, call to action, footer:
    tablet and phone */
 @media (max-width: 1100px) {
-  .faqLayout {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-  .faqSide {
-    position: static;
-  }
   .cta {
     flex-direction: column;
     align-items: flex-start;
@@ -2178,9 +2179,6 @@ textarea.contactInput {
   .faqItem p {
     padding: 0 20px 18px 60px;
     font-size: 14px;
-  }
-  .faqHelp {
-    padding: 20px;
   }
   .cta {
     padding: 28px 20px;
@@ -2225,7 +2223,7 @@ textarea.contactInput {
 
 /* ------------------------------------------------------------ call to action band + steps */
 .faqSection {
-  padding-bottom: 72px;
+  padding-bottom: 40px;
 }
 
 /* A full-width green band that leads straight into the footer. */
@@ -2366,7 +2364,7 @@ textarea.contactInput {
 
 @media (max-width: 700px) {
   .faqSection {
-    padding-bottom: 48px;
+    padding-bottom: 32px;
   }
   .whyList {
     gap: 10px;

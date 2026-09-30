@@ -19,6 +19,7 @@ describe('home page', () => {
       'Live in an afternoon.',
       'Free while you find what works.',
       'Before you install.',
+      'Still have a question?',
       'Run your first test today.',
       'Product',
       'Developers',

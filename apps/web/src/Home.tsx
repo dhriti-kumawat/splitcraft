@@ -49,6 +49,7 @@ export function Home() {
         <HowItWorks />
         <Pricing />
         <Faq />
+        <Contact />
         <Cta />
       </main>
       <Footer />
@@ -811,48 +812,59 @@ function Faq() {
         </h2>
         <p className={styles.lede}>Short answers to what people ask first.</p>
       </div>
-      <div className={styles.faqLayout}>
-        <div className={styles.faqSide}>
-          <div className={styles.faqHelp}>
-            <h3 className={styles.faqHelpTitle}>Still deciding?</h3>
-            <ul>
-              <li>
-                <a href="/docs/">
-                  <span>Browse the documentation</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-              </li>
-              <li>
-                <a href={GITHUB_URL}>
-                  <span>Look through the code on GitHub</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-              </li>
-              <li>
-                <a href={`${DASHBOARD_URL}/signup`}>
-                  <span>Try it with demo data</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-              </li>
-            </ul>
-            <ContactForm />
-          </div>
-        </div>
-        <ol className={styles.faq}>
-          {faqs.map(([q, a], i) => (
-            <li key={q}>
-              <details className={styles.faqItem} open={i === 0}>
-                <summary>
-                  <span className={styles.faqNum} aria-hidden="true">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span className={styles.faqQ}>{q}</span>
-                </summary>
-                <p>{a}</p>
-              </details>
+      <ol className={styles.faq}>
+        {faqs.map(([q, a], i) => (
+          <li key={q}>
+            <details className={styles.faqItem} open={i === 0}>
+              <summary>
+                <span className={styles.faqNum} aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className={styles.faqQ}>{q}</span>
+              </summary>
+              <p>{a}</p>
+            </details>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+/** "Still have a question?": next steps on the left, the contact form on the right. */
+function Contact() {
+  return (
+    <section className={`${styles.wrap} ${styles.contactSection}`} aria-labelledby="contact-title">
+      <div className={styles.contactCard}>
+        <div className={styles.contactIntro}>
+          <h2 className={styles.contactHeading} id="contact-title">
+            Still have a question?
+          </h2>
+          <p className={styles.contactLede}>
+            Send it here and we’ll reply by email. Or find the answer yourself:
+          </p>
+          <ul className={styles.contactLinks}>
+            <li>
+              <a href="/docs/">
+                <span>Browse the documentation</span>
+                <span aria-hidden="true">→</span>
+              </a>
             </li>
-          ))}
-        </ol>
+            <li>
+              <a href={GITHUB_URL}>
+                <span>Look through the code on GitHub</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </li>
+            <li>
+              <a href={`${DASHBOARD_URL}/signup`}>
+                <span>Try it with demo data</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <ContactForm />
       </div>
     </section>
   );
@@ -911,9 +923,9 @@ function ContactForm() {
 
   return (
     <form id="contact" className={styles.contact} onSubmit={submit} aria-labelledby={`${id}-t`}>
-      <h4 className={styles.contactTitle} id={`${id}-t`}>
+      <h3 className={styles.contactTitle} id={`${id}-t`}>
         Ask us anything
-      </h4>
+      </h3>
       <label className={styles.contactLabel} htmlFor={`${id}-email`}>
         Your email
       </label>
