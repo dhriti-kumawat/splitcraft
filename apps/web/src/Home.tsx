@@ -124,7 +124,7 @@ function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={`${styles.wrap} ${styles.heroInner}`}>
-        <div className={`${styles.heroText} ${styles.rise}`}>
+        <div className={styles.heroText}>
           <span className={styles.badge}>
             <span className={`${styles.chip} ${styles.new}`}>New</span>
             Reach estimates and automatic guardrail pauses
@@ -157,7 +157,7 @@ function Hero() {
             </li>
           </ul>
         </div>
-        <div className={`${styles.shotWrap} ${styles.rise} ${styles.delay}`}>
+        <div className={styles.shotWrap}>
           <ProductShot />
         </div>
       </div>
@@ -267,18 +267,30 @@ function ProductShot() {
 }
 
 function Stack() {
-  // Integrations as text only (DECISIONS #14). Each works through the snippet or dataLayer.
+  // Integrations as text only (DECISIONS #14), in a slow loop. Four copies keep the track
+  // wider than any screen, so the loop is seamless; screen readers get the first only.
+  const names = ['React', 'Next.js', 'Vue', 'Shopify', 'Google Tag Manager', 'GA4'];
+  const row = (hidden: boolean) => (
+    <ul className={styles.marqueeRow} aria-hidden={hidden || undefined}>
+      {names.map((n) => (
+        <li key={n}>{n}</li>
+      ))}
+    </ul>
+  );
   return (
     <section className={styles.stack} aria-labelledby="stack-title">
       <div className={`${styles.wrap} ${styles.stackInner}`}>
-        <h2 className={styles.stackLabel} id="stack-title" style={{ margin: 0, fontWeight: 400 }}>
+        <h2 className={styles.stackLabel} id="stack-title">
           Works with your stack
         </h2>
-        <ul className={styles.stackList}>
-          {['React', 'Next.js', 'Vue', 'Shopify', 'Google Tag Manager', 'GA4'].map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ul>
+        <div className={styles.marquee}>
+          <div className={styles.marqueeTrack}>
+            {row(false)}
+            {row(true)}
+            {row(true)}
+            {row(true)}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -290,20 +302,25 @@ function Stack() {
  * (decision #14).
  */
 function WhyCro() {
-  const points: Array<[string, string]> = [
+  // [icon path, title, text]
+  const points: Array<[string, string, string]> = [
     [
+      'M10 2.5v15M13.5 5.5H8.3a2.3 2.3 0 000 4.6h3.4a2.3 2.3 0 010 4.6H6',
       'Traffic is expensive. Conversions are yours to improve.',
       'Ads, SEO and email all bring people to the site. Conversion rate optimization (CRO) makes more of them buy, sign up or book, and it lifts every channel at once.',
     ],
     [
+      'M7 9a3 3 0 100-6 3 3 0 000 6zM2 17c0-2.8 2.2-5 5-5s5 2.2 5 5M14 8.5a2.5 2.5 0 100-5M15 12c1.9.5 3 2.3 3 4.5',
       'Opinions disagree. Visitors decide.',
       'A redesign that everyone in the room likes can still lose sales. An A/B test shows what real visitors do, so the loudest idea doesn’t win by default.',
     ],
     [
+      'M3 14l4.5-4.5 3 3L17 6M12.5 6H17v4.5',
       'Small wins add up.',
       'A few percent on the product page, the cart and the sign-up form multiply along the funnel, and they keep paying every month after you ship them.',
     ],
     [
+      'M10 2.5l6 2.2v4.6c0 3.9-2.6 6.9-6 8.2-3.4-1.3-6-4.3-6-8.2V4.7l6-2.2zM7.5 7.5l5 5M12.5 7.5l-5 5',
       'Knowing what not to ship is a win too.',
       'Many good-looking ideas change nothing or make things worse. Testing catches them on a slice of traffic, before they reach everyone.',
     ],
@@ -322,8 +339,22 @@ function WhyCro() {
             that do it well stop guessing and let data decide.
           </p>
           <ul className={styles.whyList}>
-            {points.map(([title, text]) => (
+            {points.map(([icon, title, text]) => (
               <li key={title} className={styles.whyItem}>
+                <span className={styles.whyIcon} aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d={icon} />
+                  </svg>
+                </span>
                 <h3 className={styles.cardTitle}>{title}</h3>
                 <p className={styles.cardText}>{text}</p>
               </li>
@@ -376,10 +407,11 @@ function ConversionMath() {
           value={value}
           onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ''))}
         />
-        {/* Always there, so the boxes line up. */}
-        <span className={styles.mathUnit} aria-hidden="true">
-          {unit}
-        </span>
+        {unit && (
+          <span className={styles.mathUnit} aria-hidden="true">
+            {unit}
+          </span>
+        )}
       </span>
     </div>
   );
@@ -391,8 +423,10 @@ function ConversionMath() {
       </h3>
       <div className={styles.mathFields}>
         {field('visitors', 'Visitors a month', visitors, setVisitors, '')}
-        {field('rate', 'Conversion rate', rate, setRate, '%')}
-        {field('lift', 'Improvement from testing', lift, setLift, '%')}
+        <div className={styles.mathPair}>
+          {field('rate', 'Conversion rate', rate, setRate, '%')}
+          {field('lift', 'Improvement', lift, setLift, '%')}
+        </div>
       </div>
       <dl className={styles.mathResults} aria-live="polite">
         <div>
@@ -408,17 +442,17 @@ function ConversionMath() {
           </dd>
         </div>
         <div>
-          <dt>Traffic you’d need to buy for the same result</dt>
+          <dt>Or buy this many more visitors a month</dt>
           <dd>
-            <b>+{whole.format((v * l) / 100)}</b> visitors a month
+            <b>+{whole.format((v * l) / 100)}</b>
           </dd>
         </div>
       </dl>
       <p className={styles.mathNote}>
         A {whole.format(l)}% improvement takes a {r}% conversion rate to{' '}
         {newRate.toFixed(2).replace(/\.?0+$/, '')}%. Multiply the extra conversions by your average
-        order value to see the revenue. This is arithmetic on your numbers, not a promise: tests
-        find out which changes really help.
+        order value to see the revenue. Arithmetic on your numbers, not a promise: tests find out
+        which changes really help.
       </p>
     </section>
   );
@@ -650,7 +684,7 @@ function Capabilities() {
       className={`${styles.wrap} ${styles.section} ${styles.capabilities}`}
       aria-labelledby="cap-title"
     >
-      <div className={styles.stackCol} style={{ maxWidth: 720, marginBottom: 40 }}>
+      <div className={`${styles.stackCol} ${styles.intro}`} style={{ maxWidth: 720 }}>
         <span className={styles.eyebrow}>And everything around it</span>
         <h2 className={styles.h2} id="cap-title">
           The details that make testing safe.
@@ -762,19 +796,54 @@ function Faq() {
       className={`${styles.wrap} ${styles.section} ${styles.faqSection}`}
       aria-labelledby="faq-title"
     >
-      <div className={styles.stackCol} style={{ marginBottom: 32 }}>
-        <span className={styles.eyebrow}>Questions</span>
-        <h2 className={styles.h2} id="faq-title">
-          Before you install.
-        </h2>
-      </div>
-      <div className={styles.faq}>
-        {faqs.map(([q, a]) => (
-          <details key={q} className={styles.faqItem}>
-            <summary>{q}</summary>
-            <p>{a}</p>
-          </details>
-        ))}
+      <div className={styles.faqLayout}>
+        <div className={styles.faqSide}>
+          <div className={styles.stackCol}>
+            <span className={styles.eyebrow}>Questions</span>
+            <h2 className={styles.h2} id="faq-title">
+              Before you install.
+            </h2>
+            <p className={styles.lede}>Short answers to what people ask first.</p>
+          </div>
+          <div className={styles.faqHelp}>
+            <h3 className={styles.faqHelpTitle}>Still deciding?</h3>
+            <ul>
+              <li>
+                <a href="/docs/">
+                  <span>Browse the documentation</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a href={GITHUB_URL}>
+                  <span>Look through the code on GitHub</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a href={`${DASHBOARD_URL}/signup`}>
+                  <span>Try it with demo data</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <ol className={styles.faq}>
+          {faqs.map(([q, a], i) => (
+            <li key={q}>
+              <details className={styles.faqItem} open={i === 0}>
+                <summary>
+                  <span className={styles.faqNum} aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className={styles.faqQ}>{q}</span>
+                </summary>
+                <p>{a}</p>
+              </details>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
@@ -918,7 +987,7 @@ function Statistics() {
       className={`${styles.wrap} ${styles.section}`}
       aria-labelledby="stats-title"
     >
-      <div className={styles.stackCol} style={{ maxWidth: 760, marginBottom: 40 }}>
+      <div className={`${styles.stackCol} ${styles.intro}`} style={{ maxWidth: 760 }}>
         <span className={styles.eyebrow}>Statistics</span>
         <h2 className={styles.h2} id="stats-title">
           Results you can defend in any review.
@@ -976,59 +1045,95 @@ function ResultCard() {
 }
 
 function HowItWorks() {
-  const steps = [
-    [
-      'Install the snippet',
-      'Paste one script tag or add it through GTM. Splitcraft confirms the install on the first page view.',
-    ],
-    [
-      'Build and QA the variant',
-      'Write the change, set who sees it, pick a goal, then force it on your own screen to check it.',
-    ],
-    [
-      'Launch and read the result',
-      'Watch it reach its planned sample, then ship the winner or learn from the loss.',
-    ],
-  ];
   return (
     <section
       id="how"
       className={`${styles.wrap} ${styles.section} ${styles.how}`}
       aria-labelledby="how-title"
     >
-      <div className={styles.stackCol} style={{ marginBottom: 40 }}>
-        <span className={styles.eyebrow}>How it works</span>
-        <h2 className={styles.h2} id="how-title">
-          Live in an afternoon.
-        </h2>
+      <div className={styles.sectionHead}>
+        <div className={styles.stackCol}>
+          <span className={styles.eyebrow}>How it works</span>
+          <h2 className={styles.h2} id="how-title">
+            Live in an afternoon.
+          </h2>
+        </div>
+        <p className={styles.lede} style={{ maxWidth: 420, fontSize: 17 }}>
+          Three steps from an empty project to a test real visitors see. No release, no ticket
+          queue.
+        </p>
       </div>
-      <ol className={styles.cards3} style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {steps.map(([title, text], i) => (
-          <li key={title} className={`${styles.card} ${styles.soft}`}>
-            <span
-              className={`${styles.stepNum} ${i === 2 ? styles.stepLast : ''}`}
-              aria-hidden="true"
-            >
-              {i + 1}
+      <ol className={styles.steps}>
+        <li className={styles.step}>
+          <div className={styles.stepHead}>
+            <span className={styles.stepNum} aria-hidden="true">
+              1
             </span>
-            <h3 className={styles.cardTitle}>{title}</h3>
-            <p className={styles.cardText}>{text}</p>
-          </li>
-        ))}
+            <span className={styles.stepTime}>About 5 minutes</span>
+          </div>
+          <h3 className={styles.cardTitle}>Install the snippet</h3>
+          <p className={styles.cardText}>
+            Paste one script tag or add it through GTM. Splitcraft confirms the install on the first
+            page view.
+          </p>
+          <div className={styles.stepArt} aria-hidden="true">
+            <code>
+              &lt;script src=&quot;…/sdk/v1.js&quot;{'\n'}
+              {'  '}data-project=&quot;prj_…&quot; async&gt;
+            </code>
+          </div>
+        </li>
+        <li className={styles.step}>
+          <div className={styles.stepHead}>
+            <span className={styles.stepNum} aria-hidden="true">
+              2
+            </span>
+            <span className={styles.stepTime}>An hour or two</span>
+          </div>
+          <h3 className={styles.cardTitle}>Build and QA the variant</h3>
+          <p className={styles.cardText}>
+            Write the change, set who sees it, pick a goal, then force it on your own screen to
+            check it.
+          </p>
+          <div className={`${styles.stepArt} ${styles.stepChips}`} aria-hidden="true">
+            <span>WHERE /trips/*</span>
+            <span>WHO mobile</span>
+            <span>Goal: Book click</span>
+          </div>
+        </li>
+        <li className={styles.step}>
+          <div className={styles.stepHead}>
+            <span className={`${styles.stepNum} ${styles.stepLast}`} aria-hidden="true">
+              3
+            </span>
+            <span className={styles.stepTime}>Until the planned sample</span>
+          </div>
+          <h3 className={styles.cardTitle}>Launch and read the result</h3>
+          <p className={styles.cardText}>
+            Watch it reach its planned sample, then ship the winner or learn from the loss.
+          </p>
+          <div className={`${styles.stepArt} ${styles.stepResult}`} aria-hidden="true">
+            <span>B vs Control</span>
+            <b>+9.7%</b>
+            <span>96% chance to win</span>
+          </div>
+        </li>
       </ol>
     </section>
   );
 }
 
 function Cta() {
+  // 00-home.html's call to action, text left and buttons right, as a full-width band
+  // that leads straight into the footer.
   return (
-    <section id="start" className={styles.wrap} aria-labelledby="cta-title">
-      <div className={styles.cta}>
-        <div className={styles.stackCol} style={{ maxWidth: 640 }}>
+    <section id="start" className={styles.ctaBand} aria-labelledby="cta-title">
+      <div className={`${styles.wrap} ${styles.cta}`}>
+        <div className={`${styles.stackCol} ${styles.ctaText}`}>
           <h2 className={`${styles.h2} ${styles.ctaTitle}`} id="cta-title">
             Run your first test today.
           </h2>
-          <p className={`${styles.lede} ${styles.ctaText}`}>
+          <p className={`${styles.lede} ${styles.ctaLede}`}>
             Free up to 100,000 events a month. No card needed.
           </p>
         </div>
@@ -1087,14 +1192,6 @@ function Footer() {
               A portfolio project by Dhriti Kumawat, built to understand how experimentation
               platforms work inside.
             </span>
-            <div className={styles.footerActions}>
-              <a className={styles.footerStart} href={`${DASHBOARD_URL}/signup`}>
-                Start free
-              </a>
-              <a className={styles.footerDocs} href="/docs/">
-                Read the docs
-              </a>
-            </div>
           </div>
           <nav className={styles.footerCols} aria-label="Footer">
             {cols.map((c) => (
