@@ -37,7 +37,7 @@ describe('experiment layout', () => {
         .map((a) => a.textContent),
     ).toEqual([
       '1Basics',
-      '2Variants & code',
+      '2Variations & code',
       '3Targeting',
       '4Goals (done)'.replace('4', '✓'),
       '5Results',

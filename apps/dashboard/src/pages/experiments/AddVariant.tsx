@@ -11,7 +11,7 @@ import styles from './AddVariant.module.css';
 export function AddVariant({
   experiment,
   buttonClassName,
-  label = '+ Add variant',
+  label = '+ Add variation',
   placeholder = 'e.g. Sticky Book bar',
   onAdded,
 }: {
@@ -70,7 +70,7 @@ export function AddVariant({
   return (
     <form className={styles.form} onSubmit={submit}>
       <label htmlFor={id} className={styles.label}>
-        New variant name
+        New variation name
       </label>
       <input
         id={id}
