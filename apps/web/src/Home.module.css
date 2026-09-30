@@ -6,6 +6,16 @@
   overflow-x: clip;
 }
 
+/* Even line breaks: headings split into lines of similar length, and paragraphs avoid a
+   single word on their last line. */
+.page :is(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+.page p {
+  text-wrap: pretty;
+}
+
 .wrap {
   width: 100%;
   max-width: 1440px;
@@ -2511,5 +2521,22 @@ textarea.contactInput {
   }
   .marqueeRow[aria-hidden='true'] {
     display: none;
+  }
+}
+
+/* ------------------------------------------------------------ phones: one text edge in cards
+   Every card's text starts 20 px inside it, so text lines up down the page. */
+@media (max-width: 700px) {
+  .cap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+  }
+  .capIcon {
+    margin: 0 0 4px;
+  }
+  .whyItem {
+    padding: 20px;
   }
 }
