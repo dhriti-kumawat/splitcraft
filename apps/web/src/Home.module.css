@@ -1660,18 +1660,21 @@
 .faqLayout {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
-  gap: 56px;
-  align-items: start;
+  gap: 32px;
+  /* Both columns share the same top and bottom edges. */
+  align-items: stretch;
 }
 
 .faqSide {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 28px;
 }
 
-/* A small dark card with next steps, so the column beside the answers has a job. */
+/* A dark card with next steps and the contact form, as tall as the list beside it. */
 .faqHelp {
+  flex-grow: 1;
   padding: 24px;
   border-radius: 16px;
   background: var(--ink);
@@ -1828,8 +1831,10 @@ textarea.contactInput {
   border-radius: 6px;
 }
 
-/* One numbered list with dividers. */
+/* One numbered list with dividers; its rows share out the height of the card beside it. */
 .faq {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1839,8 +1844,23 @@ textarea.contactInput {
   overflow: hidden;
 }
 
+.faq > li {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+}
+
+.faq > li > details {
+  width: 100%;
+}
+
 .faq > li + li {
   border-top: 1px solid var(--line);
+}
+
+/* The open answer's row takes its natural height, the others share the rest. */
+.faq > li:has(details[open]) {
+  flex: 0 0 auto;
 }
 
 .faqNum {

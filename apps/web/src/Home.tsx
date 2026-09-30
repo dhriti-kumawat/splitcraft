@@ -804,15 +804,15 @@ function Faq() {
       className={`${styles.wrap} ${styles.section} ${styles.faqSection}`}
       aria-labelledby="faq-title"
     >
+      <div className={`${styles.stackCol} ${styles.intro}`}>
+        <span className={styles.eyebrow}>Questions</span>
+        <h2 className={styles.h2} id="faq-title">
+          Before you install.
+        </h2>
+        <p className={styles.lede}>Short answers to what people ask first.</p>
+      </div>
       <div className={styles.faqLayout}>
         <div className={styles.faqSide}>
-          <div className={styles.stackCol}>
-            <span className={styles.eyebrow}>Questions</span>
-            <h2 className={styles.h2} id="faq-title">
-              Before you install.
-            </h2>
-            <p className={styles.lede}>Short answers to what people ask first.</p>
-          </div>
           <div className={styles.faqHelp}>
             <h3 className={styles.faqHelpTitle}>Still deciding?</h3>
             <ul>
