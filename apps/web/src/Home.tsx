@@ -762,19 +762,27 @@ function Faq() {
       className={`${styles.wrap} ${styles.section} ${styles.faqSection}`}
       aria-labelledby="faq-title"
     >
-      <div className={`${styles.stackCol} ${styles.introSm}`}>
-        <span className={styles.eyebrow}>Questions</span>
-        <h2 className={styles.h2} id="faq-title">
-          Before you install.
-        </h2>
-      </div>
-      <div className={styles.faq}>
-        {faqs.map(([q, a]) => (
-          <details key={q} className={styles.faqItem}>
-            <summary>{q}</summary>
-            <p>{a}</p>
-          </details>
-        ))}
+      <div className={styles.faqLayout}>
+        <div className={`${styles.stackCol} ${styles.faqIntro}`}>
+          <span className={styles.eyebrow}>Questions</span>
+          <h2 className={styles.h2} id="faq-title">
+            Before you install.
+          </h2>
+          <p className={styles.lede}>
+            Short answers to what people ask first. The developer docs have the details.
+          </p>
+          <a href="/docs/" className={styles.textLink}>
+            Read the docs
+          </a>
+        </div>
+        <div className={styles.faq}>
+          {faqs.map(([q, a]) => (
+            <details key={q} className={styles.faqItem}>
+              <summary>{q}</summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -1024,13 +1032,18 @@ function Cta() {
   return (
     <section id="start" className={styles.wrap} aria-labelledby="cta-title">
       <div className={styles.cta}>
-        <div className={styles.stackCol} style={{ maxWidth: 640 }}>
+        <div className={`${styles.stackCol} ${styles.ctaText}`}>
           <h2 className={`${styles.h2} ${styles.ctaTitle}`} id="cta-title">
             Run your first test today.
           </h2>
-          <p className={`${styles.lede} ${styles.ctaText}`}>
+          <p className={`${styles.lede} ${styles.ctaLede}`}>
             Free up to 100,000 events a month. No card needed.
           </p>
+          <ul className={styles.ctaPoints}>
+            <li>Every feature included</li>
+            <li>Snippet under 8 KB</li>
+            <li>Live in an afternoon</li>
+          </ul>
         </div>
         <div className={styles.ctaActions}>
           <a className={`${styles.primary} ${styles.ctaPrimary}`} href={`${DASHBOARD_URL}/signup`}>
@@ -1087,14 +1100,6 @@ function Footer() {
               A portfolio project by Dhriti Kumawat, built to understand how experimentation
               platforms work inside.
             </span>
-            <div className={styles.footerActions}>
-              <a className={styles.footerStart} href={`${DASHBOARD_URL}/signup`}>
-                Start free
-              </a>
-              <a className={styles.footerDocs} href="/docs/">
-                Read the docs
-              </a>
-            </div>
           </div>
           <nav className={styles.footerCols} aria-label="Footer">
             {cols.map((c) => (
