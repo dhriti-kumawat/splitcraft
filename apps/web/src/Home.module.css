@@ -2233,12 +2233,25 @@ textarea.contactInput {
 
 .ctaBand .cta {
   margin: 0;
-  padding-top: 56px;
-  padding-bottom: 56px;
+  padding-top: 40px;
+  padding-bottom: 40px;
   padding-left: 80px;
   padding-right: 80px;
   border-radius: 0;
   background: none;
+}
+
+/* A slim closing band: smaller heading and lede than a section. */
+.ctaBand .ctaTitle {
+  font-size: 38px;
+}
+
+.ctaBand .ctaLede {
+  font-size: 16px;
+}
+
+.ctaBand .ctaText {
+  gap: 8px;
 }
 
 /* How it works: three steps on a timeline. */
@@ -2343,8 +2356,9 @@ textarea.contactInput {
   .ctaBand .cta {
     padding-left: 32px;
     padding-right: 32px;
-    padding-top: 48px;
-    padding-bottom: 48px;
+    padding-top: 36px;
+    padding-bottom: 36px;
+    gap: 20px;
   }
   .steps {
     grid-template-columns: 1fr;
@@ -2376,8 +2390,11 @@ textarea.contactInput {
     padding-top: 48px;
   }
   .ctaBand .cta {
-    padding: 40px 16px;
-    gap: 20px;
+    padding: 28px 16px;
+    gap: 16px;
+  }
+  .ctaBand .ctaTitle {
+    font-size: 25px;
   }
   .step {
     padding: 20px;
