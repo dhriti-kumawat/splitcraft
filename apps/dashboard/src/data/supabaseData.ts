@@ -71,6 +71,7 @@ interface ExperimentRow {
   ended_at: string | null;
   archived_at: string | null;
   preview_url: string | null;
+  preview_token: string;
   auto_paused: Experiment['autoPaused'];
   created_at: string;
   variants: Array<Omit<Variant, 'weight'> & { weight: number | string }> | null;
@@ -98,6 +99,7 @@ export function toExperiment(row: ExperimentRow): Experiment {
     endedAt: row.ended_at,
     archivedAt: row.archived_at,
     previewUrl: row.preview_url ?? null,
+    previewToken: row.preview_token,
     autoPaused: row.auto_paused ?? null,
     createdAt: row.created_at,
     variants: (row.variants ?? [])

@@ -120,6 +120,7 @@ const experiment = (
   endedAt: null,
   archivedAt: null,
   previewUrl: null,
+  previewToken: `tok-${e.id}`,
   autoPaused: null,
   createdAt: daysAgo(30),
   variants: variants(e.id),

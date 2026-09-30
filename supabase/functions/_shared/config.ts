@@ -91,7 +91,8 @@ export function toSdkConfig(
     experiments: source.experiments.map((e) => ({
       key: e.key,
       name: e.name,
-      trafficPct: Number(e.trafficPct),
+      // A preview shows everywhere on the open page, to everyone who has the link.
+      trafficPct: e.preview ? 100 : Number(e.trafficPct),
       variants: e.variants.map((v) => ({
         key: v.key,
         name: v.name,
@@ -99,7 +100,7 @@ export function toSdkConfig(
         ...(v.js && { js: v.js }),
         ...(v.css && { css: v.css }),
       })),
-      targeting: toSdkTargeting(e.targeting ?? {}, source.segments),
+      targeting: e.preview ? {} : toSdkTargeting(e.targeting ?? {}, source.segments),
     })),
     goals: {
       clicks,

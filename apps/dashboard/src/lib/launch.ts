@@ -93,6 +93,8 @@ export function previewUrl(exp: Experiment, project: Project, variantKey?: strin
     exp.previewUrl ?? `${schemeFor(project.mainDomain)}://${project.mainDomain}/`,
   );
   url.searchParams.set('splitcraft_force', `${exp.key}:${key}`);
+  // Loads this experiment even while it's a draft (or paused), on any page.
+  url.searchParams.set('splitcraft_preview', exp.previewToken);
   return url.href;
 }
 
@@ -133,5 +135,6 @@ export function testPageUrl(
     };
   }
   url.searchParams.delete('splitcraft_force');
+  url.searchParams.delete('splitcraft_preview');
   return { url: url.href };
 }

@@ -15,7 +15,13 @@ Deno.serve(async (req) => {
   const key = (new URL(req.url).pathname.split('/').pop() ?? '').replace(/\.json$/, '');
   if (!PUBLIC_KEY.test(key)) return json({ error: 'unknown project' }, 404);
 
-  const { data, error } = await supabase.rpc('sdk_config_source', { p_public_key: key });
+  // "Preview on site" links carry a secret token that adds that experiment, even a draft.
+  const preview = new URL(req.url).searchParams.get('preview');
+  const token = preview && /^[0-9a-f-]{36}$/i.test(preview) ? preview : null;
+  const { data, error } = await supabase.rpc('sdk_config_source', {
+    p_public_key: key,
+    ...(token && { p_preview: token }),
+  });
   if (error) {
     console.error('sdk_config_source failed', error);
     return json({ error: 'config unavailable' }, 500);
@@ -30,6 +36,6 @@ Deno.serve(async (req) => {
   return json(country ? { ...config, country } : config, 200, {
     // Short cache so launches and pauses reach visitors within a minute. With a country
     // in it, only the visitor's own browser may cache it.
-    'cache-control': `${perVisitor ? 'private' : 'public'}, max-age=60`,
+    'cache-control': token ? 'no-store' : `${perVisitor ? 'private' : 'public'}, max-age=60`,
   });
 });

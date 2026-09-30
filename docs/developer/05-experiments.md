@@ -25,7 +25,10 @@ A step shows a tick when it's done.
 - **Test page** (Basics): the page the experiment runs on, as a path (`/trips/norway`) or a full URL
   on one of the project's domains. The dashboard warns when it isn't matched by the WHERE rules.
 - **Preview on site** opens the test page (or the home page) with
-  `?splitcraft_force=<experiment>:<variant>`, which forces the variant and opens the QA panel.
+  `?splitcraft_force=<experiment>:<variant>&splitcraft_preview=<token>`. The force parameter picks
+  the variant and opens the QA panel; the secret preview token makes the config include this
+  experiment **even as a draft or paused**, with its targeting removed, so your change shows on
+  whatever page you open. The token is remembered for the browser tab.
 - **Pages without the snippet**: switch on **Preview on pages without the snippet** under the
   project's install code, drag the **Splitcraft preview** bookmark to your bookmarks bar, open
   Preview on site and click the bookmark. It loads the SDK on that page for you only (sites with a

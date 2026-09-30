@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { clearForcedVariants, getForcedVariants, parseForce, withForce } from './force';
+import {
+  clearForcedVariants,
+  getForcedVariants,
+  getPreviewToken,
+  parseForce,
+  withForce,
+} from './force';
 
 afterEach(() => {
   sessionStorage.clear();
@@ -70,5 +76,16 @@ describe('withForce', () => {
     expect(withForce('https://mytrips.dev/?splitcraft_force=trust:B&x=1', {})).toBe(
       'https://mytrips.dev/?x=1',
     );
+  });
+});
+
+describe('preview token', () => {
+  beforeEach(() => sessionStorage.clear());
+
+  it('reads the token from the URL and remembers it for the tab', () => {
+    expect(getPreviewToken('?splitcraft_preview=abc-123')).toBe('abc-123');
+    expect(getPreviewToken('')).toBe('abc-123');
+    clearForcedVariants();
+    expect(getPreviewToken('')).toBeNull();
   });
 });
