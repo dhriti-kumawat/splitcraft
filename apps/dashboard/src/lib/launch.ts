@@ -2,7 +2,7 @@ import type { Experiment, Project } from '../data/api';
 import { controlKey } from './experiments';
 
 export interface Check {
-  id: 'snippet' | 'goal' | 'code' | 'qa';
+  id: 'snippet' | 'goal' | 'code' | 'where' | 'qa';
   label: string;
   ok: boolean;
   /** Blocking checks stop the launch; the QA check is only a warning (PRODUCT_SPEC §3). */
@@ -24,12 +24,20 @@ export function syntaxError(js: string): string | null {
 export function variantsReady(exp: Experiment): boolean {
   const control = controlKey(exp);
   const others = exp.variants.filter((v) => v.key !== control);
-  return (
-    others.length > 0 &&
-    others.every((v) => (v.js.trim() || v.css.trim()) && syntaxError(v.js) === null) &&
-    exp.variants.some((v) => v.weight > 0)
-  );
+  const ready =
+    exp.type === 'split_url'
+      ? (v: Experiment['variants'][number]) => Boolean(v.url)
+      : // MVT combinations may leave out a section's code, but none may break.
+        (v: Experiment['variants'][number]) =>
+          (exp.type === 'mvt' || v.js.trim() || v.css.trim()) && syntaxError(v.js) === null;
+  return others.length > 0 && others.every(ready) && exp.variants.some((v) => v.weight > 0);
 }
+
+const CODE_LABEL: Record<Experiment['type'], [done: string, todo: string]> = {
+  ab: ['Variant code saved, no errors', 'Add variant code that runs without errors'],
+  split_url: ['Every variant has a page URL', 'Give every variant a page URL'],
+  mvt: ['Sections and combinations saved', 'Add sections with at least one new version'],
+};
 
 export function launchChecks(exp: Experiment, project: Project, qaDone: boolean): Check[] {
   return [
@@ -47,12 +55,23 @@ export function launchChecks(exp: Experiment, project: Project, qaDone: boolean)
     },
     {
       id: 'code',
-      label: variantsReady(exp)
-        ? 'Variant code saved, no errors'
-        : 'Add variant code that runs without errors',
+      label: CODE_LABEL[exp.type][variantsReady(exp) ? 0 : 1],
       ok: variantsReady(exp),
       blocking: true,
     },
+    // Split URL: without WHERE rules every page would redirect to the variant pages.
+    ...(exp.type === 'split_url'
+      ? [
+          {
+            id: 'where' as const,
+            label: exp.targeting.where?.include?.length
+              ? 'WHERE limited to the original page'
+              : 'Limit WHERE to the original page, so other pages don’t redirect',
+            ok: Boolean(exp.targeting.where?.include?.length),
+            blocking: true,
+          },
+        ]
+      : []),
     {
       id: 'qa',
       label: qaDone ? 'Previewed on site' : 'QA preview not done yet',

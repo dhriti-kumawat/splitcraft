@@ -1,0 +1,162 @@
+.empty {
+  margin: 0 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sectionName {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: transparent;
+  font: 700 13px var(--font-ui);
+  color: var(--ink);
+}
+
+.sectionName:hover:not(:read-only) {
+  border-color: var(--line);
+}
+
+.sectionName:focus,
+.levelName:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 107, 87, 0.14);
+}
+
+.remove,
+.addLevel {
+  background: none;
+  border: 0;
+  padding: 4px 6px;
+  font: 600 12px var(--font-ui);
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.remove:hover {
+  color: var(--danger);
+}
+
+.addLevel {
+  align-self: flex-start;
+  color: var(--accent);
+}
+
+.remove:focus-visible,
+.addLevel:focus-visible,
+.levelRemove:focus-visible,
+.saveButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.levelBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--ink-3);
+}
+
+.levelLabel {
+  font-size: 12px;
+  color: #aab0ab;
+}
+
+.levelName {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--ink-3);
+  border-radius: var(--r-md);
+  background: var(--ink-2);
+  color: #fff;
+  font: 500 13px var(--font-ui);
+}
+
+.levelRemove {
+  background: none;
+  border: 0;
+  font: 600 12px var(--font-ui);
+  color: #f0a39d;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.levelRemove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.bad {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+.saveButton {
+  height: 36px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: #fff;
+  font: 600 13px var(--font-ui);
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.combos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 12.5px;
+  color: var(--ink);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.combos .mono {
+  color: var(--muted);
+  font-size: 11.5px;
+}

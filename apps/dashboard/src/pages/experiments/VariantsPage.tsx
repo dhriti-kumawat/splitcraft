@@ -11,6 +11,8 @@ import { controlKey } from '../../lib/experiments';
 import { syntaxError } from '../../lib/launch';
 import { MAX_VARIANTS } from '../../lib/chartColors';
 import { useExperiment } from './experimentContext';
+import { MvtVariants } from './MvtVariants';
+import { SplitUrlVariants } from './SplitUrlVariants';
 import { TemplatePicker } from './TemplatePicker';
 import styles from './VariantsPage.module.css';
 
@@ -35,8 +37,16 @@ const date = new Intl.DateTimeFormat('en-GB', {
   minute: '2-digit',
 });
 
-/** Experiment step 2: variants and their JS/CSS (13-exp-step2-variant-code.html). */
+/** Experiment step 2: what each variant changes, by test type. */
 export function VariantsPage() {
+  const { experiment } = useExperiment();
+  if (experiment.type === 'split_url') return <SplitUrlVariants />;
+  if (experiment.type === 'mvt') return <MvtVariants />;
+  return <CodeVariants />;
+}
+
+/** A/B tests: variants and their JS/CSS (13-exp-step2-variant-code.html). */
+function CodeVariants() {
   const { experiment } = useExperiment();
   const control = controlKey(experiment);
   const [selectedId, setSelectedId] = useState(

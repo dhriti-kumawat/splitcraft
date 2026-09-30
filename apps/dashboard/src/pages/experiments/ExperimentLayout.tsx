@@ -27,6 +27,13 @@ import { percent } from '../../lib/experiments';
 import { NotFoundPage } from '../NotFoundPage';
 import type { ExperimentContext } from './experimentContext';
 import styles from './ExperimentLayout.module.css';
+import { TypeTag } from './TypeTag';
+
+const VARIANTS_STEP = {
+  ab: 'Variants & code',
+  split_url: 'Variant pages',
+  mvt: 'Sections',
+} as const;
 
 const STATUS = { draft: 'Draft', live: 'Live', paused: 'Paused', ended: 'Ended' } as const;
 
@@ -44,7 +51,7 @@ export function ExperimentLayout() {
   const base = `/p/${project.id}/experiments/${experiment.id}`;
   const steps = [
     { path: 'basics', label: 'Basics', done: experiment.hypothesis.trim().length > 0 },
-    { path: 'variants', label: 'Variants & code', done: variantsReady(experiment) },
+    { path: 'variants', label: VARIANTS_STEP[experiment.type], done: variantsReady(experiment) },
     {
       path: 'targeting',
       label: 'Targeting',
@@ -65,6 +72,7 @@ export function ExperimentLayout() {
         <div className={styles.title}>
           <h1>{experiment.name}</h1>
           <Pill tone={experiment.status}>{STATUS[experiment.status]}</Pill>
+          <TypeTag type={experiment.type} />
           {experiment.archivedAt && <Pill tone="draft">Archived</Pill>}
         </div>
         {experiment.status === 'paused' && experiment.autoPaused && (
