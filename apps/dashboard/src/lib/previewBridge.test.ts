@@ -65,6 +65,12 @@ describe('bookmark tab', () => {
     );
     updatePreview({ ...edited, variantKey: 'control' }, true);
     expect(win.postMessage.mock.lastCall![0].state.variantKey).toBe('control');
+
+    stopPreview();
+    expect(win.postMessage).toHaveBeenLastCalledWith(
+      { source: 'splitcraft-dashboard', type: 'stop' },
+      'https://www.mytrips.dev',
+    );
   });
 
   it('reports a blocked pop-up', () => {
