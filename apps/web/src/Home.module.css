@@ -2513,3 +2513,49 @@ textarea.contactInput {
     display: none;
   }
 }
+
+/* ------------------------------------------------------------ one text edge in every card
+   Text in any card starts the same distance in: 24 px from tablets up, 20 px on phones
+   (plus a 1 px border, transparent where the card has none). */
+.card,
+.cap,
+.step,
+.mathCard,
+.resultCard,
+.whyItem {
+  padding: 24px;
+}
+
+.whyItem {
+  border: 1px solid transparent;
+}
+
+.mathCard {
+  border-width: 1px;
+}
+
+.contactCard {
+  padding: 32px;
+}
+
+@media (max-width: 700px) {
+  .card,
+  .cap,
+  .step,
+  .mathCard,
+  .resultCard,
+  .whyItem {
+    padding: 20px;
+  }
+  .cap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .capIcon {
+    margin: 0 0 4px;
+  }
+  .contactCard {
+    padding: 20px;
+  }
+}
