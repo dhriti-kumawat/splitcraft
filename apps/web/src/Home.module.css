@@ -807,6 +807,173 @@
 
 /* ------------------------------------------------------------ stats + how */
 
+.whyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 56px;
+  align-items: start;
+}
+
+.whyList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 28px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.whyItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 2px solid var(--ink);
+}
+
+.whyClose {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.textLink {
+  color: var(--accent);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.textLink:focus-visible,
+.mathInput:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.mathCard {
+  position: sticky;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 20px 50px rgba(21, 23, 26, 0.06);
+}
+
+.mathTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.mathFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mathField {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.mathInputWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mathInput {
+  width: 110px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong, #c8cec6);
+  border-radius: 8px;
+  font: 500 15px var(--font-mono);
+  text-align: right;
+  color: var(--ink);
+  background: var(--ground);
+}
+
+.mathUnit {
+  width: 1ch;
+  font: 500 14px var(--font-mono);
+  color: var(--muted);
+}
+
+.mathResults {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+
+.mathResults div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mathResults dt {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.mathResults dd {
+  margin: 0;
+  font: 400 15px var(--font-mono);
+  color: var(--ink);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mathResults b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.mathNote {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .whyGrid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .mathCard {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .whyList {
+    grid-template-columns: 1fr;
+  }
+  .mathResults div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .mathResults dd {
+    text-align: left;
+  }
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

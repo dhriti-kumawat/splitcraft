@@ -11,6 +11,7 @@ describe('home page', () => {
     ]);
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'Works with your stack',
+      'More customers from the visitors you already have.',
       'Everything a test needs, from the first line of code to the final call.',
       'The details that make testing safe.',
       'Built for the person who writes the variant.',
@@ -23,6 +24,31 @@ describe('home page', () => {
       'Developers',
       'Get started',
     ]);
+  });
+
+  it('explains CRO and works out what a lift is worth from the visitor’s numbers', async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+    const why = screen.getByRole('region', {
+      name: 'More customers from the visitors you already have.',
+    });
+    expect(within(why).getByText(/Conversion rate optimization \(CRO\)/)).toBeInTheDocument();
+    const calc = within(why).getByRole('region', { name: 'Try your numbers' });
+    const result = (term: string) =>
+      within(calc).getByText(term).parentElement!.querySelector('dd')!.textContent;
+    expect(result('Conversions a month')).toBe('400 → 440');
+    expect(result('Extra conversions a year')).toBe('+480');
+    expect(result('Traffic you’d need to buy for the same result')).toBe('+2,000 visitors a month');
+
+    const rate = within(calc).getByLabelText('Conversion rate');
+    await user.clear(rate);
+    await user.type(rate, '3');
+    const lift = within(calc).getByLabelText('Improvement from testing');
+    await user.clear(lift);
+    await user.type(lift, '20');
+    expect(result('Conversions a month')).toBe('600 → 720');
+    expect(result('Extra conversions a year')).toBe('+1,440');
+    expect(within(calc).getByText(/takes a 3% conversion rate to 3.6%/)).toBeInTheDocument();
   });
 
   it('links nav items to sections that exist', () => {
