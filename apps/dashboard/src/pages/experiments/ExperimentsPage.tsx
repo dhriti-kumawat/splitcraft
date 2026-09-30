@@ -16,6 +16,7 @@ import { percent, summarize, timeAgo, type ExperimentSummary } from '../../lib/e
 import { targetingSummary } from '../../lib/targeting';
 import { NewExperimentDialog } from './NewExperimentDialog';
 import styles from './ExperimentsPage.module.css';
+import { TypeTag } from './TypeTag';
 
 const FILTERS: Array<{ id: 'all' | ExperimentStatus | 'archived'; label: string }> = [
   { id: 'all', label: 'All' },
@@ -202,7 +203,10 @@ function Row({
           <Link to={`/p/${projectId}/experiments/${exp.id}/${step}`} className={styles.name}>
             {exp.name}
           </Link>
-          <span className={`${styles.where} mono`}>{targetingSummary(exp.targeting)}</span>
+          <span className={styles.meta}>
+            {exp.type !== 'ab' && <TypeTag type={exp.type} />}
+            <span className={`${styles.where} mono`}>{targetingSummary(exp.targeting)}</span>
+          </span>
         </div>
       </td>
       <td>

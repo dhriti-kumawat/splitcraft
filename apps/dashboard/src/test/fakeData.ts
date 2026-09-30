@@ -101,8 +101,17 @@ export const STATS: ProjectStats[] = [
 const DAY = 24 * 60 * 60 * 1000;
 const daysAgo = (n: number) => new Date(Date.now() - n * DAY).toISOString();
 const variants = (id: string) => [
-  { id: `${id}-c`, key: 'control', name: 'Control', weight: 50, js: '', css: '', version: 1 },
-  { id: `${id}-b`, key: 'b', name: 'B', weight: 50, js: '', css: '', version: 1 },
+  {
+    id: `${id}-c`,
+    key: 'control',
+    name: 'Control',
+    weight: 50,
+    js: '',
+    css: '',
+    url: null,
+    version: 1,
+  },
+  { id: `${id}-b`, key: 'b', name: 'B', weight: 50, js: '', css: '', url: null, version: 1 },
 ];
 const experiment = (
   e: Partial<Experiment> & Pick<Experiment, 'id' | 'name' | 'status'>,
@@ -110,6 +119,8 @@ const experiment = (
   projectId: 'trip-demo',
   key: e.id,
   hypothesis: '',
+  type: 'ab',
+  factors: [],
   trafficPct: 100,
   targeting: {},
   primaryMetricId: 'm-book',
@@ -635,6 +646,7 @@ export function fakeData(
         id: `${experimentId}-${variant.key}`,
         js: '',
         css: '',
+        url: null,
         version: 1,
         ...variant,
       });
@@ -644,6 +656,19 @@ export function fakeData(
     },
     async deleteVariant(id) {
       for (const e of experiments) e.variants = e.variants.filter((v) => v.id !== id);
+    },
+    async setMvt(experimentId, factors, next) {
+      const e = experiments.find((x) => x.id === experimentId)!;
+      e.factors = factors;
+      e.variants = next.map((v) => {
+        const old = e.variants.find((o) => o.key === v.key);
+        return {
+          id: old?.id ?? `${experimentId}-${v.key}`,
+          url: null,
+          version: old?.version ?? 1,
+          ...v,
+        };
+      });
     },
     listSegments: async (projectId) =>
       segments.filter((x) => x.projectId === projectId).map((x) => ({ ...x })),
@@ -752,11 +777,14 @@ export function fakeData(
         );
       experiments.splice(experiments.indexOf(e!), 1);
     },
-    async createExperiment(projectId, name) {
+    async createExperiment(projectId, name, type = 'ab') {
       createdExperiments.push(name);
+      const id = `exp-${createdExperiments.length}`;
       const e = experiment({
-        id: `exp-${createdExperiments.length}`,
+        id,
         name,
+        type,
+        ...(type === 'mvt' && { variants: [{ ...variants(id)[0]!, weight: 100 }] }),
         status: 'draft',
         projectId,
         primaryMetricId: null,

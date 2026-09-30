@@ -6,6 +6,7 @@
   align-items: flex-start;
   justify-content: center;
   padding: 12vh 16px 16px;
+  overflow-y: auto;
   background: rgba(21, 23, 26, 0.35);
 }
 
@@ -16,6 +17,10 @@
   background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 24px 60px rgba(21, 23, 26, 0.25);
+}
+
+.wide {
+  width: min(640px, 100%);
 }
 
 .head {

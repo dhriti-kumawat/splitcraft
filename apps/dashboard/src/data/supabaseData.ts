@@ -12,6 +12,8 @@ import type {
   Experiment,
   ExperimentPatch,
   ExperimentStatus,
+  ExperimentType,
+  MvtFactor,
   Metric,
   Project,
   Segment,
@@ -62,6 +64,8 @@ interface ExperimentRow {
   name: string;
   hypothesis: string;
   status: ExperimentStatus;
+  type: ExperimentType | null;
+  factors: MvtFactor[] | null;
   traffic_pct: number | string;
   targeting: StoredTargeting | null;
   primary_metric_id: string | null;
@@ -79,7 +83,7 @@ interface ExperimentRow {
 }
 
 const EXPERIMENT_COLUMNS =
-  '*, variants (id, key, name, weight, js, css, version), primary_metric:metrics!primary_metric_id (name)';
+  '*, variants (id, key, name, weight, js, css, url, version), primary_metric:metrics!primary_metric_id (name)';
 
 export function toExperiment(row: ExperimentRow): Experiment {
   return {
@@ -89,6 +93,8 @@ export function toExperiment(row: ExperimentRow): Experiment {
     name: row.name,
     hypothesis: row.hypothesis,
     status: row.status,
+    type: row.type ?? 'ab',
+    factors: row.factors ?? [],
     trafficPct: Number(row.traffic_pct),
     targeting: row.targeting ?? {},
     primaryMetricId: row.primary_metric_id,
@@ -103,7 +109,7 @@ export function toExperiment(row: ExperimentRow): Experiment {
     autoPaused: row.auto_paused ?? null,
     createdAt: row.created_at,
     variants: (row.variants ?? [])
-      .map((v) => ({ ...v, weight: Number(v.weight) }))
+      .map((v) => ({ ...v, url: v.url ?? null, weight: Number(v.weight) }))
       // Control first, then by key. (Display only: the SDK config orders by key in SQL.)
       .sort((a, b) =>
         a.key === 'control' ? -1 : b.key === 'control' ? 1 : a.key.localeCompare(b.key),
@@ -136,6 +142,7 @@ const PATCH_COLUMNS: Record<keyof ExperimentPatch, string> = {
   endedAt: 'ended_at',
   archivedAt: 'archived_at',
   previewUrl: 'preview_url',
+  factors: 'factors',
 };
 
 interface MetricRow {
@@ -530,24 +537,28 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       return rows[0]?.created_at ?? null;
     },
 
-    async createExperiment(projectId, name) {
+    async createExperiment(projectId, name, type = 'ab') {
       const base = experimentKey(name);
       // Keys are unique per project; add -2, -3… on a clash.
       for (let attempt = 1; attempt <= 20; attempt++) {
         const key = attempt === 1 ? base : `${base}-${attempt}`;
         const { data, error } = await supabase
           .from('experiments')
-          .insert({ project_id: projectId, key, name })
+          .insert({ project_id: projectId, key, name, type })
           .select('id')
           .single();
         if (error?.code === '23505') continue;
         if (error) throw new Error(error.message);
         const id = (data as { id: string }).id;
         check(
-          await supabase.from('variants').insert([
-            { experiment_id: id, key: 'control', name: 'Control', weight: 50 },
-            { experiment_id: id, key: 'b', name: 'B', weight: 50 },
-          ]),
+          await supabase.from('variants').insert(
+            type === 'mvt'
+              ? [{ experiment_id: id, key: 'control', name: 'Control', weight: 100 }]
+              : [
+                  { experiment_id: id, key: 'control', name: 'Control', weight: 50 },
+                  { experiment_id: id, key: 'b', name: 'B', weight: 50 },
+                ],
+          ),
         );
         const row = check(
           await supabase.from('experiments').select(EXPERIMENT_COLUMNS).eq('id', id).single(),
@@ -698,6 +709,24 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
 
     async deleteVariant(variantId) {
       check(await supabase.from('variants').delete().eq('id', variantId));
+    },
+
+    async setMvt(experimentId, factors, variants) {
+      check(await supabase.from('experiments').update({ factors }).eq('id', experimentId));
+      const keep = variants.map((v) => v.key);
+      check(
+        await supabase
+          .from('variants')
+          .delete()
+          .eq('experiment_id', experimentId)
+          .not('key', 'in', `(${keep.join(',')})`),
+      );
+      check(
+        await supabase.from('variants').upsert(
+          variants.map((v) => ({ experiment_id: experimentId, ...v })),
+          { onConflict: 'experiment_id,key' },
+        ),
+      );
     },
 
     async createMetric(metric) {

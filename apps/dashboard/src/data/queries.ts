@@ -12,6 +12,9 @@ import type {
   Role,
   SavedKind,
   SavedRules,
+  ExperimentType,
+  MvtFactor,
+  NewVariant,
   VariantPatch,
   VariantStats,
 } from './api';
@@ -193,7 +196,8 @@ export function useCreateExperiment(projectId: string) {
   const api = useData();
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (name: string) => api.createExperiment(projectId, name),
+    mutationFn: ({ name, type }: { name: string; type: ExperimentType }) =>
+      api.createExperiment(projectId, name, type),
     onSuccess: () => void client.invalidateQueries({ queryKey: keys.experiments(projectId) }),
   });
 }
@@ -267,6 +271,20 @@ export function useUpdateVariants(experiment: Pick<Experiment, 'id' | 'projectId
   return useMutation({
     mutationFn: (updates: Array<{ id: string; patch: VariantPatch }>) =>
       Promise.all(updates.map((u) => api.updateVariant(u.id, u.patch))),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.experiment(experiment.id) });
+      void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
+    },
+  });
+}
+
+/** MVT: save the sections and regenerate the combination variants. */
+export function useSetMvt(experiment: Pick<Experiment, 'id' | 'projectId'>) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ factors, variants }: { factors: MvtFactor[]; variants: NewVariant[] }) =>
+      api.setMvt(experiment.id, factors, variants),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: keys.experiment(experiment.id) });
       void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });

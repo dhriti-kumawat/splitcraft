@@ -12,11 +12,14 @@ export function Dialog({
   title,
   description,
   onClose,
+  wide = false,
   children,
 }: {
   title: string;
   description?: string;
   onClose(): void;
+  /** 640 px instead of 460 px, for choices laid out side by side. */
+  wide?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -56,7 +59,7 @@ export function Dialog({
     <div className={styles.overlay} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={ref}
-        className={styles.dialog}
+        className={`${styles.dialog} ${wide ? styles.wide : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

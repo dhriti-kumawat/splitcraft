@@ -7,16 +7,32 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import '../../../design/tokens.css';
 import './index.css';
 import { AuthProvider } from './auth/AuthProvider';
+import type { ExperimentType } from './data/api';
 import { DataContext } from './data/context';
 import { routes } from './router';
 import { fakeAuth } from './test/fakeAuth';
-import { fakeData } from './test/fakeData';
+import { EXPERIMENTS, fakeData } from './test/fakeData';
 
 const params = new URLSearchParams(location.search);
 const path = params.get('path') ?? '/projects';
 const signedIn = !/^\/(login|signup|forgot-password)/.test(path);
 // &workspaces=none shows the first-run screen for an account without a workspace.
-const data = fakeData(params.get('workspaces') === 'none' ? { workspaces: [] } : {});
+// &type=split_url or &type=mvt turns the "trust" draft into that kind of test.
+const type = params.get('type') as ExperimentType | null;
+const data = fakeData({
+  ...(params.get('workspaces') === 'none' && { workspaces: [] }),
+  ...(type && {
+    experiments: EXPERIMENTS.map((e) =>
+      e.id === 'trust'
+        ? {
+            ...e,
+            type,
+            variants: type === 'mvt' ? [{ ...e.variants[0]!, weight: 100 }] : e.variants,
+          }
+        : e,
+    ),
+  }),
+});
 // Example variant code for the Sticky Book Now bar, so the code editor isn't empty.
 void data.api.updateVariant('sticky-b', {
   js: `// Keep the Book button in view on mobile trip pages.
