@@ -52,10 +52,16 @@ describe('launchChecks', () => {
 describe('previewUrl', () => {
   it('forces the first variant on the main domain', () => {
     expect(previewUrl(draft, project)).toBe(
-      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
+      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
+        '#splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
     );
     expect(previewUrl(draft, { ...project, mainDomain: 'localhost:5173' }, 'control')).toBe(
-      'http://localhost:5173/?splitcraft_force=trust%3Acontrol&splitcraft_preview=tok-trust',
+      'http://localhost:5173/?splitcraft_force=trust%3Acontrol&splitcraft_preview=tok-trust' +
+        '#splitcraft_force=trust%3Acontrol&splitcraft_preview=tok-trust',
+    );
+    // Hash routers keep their hash.
+    expect(previewUrl({ ...draft, previewUrl: 'https://mytrips.dev/#/trips' }, project)).toBe(
+      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/trips',
     );
   });
 });
@@ -90,7 +96,8 @@ describe('test page', () => {
   it('opens the test page with the force parameter, keeping its query', () => {
     const withPage = { ...draft, previewUrl: 'https://mytrips.dev/trips/norway?ref=a' };
     expect(previewUrl(withPage, project as never)).toBe(
-      'https://mytrips.dev/trips/norway?ref=a&splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
+      'https://mytrips.dev/trips/norway?ref=a&splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
+        '#splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
     );
   });
 });
