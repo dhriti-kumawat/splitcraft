@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { CumulativeChart } from '../../components/CumulativeChart';
 import { Breakdown } from './Breakdown';
-import type { ExperimentGoal, Metric } from '../../data/api';
+import type { Experiment, ExperimentGoal, Metric } from '../../data/api';
 import { useDailyQuery, useGoalsQuery, useMetricsQuery, useResultsQuery } from '../../data/queries';
-import { SERIES } from '../../lib/chartColors';
+import { SERIES, seriesColor } from '../../lib/chartColors';
 import { controlKey, percent } from '../../lib/experiments';
 import { MEASURES } from '../../lib/metrics';
+import { mainEffects } from '../../lib/mvt';
 import {
   cumulativeSeries,
   guardrailStatus,
@@ -80,8 +81,14 @@ export function ResultsPage() {
 
   const best = primary.best;
   const control = primary.arms.find((a) => a.variantKey === controlKey(experiment))!;
-  const orderedArms = [control, ...primary.arms.filter((a) => a !== control)];
-  const series = orderedArms.map((a) => ({ key: a.variantKey, name: a.name }));
+  const others = primary.arms.filter((a) => a !== control);
+  // MVT: best combinations first, and only the top ones in the chart.
+  if (experiment.type === 'mvt')
+    others.sort((a, b) => (b.chanceBetter ?? 0) - (a.chanceBetter ?? 0));
+  const orderedArms = [control, ...others];
+  const series = orderedArms
+    .slice(0, SERIES.length)
+    .map((a) => ({ key: a.variantKey, name: a.name }));
   const chart = cumulativeSeries(
     daily.data ?? [],
     series.map((s) => s.key),
@@ -200,7 +207,7 @@ export function ResultsPage() {
                   <span className={styles.variant}>
                     <span
                       className={styles.swatch}
-                      style={{ background: SERIES[i] }}
+                      style={{ background: seriesColor(i) }}
                       aria-hidden="true"
                     />
                     {a.name}
@@ -244,10 +251,15 @@ export function ResultsPage() {
             data={chart}
             series={series}
             summary={`Cumulative ${primaryMetric.name} conversion rate over ${chart.length} ${chart.length === 1 ? 'day' : 'days'}. ${orderedArms
+              .slice(0, SERIES.length)
               .map((a) => `${a.name} ${fmt(a.value)}`)
               .join(', ')}. The table above has the exact numbers.`}
           />
         </section>
+      )}
+
+      {experiment.type === 'mvt' && proportion && (
+        <FactorEffects experiment={experiment} result={primary} fmt={fmt} />
       )}
 
       {unique && <Breakdown experiment={experiment} goalName={primaryMetric.name} />}
@@ -296,7 +308,7 @@ export function ResultsPage() {
   );
 }
 
-function Uplift({ arm }: { arm: ArmResult }) {
+function Uplift({ arm }: { arm: Pick<ArmResult, 'comparison' | 'chanceBetter'> }) {
   if (!arm.comparison) return <span className={styles.none}>—</span>;
   const c = arm.comparison;
   const better = arm.chanceBetter ?? 0.5;
@@ -352,4 +364,95 @@ function formatValue(measure: Metric['measure'], x: number): string {
   if (measure === 'unique' || measure === 'ctr') return `${(x * 100).toFixed(2)}%`;
   if (measure === 'time_to_click') return `${x.toFixed(1)} s`;
   return x.toFixed(2);
+}
+
+/**
+ * MVT: how each section's versions did, pooled over the other sections (main effects).
+ * Shows which version of each section to keep, even when single combinations are noisy.
+ */
+function FactorEffects({
+  experiment,
+  result,
+  fmt,
+}: {
+  experiment: Experiment;
+  result: MetricResult;
+  fmt(x: number): string;
+}) {
+  const effects = mainEffects(
+    experiment.factors,
+    result.arms.map((a) => ({
+      variantKey: a.variantKey,
+      visitors: a.visitors,
+      conversions: a.converters,
+    })),
+  );
+  if (!effects.length) return null;
+  const better = (chance: number) => (result.lowerIsBetter ? 1 - chance : chance);
+
+  return (
+    <section className={styles.section} aria-labelledby="factors-h">
+      <h2 className={styles.title} id="factors-h">
+        {result.metric.name} by section
+      </h2>
+      <p className={styles.note}>
+        Each version pooled over every combination that shows it, compared with the section's
+        original.
+      </p>
+      {effects.map((levels) => {
+        const factor = levels[0]!.factor;
+        return (
+          <table key={factor.key} className={styles.table}>
+            <caption className={styles.caption}>{factor.name}</caption>
+            <thead>
+              <tr>
+                <th scope="col">Version</th>
+                <th scope="col" className={styles.r}>
+                  Visitors
+                </th>
+                <th scope="col" className={styles.r}>
+                  Conversions
+                </th>
+                <th scope="col" className={styles.r}>
+                  Conv. rate
+                </th>
+                <th scope="col" className={styles.r}>
+                  Uplift
+                </th>
+                <th scope="col" className={styles.r}>
+                  Chance to beat original
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {levels.map((e) => {
+                const level = factor.levels[e.levelIndex]!;
+                const chance = e.comparison ? better(e.comparison.chanceToWin) : undefined;
+                return (
+                  <tr key={level.key}>
+                    <th scope="row" style={{ textAlign: 'left', fontWeight: 400 }}>
+                      {level.name}
+                    </th>
+                    <td className={styles.r}>{number.format(e.arm.visitors)}</td>
+                    <td className={styles.r}>{number.format(e.arm.conversions)}</td>
+                    <td className={styles.r}>
+                      {e.arm.visitors ? fmt(e.arm.conversions / e.arm.visitors) : '—'}
+                    </td>
+                    <td className={styles.r}>
+                      <Uplift
+                        arm={{ comparison: e.comparison ?? undefined, chanceBetter: chance }}
+                      />
+                    </td>
+                    <td className={styles.r}>
+                      {chance !== undefined ? `${Math.round(chance * 100)}%` : '—'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        );
+      })}
+    </section>
+  );
 }
