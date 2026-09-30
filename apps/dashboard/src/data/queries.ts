@@ -1,4 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { MAX_VARIANTS } from '../lib/chartColors';
+import { evenWeights } from '../lib/experiments';
 import type { ConditionGroup } from '../lib/targeting';
 import type {
   Experiment,
@@ -12,6 +14,9 @@ import type {
   Role,
   SavedKind,
   SavedRules,
+  ExperimentType,
+  MvtFactor,
+  NewVariant,
   VariantPatch,
   VariantStats,
 } from './api';
@@ -193,7 +198,8 @@ export function useCreateExperiment(projectId: string) {
   const api = useData();
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (name: string) => api.createExperiment(projectId, name),
+    mutationFn: ({ name, type }: { name: string; type: ExperimentType }) =>
+      api.createExperiment(projectId, name, type),
     onSuccess: () => void client.invalidateQueries({ queryKey: keys.experiments(projectId) }),
   });
 }
@@ -229,9 +235,45 @@ export function useUpdateExperiment(experiment: Pick<Experiment, 'id' | 'project
   const client = useQueryClient();
   return useMutation({
     mutationFn: (patch: ExperimentPatch) => api.updateExperiment(experiment.id, patch),
-    onSuccess: (updated) => {
+    onSuccess: (updated, patch) => {
       client.setQueryData(keys.experiment(experiment.id), updated);
       void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
+      // A new primary goal changes what the results are measured on.
+      if ('primaryMetricId' in patch) {
+        void client.invalidateQueries({ queryKey: keys.results(experiment.id) });
+        void client.invalidateQueries({ queryKey: keys.experimentStats(experiment.projectId) });
+      }
+    },
+  });
+}
+
+/** Use a metric just created from an experiment's Goals step as its primary or a secondary goal. */
+export function useAttachGoal(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      experimentId,
+      metricId,
+      role,
+    }: {
+      experimentId: string;
+      metricId: string;
+      role: 'primary' | 'secondary';
+    }) => {
+      if (role === 'primary')
+        await api.updateExperiment(experimentId, { primaryMetricId: metricId });
+      else await api.setExperimentGoal(experimentId, metricId, 'secondary', null);
+    },
+    onSuccess: (_, { experimentId }) => {
+      for (const key of [
+        keys.experiment(experimentId),
+        keys.goals(experimentId),
+        keys.results(experimentId),
+        keys.experiments(projectId),
+        keys.experimentStats(projectId),
+      ])
+        void client.invalidateQueries({ queryKey: key });
     },
   });
 }
@@ -274,6 +316,20 @@ export function useUpdateVariants(experiment: Pick<Experiment, 'id' | 'projectId
   });
 }
 
+/** MVT: save the sections and regenerate the combination variants. */
+export function useSetMvt(experiment: Pick<Experiment, 'id' | 'projectId'>) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ factors, variants }: { factors: MvtFactor[]; variants: NewVariant[] }) =>
+      api.setMvt(experiment.id, factors, variants),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.experiment(experiment.id) });
+      void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
+    },
+  });
+}
+
 export function useVersionsQuery(variantId: string | undefined) {
   const api = useData();
   return useQuery({
@@ -306,16 +362,19 @@ export function useEditVariants(experiment: Experiment) {
     void client.invalidateQueries({ queryKey: keys.experiments(experiment.projectId) });
   };
   const add = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (name: string) => {
       const used = new Set(experiment.variants.map((v) => v.key));
-      const letter = 'bcdefghijklmnopqrstuvwxyz'.split('').find((l) => !used.has(l))!;
-      const even = Math.round((100 / (experiment.variants.length + 1)) * 100) / 100;
+      const letter = 'bcdefghijklmnopqrstuvwxyz'.split('').find((l) => !used.has(l));
+      if (!letter) throw new Error(`An experiment can have at most ${MAX_VARIANTS} variants.`);
+      const weights = evenWeights(experiment.variants.length + 1);
       await api.addVariant(experiment.id, {
         key: letter,
-        name: letter.toUpperCase(),
-        weight: even,
+        name: name.trim() || `Variant ${letter.toUpperCase()}`,
+        weight: weights[weights.length - 1]!,
       });
-      await Promise.all(experiment.variants.map((v) => api.updateVariant(v.id, { weight: even })));
+      await Promise.all(
+        experiment.variants.map((v, i) => api.updateVariant(v.id, { weight: weights[i]! })),
+      );
       return letter;
     },
     onSuccess: refresh,
@@ -323,9 +382,9 @@ export function useEditVariants(experiment: Experiment) {
   const remove = useMutation({
     mutationFn: async (variantId: string) => {
       const rest = experiment.variants.filter((v) => v.id !== variantId);
-      const even = Math.round((100 / rest.length) * 100) / 100;
+      const weights = evenWeights(rest.length);
       await api.deleteVariant(variantId);
-      await Promise.all(rest.map((v) => api.updateVariant(v.id, { weight: even })));
+      await Promise.all(rest.map((v, i) => api.updateVariant(v.id, { weight: weights[i]! })));
     },
     onSuccess: refresh,
   });

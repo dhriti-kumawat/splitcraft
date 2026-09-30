@@ -12,24 +12,28 @@ import {
 } from './context';
 import { clearForcedVariants, getForcedVariants, getPreviewToken, withForce } from './qa/force';
 import { loadGlobal } from './load';
-import type { BrowsingKind, MetricsModule, Vital } from './metrics/types';
+import type {
+  BrowsingKind,
+  DataLayerGoal,
+  MetricsModule,
+  TransactionGoal,
+  Vital,
+} from './metrics/types';
 import { loadQaPanel } from './qa/loader';
 import type { QaExperiment, QaSource, QaState } from './qa/types';
 import { injectStyles, onceInView, waitForElement } from './helpers';
 import { onRouteChange } from './router';
+import { nav, splitTarget } from './split';
 import { evaluateTargeting, waitForDataLayer, type Targeting } from './targeting';
 import {
   createQueue,
   createTracker,
   trackClicks,
-  trackDataLayer,
   trackPageviews,
   trackViews,
   runCustomTrackers,
   type ClickGoal,
   type CustomGoal,
-  type DataLayerGoal,
-  type TransactionGoal,
   type PageviewGoal,
   type TrackedEvent,
 } from './tracking';
@@ -41,6 +45,8 @@ export interface VariantConfig {
   weight: number;
   js?: string;
   css?: string;
+  /** Split URL tests: the page this variant lives on; the SDK redirects to it. */
+  url?: string;
 }
 
 export interface ExperimentConfig {
@@ -63,7 +69,7 @@ export interface ProjectConfig {
     custom?: CustomGoal[];
     datalayer?: DataLayerGoal[];
     transactions?: TransactionGoal[];
-    /** Loaded from the separate metrics bundle, only when present. */
+    /** These four load the separate metrics bundle, only when present. */
     browsing?: BrowsingKind[];
     vitals?: Vital[];
   };
@@ -81,7 +87,7 @@ export interface ProjectConfig {
 export interface StartOptions {
   /** URL of splitcraft-qa.iife.js, loaded only when variants are forced. */
   qaPanelUrl?: string;
-  /** URL of splitcraft-metrics.iife.js, loaded only for browsing / Web Vitals goals. */
+  /** URL of splitcraft-metrics.iife.js, loaded only for browsing, Web Vitals, dataLayer and transaction goals. */
   metricsUrl?: string;
   /** Reveal function from an anti-flicker hide started before the config loaded. */
   reveal?: () => void;
@@ -126,11 +132,6 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
       tracker.trackEvent(key, value === undefined ? undefined : { value }),
     ),
     trackViews(clickGoals, (key) => tracker.trackEvent(key)),
-    trackDataLayer(
-      config.goals?.datalayer ?? [],
-      config.goals?.transactions ?? [],
-      tracker.trackEvent,
-    ),
     trackPageviews(config.goals?.pageviews ?? [], (key) => tracker.trackEvent(key)),
     runCustomTrackers(config.goals?.custom ?? [], {
       waitForElement,
@@ -140,6 +141,9 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
       trackEvent: tracker.trackEvent,
     }),
   ];
+
+  // Set when a split URL variant sends this visitor elsewhere; the page stays hidden.
+  let redirect: string | null = null;
 
   const runExperiment = async (exp: ExperimentConfig, st: VisitorState): Promise<void> => {
     const t = exp.targeting;
@@ -177,10 +181,13 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
       qa.setExperiment(exp.key, null);
       return;
     }
-    applyVariant(
-      { experimentKey: exp.key, variantKey: variant.key, js: variant.js, css: variant.css },
-      { trackEvent: tracker.trackEvent },
-    );
+    const target = variant.url && splitTarget(variant.url, location.href);
+    if (target) redirect ??= target;
+    else
+      applyVariant(
+        { experimentKey: exp.key, variantKey: variant.key, js: variant.js, css: variant.css },
+        { trackEvent: tracker.trackEvent },
+      );
     if (tracker.exposure(exp.key, variant.key)) recordExposure(st, exp.key, Date.now());
     qa.setExperiment(exp.key, {
       key: exp.key,
@@ -200,12 +207,16 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
     qa.newPage(clickGoals.map((g) => g.key));
     await Promise.all(config.experiments.map((exp) => runExperiment(exp, state)));
     saveState(state);
+    if (redirect) {
+      queue.flush();
+      nav.go(redirect);
+    }
   };
 
   let lastUrl = location.href;
   let isReady = false;
   void run(document.referrer).finally(() => {
-    opts.reveal?.();
+    if (!redirect) opts.reveal?.();
     isReady = true;
     for (const fn of qa.listeners) fn();
   });
@@ -219,15 +230,19 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
     );
   }
 
-  const browsing = config.goals?.browsing ?? [];
-  const vitals = config.goals?.vitals ?? [];
-  if ((browsing.length || vitals.length) && opts.metricsUrl) {
+  const { browsing = [], vitals = [], datalayer = [], transactions = [] } = config.goals ?? {};
+  if (
+    (browsing.length || vitals.length || datalayer.length || transactions.length) &&
+    opts.metricsUrl
+  ) {
     loadGlobal<MetricsModule>(opts.metricsUrl, 'splitcraftMetrics')
       .then((m) =>
         stops.push(
           m.start({
             browsing,
             vitals,
+            datalayer,
+            transactions,
             track: tracker.trackEvent,
             session: () => ({ n: state.s?.n ?? 1, p: state.s?.p ?? 1 }),
           }),

@@ -16,6 +16,13 @@ export interface ExperimentSummary {
   visitorsPerDay: number;
 }
 
+/** An even split of 100% over `n` variants, in hundredths, adding up to exactly 100 (Control gets any remainder). */
+export function evenWeights(n: number): number[] {
+  if (n <= 0) return [];
+  const each = Math.floor(10000 / n);
+  return Array.from({ length: n }, (_, i) => (i === 0 ? 10000 - each * (n - 1) : each) / 100);
+}
+
 export function controlKey(exp: Experiment): string {
   return exp.variants.find((v) => v.key === 'control')?.key ?? exp.variants[0]?.key ?? 'control';
 }

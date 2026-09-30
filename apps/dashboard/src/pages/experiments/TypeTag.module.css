@@ -1,0 +1,25 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  font: 600 11px var(--font-mono);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  background: var(--surface);
+}
+
+.split_url {
+  border-color: transparent;
+  color: var(--variant-a);
+  background: var(--variant-a-soft);
+}
+
+.mvt {
+  border-color: transparent;
+  color: var(--warn);
+  background: var(--variant-b-soft);
+}

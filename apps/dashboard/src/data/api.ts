@@ -131,6 +131,24 @@ export interface NewProject {
 
 export type ExperimentStatus = 'draft' | 'live' | 'paused' | 'ended';
 
+/** A/B: code changes on one page. Split URL: each variant is its own page. MVT: every combination of section versions. */
+export type ExperimentType = 'ab' | 'split_url' | 'mvt';
+
+/** One version of an MVT section. The first version of each section is the original (no code). */
+export interface MvtLevel {
+  key: string;
+  name: string;
+  js: string;
+  css: string;
+}
+
+/** An MVT section (factor), e.g. "Headline", with its versions. */
+export interface MvtFactor {
+  key: string;
+  name: string;
+  levels: MvtLevel[];
+}
+
 export interface Variant {
   id: string;
   key: string;
@@ -138,6 +156,8 @@ export interface Variant {
   weight: number;
   js: string;
   css: string;
+  /** Split URL tests: the page this variant sends visitors to. Null for Control. */
+  url: string | null;
   version: number;
 }
 
@@ -148,6 +168,9 @@ export interface Experiment {
   name: string;
   hypothesis: string;
   status: ExperimentStatus;
+  type: ExperimentType;
+  /** MVT sections; empty for other types. Variants are generated from them. */
+  factors: MvtFactor[];
   trafficPct: number;
   targeting: StoredTargeting;
   primaryMetricId: string | null;
@@ -204,10 +227,13 @@ export type ExperimentPatch = Partial<
     | 'endedAt'
     | 'archivedAt'
     | 'previewUrl'
+    | 'factors'
   >
 >;
 
-export type VariantPatch = Partial<Pick<Variant, 'name' | 'weight' | 'js' | 'css'>>;
+export type VariantPatch = Partial<Pick<Variant, 'name' | 'weight' | 'js' | 'css' | 'url'>>;
+
+export type NewVariant = Pick<Variant, 'key' | 'name' | 'weight' | 'js' | 'css'>;
 
 export interface VariantVersion {
   id: string;
@@ -339,8 +365,8 @@ export interface DataApi {
   experimentStats(projectId: string): Promise<VariantStats[]>;
   /** Time of the project's most recent event, or null if it never sent one. */
   lastEventAt(projectId: string): Promise<string | null>;
-  /** Creates a draft with Control and B at 50/50. */
-  createExperiment(projectId: string, name: string): Promise<Experiment>;
+  /** Creates a draft with Control and B at 50/50 (A/B, split URL) or just Control (MVT). */
+  createExperiment(projectId: string, name: string, type?: ExperimentType): Promise<Experiment>;
   getExperiment(experimentId: string): Promise<Experiment | null>;
   updateExperiment(experimentId: string, patch: ExperimentPatch): Promise<Experiment>;
   /** A new draft with the same setup, variant code and goals. */
@@ -355,6 +381,11 @@ export interface DataApi {
     variant: { key: string; name: string; weight: number },
   ): Promise<void>;
   deleteVariant(variantId: string): Promise<void>;
+  /**
+   * MVT: save the sections and replace the variants with the given combinations.
+   * Variants kept by key keep their id (and code history).
+   */
+  setMvt(experimentId: string, factors: MvtFactor[], variants: NewVariant[]): Promise<void>;
   listMetrics(projectId: string): Promise<Metric[]>;
   createMetric(metric: Omit<Metric, 'id'>): Promise<Metric>;
   updateMetric(metricId: string, patch: Partial<Omit<Metric, 'id' | 'projectId'>>): Promise<Metric>;

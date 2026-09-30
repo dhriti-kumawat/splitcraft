@@ -44,7 +44,9 @@ export function GoalsPage() {
     ...(goals.data ?? []).map((g) => g.metric.id),
   ]);
   const unused = (metrics.data ?? []).filter((m) => !usedIds.has(m.id));
-  const locked = experiment.status !== 'draft';
+  const started = experiment.status !== 'draft';
+  const newMetric = (src: string, role: 'primary' | 'secondary') =>
+    `/p/${project.id}/metrics/new?source=${src}&experiment=${experiment.id}&role=${role}`;
   const failed = update.error ?? set.error ?? remove.error;
   const ids = { primary: useId(), secondary: useId(), guard: useId() };
 
@@ -67,9 +69,7 @@ export function GoalsPage() {
             <span className={styles.lbl} id={ids.primary}>
               Primary goal
             </span>
-            <span className={styles.lock}>
-              {locked ? 'Locked since launch' : 'Locks at launch'}
-            </span>
+            <span className={styles.lock}>Decides the winner</span>
           </div>
           {primary ? (
             <>
@@ -83,25 +83,32 @@ export function GoalsPage() {
               No primary goal yet. It decides the winner, so set it before launch.
             </span>
           )}
-          {!locked && (
-            <div className={styles.primaryRow}>
-              <label htmlFor={`${ids.primary}-select`} className={styles.sub}>
-                {primary ? 'Change to' : 'Choose'}
-              </label>
-              <select
-                id={`${ids.primary}-select`}
-                className={styles.select}
-                value={experiment.primaryMetricId ?? ''}
-                onChange={(e) => setPrimary(e.target.value)}
-              >
-                <option value="">Pick a metric…</option>
-                {(metrics.data ?? []).map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className={styles.primaryRow}>
+            <label htmlFor={`${ids.primary}-select`} className={styles.sub}>
+              {primary ? 'Change to' : 'Choose'}
+            </label>
+            <select
+              id={`${ids.primary}-select`}
+              className={styles.select}
+              value={experiment.primaryMetricId ?? ''}
+              onChange={(e) => setPrimary(e.target.value)}
+            >
+              <option value="">Pick a metric…</option>
+              {(metrics.data ?? []).map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+            <Link to={newMetric('click', 'primary')} className={styles.sub}>
+              or create a new metric
+            </Link>
+          </div>
+          {started && (
+            <span className={styles.detail}>
+              You can change it while the test runs or after it ends; results are recalculated.
+              Goals that weren't tracked before only have data from the change on.
+            </span>
           )}
         </section>
 
@@ -231,7 +238,7 @@ export function GoalsPage() {
         ].map((t) => (
           <Link
             key={t.name}
-            to={`/p/${project.id}/metrics/new?source=${t.source}`}
+            to={newMetric(t.source, primary ? 'secondary' : 'primary')}
             className={styles.goalType}
           >
             <span>
@@ -241,7 +248,8 @@ export function GoalsPage() {
           </Link>
         ))}
         <span className={styles.sub}>
-          Action and custom-event goals only count from launch. Add them before you launch.
+          A new metric becomes this test's {primary ? 'secondary' : 'primary'} goal. Action and
+          custom-event goals only count from launch, so add them before you launch.
         </span>
       </aside>
     </div>

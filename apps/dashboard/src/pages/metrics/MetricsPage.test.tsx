@@ -77,6 +77,23 @@ describe('click tracker', () => {
     });
   });
 
+  it('uses a metric created from an experiment as its primary goal and goes back', async () => {
+    const user = userEvent.setup();
+    const { router, patches } = await open(
+      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=primary',
+    );
+    await user.type(screen.getByLabelText('Name'), 'Reserve click');
+    await user.type(screen.getByLabelText(/CSS selector/), '.reserve-btn');
+    await user.click(await screen.findByRole('button', { name: 'Create and use as primary goal' }));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/trust/goals'),
+    );
+    expect(patches).toContainEqual({
+      id: 'trust',
+      patch: { primaryMetricId: expect.any(String) },
+    });
+  });
+
   it('saves click-through rate with what the SDK needs', async () => {
     const user = userEvent.setup();
     const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=click');

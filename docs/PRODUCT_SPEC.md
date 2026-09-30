@@ -42,11 +42,15 @@ Workspace (e.g. Acme Inc.; new accounts get their company name or "My workspace"
 
 1. **Basics**: name, hypothesis, traffic (% of matching visitors, split per variant),
    summaries of targeting and goals, sample-size card, pre-launch checklist.
+Each experiment has a type, picked when it's created: **A/B** (code changes), **Split URL**
+(each variant is its own page and the SDK redirects to it) or **Multivariate** (sections with
+versions; every combination becomes a variant and results add a main effect per section).
+
 2. **Variants & code**: Control (no code) + variants. Each variant has `variant.js` and
    `variant.css` in a Monaco editor, a template picker, built-in helpers list, save,
    version history, syntax check, "Preview on site" (opens the site with `?splitcraft_force=`).
 3. **Targeting**: WHO / WHERE / HOW / WHEN (see §4).
-4. **Goals**: one primary goal (locks at launch), any number of secondary goals,
+4. **Goals**: one primary goal (can change at any time; results are recalculated), any number of secondary goals,
    guardrails with auto-pause.
 5. **Results**: see §6.
 
@@ -194,11 +198,12 @@ segments(id, project_id, name, rules jsonb)          -- condition groups
 triggers(id, project_id, name, rules jsonb)
 page_sets(id, project_id, name, rules jsonb)
 metrics(id, project_id, name, event_key, source, source_config jsonb, measure, measure_config jsonb)
-experiments(id, project_id, key, name, hypothesis, status, traffic_pct,
+experiments(id, project_id, key, name, hypothesis, status, type, traffic_pct,
             targeting jsonb,   -- {who:{mode,segmentIds}, where:[...], how:{mode,rules}, when:{...}}
+            factors jsonb,     -- MVT sections: [{key, name, levels:[{key, name, js, css}]}]
             primary_metric_id, planned_sample, started_at, ended_at, archived_at)
 experiment_metrics(experiment_id, metric_id, role)   -- 'secondary' | 'guardrail', limit jsonb
-variants(id, experiment_id, key, name, weight, js, css, version)
+variants(id, experiment_id, key, name, weight, js, css, url, version)   -- url: split URL tests
 variant_versions(id, variant_id, js, css, note, created_at)
 events(id, project_id, visitor_id, experiment_id, variant_key, type, key, value, props jsonb, url, created_at)
   -- type: 'exposure' | 'goal' | 'ping'
@@ -211,7 +216,7 @@ events(id, project_id, visitor_id, experiment_id, variant_key, type, key, value,
 
 ## 11. Out of scope for v1
 
-Visual (point-and-click) editor · multivariate tests · server-side SDK · CUPED ·
+Visual (point-and-click) editor · server-side SDK · CUPED ·
 sequential testing · native mobile SDKs · preview Chrome extension (v1.1) ·
 custom formula metrics (removed in favour of event-source metrics; may return as
 "combine metrics").

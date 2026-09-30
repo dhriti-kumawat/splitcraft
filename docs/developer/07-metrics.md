@@ -43,9 +43,13 @@ navigation) as the value of each page's first click.
 
 ## Goals in an experiment
 
-- **Primary**: exactly one; it calls the winner. Set it before launch.
+- **Primary**: exactly one; it calls the winner. Set it before launch; you can change it at any
+  time, also while live or after the end, and results are recalculated for the new goal.
 - **Secondary**: any number; reported only.
 - **Guardrails**: a metric plus a limit (default: must not get worse by more than 2%). Crossing one
   with 95% confidence pauses the experiment automatically (see [Results](results)).
 
-Action and custom-event goals only count from launch: add them before you launch.
+Action and custom-event goals only count from launch (or from when they were added): add them
+before you launch. The goal types on the Goals step open the metric editor; the new metric then
+becomes the experiment's primary goal if it has none, otherwise a secondary goal, and you return
+to the experiment. The Goals step also has **or create a new metric** next to the primary goal.

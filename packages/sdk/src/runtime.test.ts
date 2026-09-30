@@ -3,6 +3,7 @@ import { boot, start, type ExperimentConfig, type ProjectConfig, type Runtime } 
 import { assignVariant } from './bucketing';
 import { removeVariant, styleId } from './apply';
 import type { QaSource } from './qa/types';
+import { nav } from './split';
 
 const exp = (overrides: Partial<ExperimentConfig> = {}): ExperimentConfig => ({
   key: 'trust',
@@ -321,6 +322,56 @@ describe('metrics bundle', () => {
       expect.objectContaining({ browsing: ['pages'], vitals: ['lcp'] }),
     );
     delete (window as unknown as { splitcraftMetrics?: unknown }).splitcraftMetrics;
+  });
+
+  it('loads for dataLayer and transaction goals too', async () => {
+    const started = vi.fn(() => () => {});
+    (window as unknown as { splitcraftMetrics?: unknown }).splitcraftMetrics = { start: started };
+    const datalayer = [{ key: 'cart', event: 'add_to_cart' }];
+    const transactions = [{ key: 'buy', event: 'purchase', valuePath: 'v', idPath: 'id' }];
+    runtime = start(
+      { ...config([exp()]), goals: { datalayer, transactions } },
+      { metricsUrl: '/m.js' },
+    );
+    await settle();
+    expect(started).toHaveBeenCalledWith(expect.objectContaining({ datalayer, transactions }));
+    delete (window as unknown as { splitcraftMetrics?: unknown }).splitcraftMetrics;
+  });
+});
+
+describe('split URL', () => {
+  const split = (url: string) =>
+    exp({
+      variants: [
+        { key: 'control', name: 'Control', weight: 0 },
+        { key: 'b', name: 'B', weight: 100, url },
+      ],
+    });
+
+  it('sends the exposure, then redirects with the query string, keeping the page hidden', async () => {
+    const go = vi.spyOn(nav, 'go').mockImplementation(() => {});
+    const reveal = vi.fn();
+    history.replaceState({}, '', '/trips/norway?utm_source=ad');
+    runtime = start(config([split('https://shop.test/trips/norway-b')]), { reveal });
+    await settle();
+    expect(go).toHaveBeenCalledWith('https://shop.test/trips/norway-b?utm_source=ad');
+    expect(reveal).not.toHaveBeenCalled();
+    expect(beacon).toHaveBeenCalled();
+    expect(await sentEvents()).toEqual([
+      expect.objectContaining({ type: 'exposure', experimentKey: 'trust', variantKey: 'b' }),
+    ]);
+  });
+
+  it('does not redirect on the variant page itself', async () => {
+    const go = vi.spyOn(nav, 'go').mockImplementation(() => {});
+    const reveal = vi.fn();
+    runtime = start(config([split('/trips/norway')]), { reveal });
+    await settle();
+    expect(go).not.toHaveBeenCalled();
+    expect(reveal).toHaveBeenCalled();
+    expect(await sentEvents()).toEqual([
+      expect.objectContaining({ type: 'exposure', variantKey: 'b' }),
+    ]);
   });
 });
 

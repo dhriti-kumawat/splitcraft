@@ -9,9 +9,12 @@ import {
 } from '../../data/queries';
 import { controlKey } from '../../lib/experiments';
 import { syntaxError } from '../../lib/launch';
-import { MAX_VARIANTS } from '../../lib/chartColors';
 import { useExperiment } from './experimentContext';
+import { AddVariant } from './AddVariant';
+import { MvtVariants } from './MvtVariants';
+import { SplitUrlVariants } from './SplitUrlVariants';
 import { TemplatePicker } from './TemplatePicker';
+import { TrafficSplit } from './TrafficSplit';
 import styles from './VariantsPage.module.css';
 
 const COLORS = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
@@ -35,8 +38,16 @@ const date = new Intl.DateTimeFormat('en-GB', {
   minute: '2-digit',
 });
 
-/** Experiment step 2: variants and their JS/CSS (13-exp-step2-variant-code.html). */
+/** Experiment step 2: what each variant changes, by test type. */
 export function VariantsPage() {
+  const { experiment } = useExperiment();
+  if (experiment.type === 'split_url') return <SplitUrlVariants />;
+  if (experiment.type === 'mvt') return <MvtVariants />;
+  return <CodeVariants />;
+}
+
+/** A/B tests: variants and their JS/CSS (13-exp-step2-variant-code.html). */
+function CodeVariants() {
   const { experiment } = useExperiment();
   const control = controlKey(experiment);
   const [selectedId, setSelectedId] = useState(
@@ -44,10 +55,18 @@ export function VariantsPage() {
   );
   // Unsaved edits per variant, kept while switching between variants.
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  // A variant just added: selected once it shows up in the refreshed experiment.
+  const [addedKey, setAddedKey] = useState<string | null>(null);
   const [file, setFile] = useState<'js' | 'css'>('js');
-  const selected = experiment.variants.find((v) => v.id === selectedId) ?? experiment.variants[0]!;
+  const selected =
+    (addedKey && experiment.variants.find((v) => v.key === addedKey)) ||
+    experiment.variants.find((v) => v.id === selectedId) ||
+    experiment.variants[0]!;
+  const select = (id: string) => {
+    setAddedKey(null);
+    setSelectedId(id);
+  };
   const edits = useEditVariants(experiment);
-  const isDraftExp = experiment.status === 'draft';
 
   const current: Draft = drafts[selected.id] ?? { js: selected.js, css: selected.css };
   const dirty = (v: Variant) => {
@@ -71,7 +90,7 @@ export function VariantsPage() {
                   type="button"
                   className={styles.variant}
                   aria-current={v.id === selected.id ? 'true' : undefined}
-                  onClick={() => setSelectedId(v.id)}
+                  onClick={() => select(v.id)}
                 >
                   <span className={styles.variantName}>
                     <span
@@ -91,18 +110,11 @@ export function VariantsPage() {
             );
           })}
         </ul>
-        <button
-          type="button"
-          className={styles.add}
-          disabled={
-            !isDraftExp || experiment.variants.length >= MAX_VARIANTS || edits.add.isPending
-          }
-          onClick={() => edits.add.mutate(undefined)}
-          title={isDraftExp ? undefined : 'Variants can only be added before launch'}
-        >
-          + Add variant
-        </button>
-        {edits.add.isError && <span className={styles.note}>{edits.add.error.message}</span>}
+        <AddVariant
+          experiment={experiment}
+          buttonClassName={styles.add}
+          onAdded={(key) => setAddedKey(key)}
+        />
       </section>
 
       <Editor
@@ -130,7 +142,7 @@ export function VariantsPage() {
             experiment={experiment}
             variant={selected}
             onDeleted={() =>
-              setSelectedId(
+              select(
                 experiment.variants.find((v) => v.key !== control && v.id !== selected.id)?.id ??
                   experiment.variants[0]!.id,
               )
@@ -138,6 +150,9 @@ export function VariantsPage() {
             remove={edits.remove}
           />
         )}
+        <section className={styles.card} aria-label="Traffic split">
+          <TrafficSplit experiment={experiment} />
+        </section>
         <section className={styles.card} aria-labelledby="helpers-h">
           <h2 className={styles.cardTitle} id="helpers-h">
             Built-in helpers

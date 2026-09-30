@@ -158,6 +158,23 @@ describe('new experiment', () => {
     );
   });
 
+  it('creates a split URL or multivariate test when picked', async () => {
+    const user = userEvent.setup();
+    const { router, experimentsNow } = await open();
+    await user.click(
+      within(screen.getByRole('banner')).getByRole('button', { name: 'New experiment' }),
+    );
+    const dialog = screen.getByRole('dialog', { name: 'New experiment' });
+    expect(within(dialog).getByRole('radio', { name: /A\/B test/ })).toBeChecked();
+    await user.type(within(dialog).getByLabelText('Name'), 'Headline and hero');
+    await user.click(within(dialog).getByRole('radio', { name: /Multivariate test/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Create draft' }));
+    await vi.waitFor(() => expect(router.state.location.pathname).toMatch(/exp-1\/basics$/));
+    const created = experimentsNow().find((e) => e.id === 'exp-1')!;
+    expect(created.type).toBe('mvt');
+    expect(created.variants.map((v) => v.key)).toEqual(['control']);
+  });
+
   it('closes with Escape and returns focus', async () => {
     const user = userEvent.setup();
     await open();

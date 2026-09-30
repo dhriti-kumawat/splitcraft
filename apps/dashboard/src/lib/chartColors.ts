@@ -5,5 +5,11 @@
 // grey in a chart (chroma below the floor).
 export const SERIES = ['#355E9C', '#D97A2B', '#0B7A5E', '#9C4FA8'] as const;
 
-/** Most variants an experiment can have, so every series keeps a validated colour. */
-export const MAX_VARIANTS = SERIES.length;
+/** Rows past the fourth (MVT combinations) get a neutral swatch and stay out of charts. */
+export const seriesColor = (i: number): string => SERIES[i] ?? '#8A918B';
+
+/**
+ * Most variants an A/B or split URL test can have: Control plus keys b to z. Charts show
+ * Control and the three leading variants, so every charted series keeps a validated colour.
+ */
+export const MAX_VARIANTS = 26;

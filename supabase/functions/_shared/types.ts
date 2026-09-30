@@ -32,7 +32,14 @@ export interface ConfigSource {
     trafficPct: number;
     targeting: StoredTargeting;
     metricIds: string[];
-    variants: Array<{ key: string; name: string; weight: number; js: string; css: string }>;
+    variants: Array<{
+      key: string;
+      name: string;
+      weight: number;
+      js: string;
+      css: string;
+      url?: string | null;
+    }>;
   }>;
   segments: Record<string, ConditionGroup>;
   metrics: Array<{ id: string; eventKey: string; source: string; sourceConfig: Json }>;
@@ -47,7 +54,14 @@ export interface SdkProjectConfig {
     key: string;
     name: string;
     trafficPct: number;
-    variants: Array<{ key: string; name: string; weight: number; js?: string; css?: string }>;
+    variants: Array<{
+      key: string;
+      name: string;
+      weight: number;
+      js?: string;
+      css?: string;
+      url?: string;
+    }>;
     targeting: {
       who?: ConditionGroup[];
       where?: Json;

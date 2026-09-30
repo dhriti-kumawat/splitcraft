@@ -94,3 +94,36 @@ describe('test page', () => {
     );
   });
 });
+
+describe('launch checks by test type', () => {
+  it('split URL: every variant needs a URL and WHERE must be limited', () => {
+    const split = { ...draft, type: 'split_url' as const };
+    expect(variantsReady(split)).toBe(false);
+    const withUrl = {
+      ...split,
+      variants: split.variants.map((v) =>
+        v.key === 'b' ? { ...v, url: 'https://mytrips.dev/b' } : v,
+      ),
+    };
+    expect(variantsReady(withUrl)).toBe(true);
+    const where = (exp: typeof withUrl) =>
+      launchChecks(exp, project, true).find((c) => c.id === 'where');
+    expect(where(withUrl)).toMatchObject({ ok: false, blocking: true });
+    expect(
+      where({ ...withUrl, targeting: { where: { include: [{ op: 'is', value: '/a' }] } } }),
+    ).toMatchObject({ ok: true });
+    expect(launchChecks(draft, project, true).some((c) => c.id === 'where')).toBe(false);
+  });
+
+  it('MVT: combinations may be empty of code but must parse', () => {
+    const mvt = { ...draft, type: 'mvt' as const };
+    expect(variantsReady(mvt)).toBe(true);
+    expect(variantsReady({ ...mvt, variants: [mvt.variants[0]!] })).toBe(false);
+    expect(
+      variantsReady({
+        ...mvt,
+        variants: mvt.variants.map((v) => (v.key === 'b' ? { ...v, js: 'if (' } : v)),
+      }),
+    ).toBe(false);
+  });
+});

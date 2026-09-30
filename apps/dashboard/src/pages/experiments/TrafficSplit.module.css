@@ -1,0 +1,95 @@
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inputWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.input {
+  width: 64px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font: 400 13px var(--font-mono);
+  text-align: right;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 107, 87, 0.14);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.input:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.even {
+  align-self: flex-start;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: 600 13px var(--font-ui);
+  color: var(--accent);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.even:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.error {
+  font-size: 12.5px;
+  color: var(--danger);
+}

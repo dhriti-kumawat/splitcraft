@@ -38,8 +38,42 @@ describe('variants list', () => {
     const user = userEvent.setup();
     const { variantPatches } = await open();
     await user.click(screen.getByRole('button', { name: '+ Add variant' }));
-    expect(await screen.findByRole('button', { name: /^C0 lines/ })).toBeInTheDocument();
-    expect(variantPatches.map((p) => p.patch)).toEqual([{ weight: 33.33 }, { weight: 33.33 }]);
+    const name = screen.getByRole('textbox', { name: 'New variant name' });
+    expect(name).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+    await user.type(name, 'Price first{Enter}');
+    const added = await screen.findByRole('button', { name: /^Price first0 lines/ });
+    // The new variant opens in the editor, and the split is even again.
+    expect(added).toHaveAttribute('aria-current', 'true');
+    expect(variantPatches.map((p) => p.patch)).toEqual([{ weight: 33.34 }, { weight: 33.33 }]);
+    expect(screen.getByRole('textbox', { name: 'Price first %' })).toHaveValue('33.33');
+  });
+
+  it('adds more than three variants and lets the split be changed', async () => {
+    const user = userEvent.setup();
+    const { experimentsNow } = await open();
+    for (const n of ['C one', 'D one', 'E one', 'F one']) {
+      await user.click(screen.getByRole('button', { name: '+ Add variant' }));
+      await user.type(screen.getByRole('textbox', { name: 'New variant name' }), `${n}{Enter}`);
+      // The form closes once the variant is added and the split saved.
+      await vi.waitFor(() =>
+        expect(screen.queryByRole('textbox', { name: 'New variant name' })).toBeNull(),
+      );
+      await screen.findByRole('button', { name: new RegExp(`^${n}0 lines`) });
+    }
+    const weights = () =>
+      experimentsNow()
+        .find((e) => e.id === 'trust')!
+        .variants.map((v) => v.weight);
+    expect(weights()).toEqual([16.7, 16.66, 16.66, 16.66, 16.66, 16.66]);
+
+    const control = screen.getByRole('textbox', { name: 'Control %' });
+    await user.clear(control);
+    await user.type(control, '50');
+    await user.tab();
+    expect(screen.getByText(/must add up to 100% \(now 133.3%\)/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Split evenly' }));
+    await vi.waitFor(() => expect(weights()).toEqual([16.7, 16.66, 16.66, 16.66, 16.66, 16.66]));
   });
 
   it('does not add variants once started', async () => {

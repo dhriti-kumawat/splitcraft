@@ -1,6 +1,8 @@
 /** Browsing measures (PRODUCT_SPEC §5), each sent under a fixed event key. */
 export type BrowsingKind = 'engaged' | 'pages' | 'time' | 'return';
 export type Vital = 'lcp' | 'inp' | 'cls';
+export type { DataLayerGoal, TransactionGoal } from './dataLayerGoals';
+import type { DataLayerGoal, TransactionGoal } from './dataLayerGoals';
 
 export const BROWSING_KEYS: Record<BrowsingKind, string> = {
   engaged: 'browse.engaged',
@@ -13,7 +15,9 @@ export interface MetricsModule {
   start(opts: {
     browsing: BrowsingKind[];
     vitals: Vital[];
-    track(key: string, props?: { value?: number }): void;
+    datalayer: DataLayerGoal[];
+    transactions: TransactionGoal[];
+    track(key: string, props?: { value?: number; [k: string]: unknown }): void;
     /** Current session: number (1 = first visit) and pages viewed so far. */
     session(): { n: number; p: number };
   }): () => void;

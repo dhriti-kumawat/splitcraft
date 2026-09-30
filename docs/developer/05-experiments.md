@@ -1,6 +1,6 @@
 ---
 title: Experiments
-description: The five steps, variant code, previews, launching, and the experiment lifecycle.
+description: Test types, the five steps, variant code, previews, launching, and the experiment lifecycle.
 ---
 
 # Experiments
@@ -8,12 +8,45 @@ description: The five steps, variant code, previews, launching, and the experime
 An experiment belongs to a project and has a unique **key** (made from its name, e.g.
 `sticky-book-now-bar`). The key is what the SDK, QA links and the npm hook use.
 
+## Test types
+
+Pick the type in **New experiment**. It can't change later; duplicate the experiment instead.
+
+| Type              | Variants are                                         | Use it for                                  |
+| ----------------- | ---------------------------------------------------- | ------------------------------------------- |
+| A/B test          | JS and CSS that change the page                      | One idea, such as a sticky Book button      |
+| Split URL test    | Separate page URLs; the SDK redirects to them        | Redesigned pages, different page templates  |
+| Multivariate test | Every combination of section versions (generated)    | Several changes at once, to find the best mix |
+
+### Split URL tests
+
+- Step 2 (**Variant pages**) takes one URL per variant, as a path or a full URL on one of the
+  project's domains. Control is the original page.
+- Limit the **WHERE** rules to the original page. Launch is blocked until you do, because otherwise
+  every page would redirect.
+- A visitor bucketed into a variant is sent there with `location.replace`, after the exposure is
+  queued. The page stays hidden until then, the query string (UTM tags, QA parameters) and hash are
+  kept, and nothing happens when the visitor is already on that page.
+- Install the snippet on the variant pages too, so goals count there.
+
+### Multivariate tests (MVT)
+
+- Step 2 (**Sections**) holds up to 3 sections (for example Headline, Hero image, Button), each with
+  up to 4 versions. The first version of each section is the original page; the others get JS and CSS.
+- **Save and build combinations** creates one variant per combination (the full factorial, at most
+  16) with equal weights. All originals is Control. Keys are `v` plus one digit per section, so
+  `v10` is version 2 of section 1 with the original of section 2. Each version's code runs in its
+  own block, so versions can reuse variable names.
+- Sections and versions can only be added or removed in a draft; code can change while live.
+- Results list every combination, best first, and add a table per section: each version pooled over
+  all combinations that show it, compared with that section's original (the main effect).
+
 ## The five steps
 
 | Step            | What you set                                                                            |
 | --------------- | --------------------------------------------------------------------------------------- |
 | 1 Basics        | Name, hypothesis, **test page**, traffic split, sample-size planner, launch checklist   |
-| 2 Variants & code | Variants with weights, JS and CSS per variant, templates, version history             |
+| 2 Variants      | A/B: JS and CSS per variant, templates, version history. Split URL: a page per variant. MVT: sections and versions |
 | 3 Targeting     | WHO / WHERE / HOW / WHEN, evaluation settings, reach estimate, URL tester (see [Targeting](targeting)) |
 | 4 Goals         | One primary goal, secondary goals, guardrails (see [Metrics](metrics))                  |
 | 5 Results       | Verdict, uplift and range, chance to win, SRM, cumulative chart (see [Results](results)) |
@@ -42,12 +75,20 @@ A step shows a tick when it's done.
   promo banner, sticky bar, reorder sections, image swap, trust row, hide element). If the variant
   already has code, you choose to replace it or add the template below.
 - The editor checks syntax as you type; saving keeps the previous code as a version you can restore.
-- Weights set the split (e.g. 50 / 50); **traffic** (Basics) sets how many matching visitors enter at all.
+- **+ Add variant** asks for the variant's name first. An experiment can have up to 26 variants
+  (Control plus keys `b` to `z`); names can be changed later, keys can't.
+- **Traffic split** (on Basics and next to the variants) sets each variant's share. Adding or
+  removing a variant splits traffic evenly again; change any share afterwards, as long as they add
+  up to 100%, or use **Split evenly**. The split locks at launch. **Traffic** (Basics) sets how many
+  matching visitors enter at all.
+- With more than four variants, results list them best first and chart Control and the three
+  leading variants.
 
 ## Launching
 
 **Launch experiment** is enabled when the checklist passes: the snippet is installed, a primary goal
-is set, and variant code is saved without errors. The checklist also reminds you to preview on the
+is set, and variant code is saved without errors (split URL: every variant has a URL and WHERE is
+limited; MVT: at least one section with a new version). The checklist also reminds you to preview on the
 site first (recommended, not required). While live:
 
 - **Pause** stops showing variants (visitors see the original) and **Resume** restarts.

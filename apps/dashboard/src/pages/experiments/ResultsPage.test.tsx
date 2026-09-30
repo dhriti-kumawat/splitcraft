@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { fakeData, RESULTS } from '../../test/fakeData';
+import { EXPERIMENTS, fakeData, RESULTS } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(id = 'sticky', data = fakeData()) {
@@ -107,5 +107,56 @@ describe('breakdown', () => {
       await screen.findByRole('region', { name: 'Book click by traffic source' }),
     ).toBeInTheDocument();
     expect(await screen.findByRole('row', { name: /Organic search/ })).toBeInTheDocument();
+  });
+});
+
+describe('MVT results', () => {
+  it('ranks combinations and shows each section version pooled', async () => {
+    const lvl = (key: string, name: string) => ({ key, name, js: '', css: '' });
+    const factors = [
+      { key: 's1', name: 'Headline', levels: [lvl('a', 'Original'), lvl('b', 'Short')] },
+      { key: 's2', name: 'Button', levels: [lvl('a', 'Original'), lvl('b', 'Green')] },
+    ];
+    const keys = ['control', 'v01', 'v10', 'v11'];
+    const conv = { control: 100, v01: 100, v10: 160, v11: 170 } as Record<string, number>;
+    const base = EXPERIMENTS.find((e) => e.id === 'sticky')!;
+    const mvt = {
+      ...base,
+      type: 'mvt' as const,
+      factors,
+      variants: keys.map((key) => ({
+        ...base.variants[0]!,
+        id: `sticky-${key}`,
+        key,
+        name: key,
+        weight: 25,
+      })),
+    };
+    const arm = (variantKey: string) => ({
+      metricId: 'm-book',
+      variantKey,
+      visitors: 2000,
+      converters: conv[variantKey]!,
+      events: conv[variantKey]!,
+      eventsSumsq: 0,
+      valueSum: 0,
+      valueSumsq: 0,
+      viewers: 0,
+    });
+    await open(
+      'sticky',
+      fakeData({
+        experiments: EXPERIMENTS.map((e) => (e.id === 'sticky' ? mvt : e)),
+        results: { sticky: keys.map(arm) },
+      }),
+    );
+    const byVariant = await screen.findByRole('region', { name: 'Book click by variant' });
+    const names = within(byVariant)
+      .getAllByRole('rowheader')
+      .map((r) => r.textContent);
+    expect(names).toEqual(['control', 'v11', 'v10', 'v01']);
+    const headline = screen.getByRole('table', { name: 'Headline' });
+    expect(within(headline).getByRole('row', { name: /Short/ })).toHaveTextContent('4,000');
+    expect(within(headline).getByRole('row', { name: /Short/ })).toHaveTextContent('330');
   });
 });
