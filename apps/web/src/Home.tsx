@@ -124,7 +124,7 @@ function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={`${styles.wrap} ${styles.heroInner}`}>
-        <div className={`${styles.heroText} ${styles.rise}`}>
+        <div className={styles.heroText}>
           <span className={styles.badge}>
             <span className={`${styles.chip} ${styles.new}`}>New</span>
             Reach estimates and automatic guardrail pauses
@@ -157,7 +157,7 @@ function Hero() {
             </li>
           </ul>
         </div>
-        <div className={`${styles.shotWrap} ${styles.rise} ${styles.delay}`}>
+        <div className={styles.shotWrap}>
           <ProductShot />
         </div>
       </div>
@@ -1033,76 +1033,105 @@ function ResultCard() {
 }
 
 function HowItWorks() {
-  const steps = [
-    [
-      'Install the snippet',
-      'Paste one script tag or add it through GTM. Splitcraft confirms the install on the first page view.',
-    ],
-    [
-      'Build and QA the variant',
-      'Write the change, set who sees it, pick a goal, then force it on your own screen to check it.',
-    ],
-    [
-      'Launch and read the result',
-      'Watch it reach its planned sample, then ship the winner or learn from the loss.',
-    ],
-  ];
   return (
     <section
       id="how"
       className={`${styles.wrap} ${styles.section} ${styles.how}`}
       aria-labelledby="how-title"
     >
-      <div className={`${styles.stackCol} ${styles.intro}`}>
-        <span className={styles.eyebrow}>How it works</span>
-        <h2 className={styles.h2} id="how-title">
-          Live in an afternoon.
-        </h2>
+      <div className={styles.sectionHead}>
+        <div className={styles.stackCol}>
+          <span className={styles.eyebrow}>How it works</span>
+          <h2 className={styles.h2} id="how-title">
+            Live in an afternoon.
+          </h2>
+        </div>
+        <p className={styles.lede} style={{ maxWidth: 420, fontSize: 17 }}>
+          Three steps from an empty project to a test real visitors see. No release, no ticket
+          queue.
+        </p>
       </div>
-      <ol className={styles.cards3} style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {steps.map(([title, text], i) => (
-          <li key={title} className={`${styles.card} ${styles.soft}`}>
-            <span
-              className={`${styles.stepNum} ${i === 2 ? styles.stepLast : ''}`}
-              aria-hidden="true"
-            >
-              {i + 1}
+      <ol className={styles.steps}>
+        <li className={styles.step}>
+          <div className={styles.stepHead}>
+            <span className={styles.stepNum} aria-hidden="true">
+              1
             </span>
-            <h3 className={styles.cardTitle}>{title}</h3>
-            <p className={styles.cardText}>{text}</p>
-          </li>
-        ))}
+            <span className={styles.stepTime}>About 5 minutes</span>
+          </div>
+          <h3 className={styles.cardTitle}>Install the snippet</h3>
+          <p className={styles.cardText}>
+            Paste one script tag or add it through GTM. Splitcraft confirms the install on the first
+            page view.
+          </p>
+          <div className={styles.stepArt} aria-hidden="true">
+            <code>
+              &lt;script src=&quot;…/sdk/v1.js&quot;{'\n'}
+              {'  '}data-project=&quot;prj_…&quot; async&gt;
+            </code>
+          </div>
+        </li>
+        <li className={styles.step}>
+          <div className={styles.stepHead}>
+            <span className={styles.stepNum} aria-hidden="true">
+              2
+            </span>
+            <span className={styles.stepTime}>An hour or two</span>
+          </div>
+          <h3 className={styles.cardTitle}>Build and QA the variant</h3>
+          <p className={styles.cardText}>
+            Write the change, set who sees it, pick a goal, then force it on your own screen to
+            check it.
+          </p>
+          <div className={`${styles.stepArt} ${styles.stepChips}`} aria-hidden="true">
+            <span>WHERE /trips/*</span>
+            <span>WHO mobile</span>
+            <span>Goal: Book click</span>
+          </div>
+        </li>
+        <li className={styles.step}>
+          <div className={styles.stepHead}>
+            <span className={`${styles.stepNum} ${styles.stepLast}`} aria-hidden="true">
+              3
+            </span>
+            <span className={styles.stepTime}>Until the planned sample</span>
+          </div>
+          <h3 className={styles.cardTitle}>Launch and read the result</h3>
+          <p className={styles.cardText}>
+            Watch it reach its planned sample, then ship the winner or learn from the loss.
+          </p>
+          <div className={`${styles.stepArt} ${styles.stepResult}`} aria-hidden="true">
+            <span>B vs Control</span>
+            <b>+9.7%</b>
+            <span>96% chance to win</span>
+          </div>
+        </li>
       </ol>
     </section>
   );
 }
 
 function Cta() {
-  // 00-home.html: a green banner, text left and buttons right.
+  // 00-home.html's call to action, text left and buttons right, as a full-width band
+  // that leads straight into the footer.
   return (
-    // Sits on the edge of the dark footer, so there is no empty band around it.
     <section id="start" className={styles.ctaBand} aria-labelledby="cta-title">
-      <div className={`${styles.wrap} ${styles.ctaWrap}`}>
-        <div className={styles.cta}>
-          <div className={`${styles.stackCol} ${styles.ctaText}`}>
-            <h2 className={`${styles.h2} ${styles.ctaTitle}`} id="cta-title">
-              Run your first test today.
-            </h2>
-            <p className={`${styles.lede} ${styles.ctaLede}`}>
-              Free up to 100,000 events a month. No card needed.
-            </p>
-          </div>
-          <div className={styles.ctaActions}>
-            <a
-              className={`${styles.primary} ${styles.ctaPrimary}`}
-              href={`${DASHBOARD_URL}/signup`}
-            >
-              Start free
-            </a>
-            <a className={`${styles.secondary} ${styles.ctaSecondary}`} href={GITHUB_URL}>
-              View on GitHub
-            </a>
-          </div>
+      <div className={`${styles.wrap} ${styles.cta}`}>
+        <div className={`${styles.stackCol} ${styles.ctaText}`}>
+          <h2 className={`${styles.h2} ${styles.ctaTitle}`} id="cta-title">
+            Run your first test today.
+          </h2>
+          <p className={`${styles.lede} ${styles.ctaLede}`}>
+            Free up to 100,000 events a month. No card needed.
+          </p>
+        </div>
+        <div className={styles.ctaActions}>
+          <a className={`${styles.primary} ${styles.ctaPrimary}`} href={`${DASHBOARD_URL}/signup`}>
+            Start free
+          </a>
+          <a className={`${styles.secondary} ${styles.ctaSecondary}`} href={GITHUB_URL}>
+            View on GitHub
+          </a>
         </div>
       </div>
     </section>
