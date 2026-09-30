@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { CodeEditor } from '../../components/CodeEditor';
 import type { Experiment, Variant } from '../../data/api';
 import {
@@ -10,8 +10,8 @@ import {
 import { controlKey } from '../../lib/experiments';
 import { syntaxError } from '../../lib/launch';
 import { MAX_VARIANTS } from '../../lib/chartColors';
-import { TEMPLATES } from '../../lib/templates';
 import { useExperiment } from './experimentContext';
+import { TemplatePicker } from './TemplatePicker';
 import styles from './VariantsPage.module.css';
 
 const COLORS = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
@@ -184,7 +184,6 @@ function Editor({
   const save = useSaveVariantCode(experiment);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuButton = useRef<HTMLButtonElement>(null);
   const tabId = useId();
   const readOnly = experiment.status === 'ended';
   const dirty = code.js !== variant.js || code.css !== variant.css;
@@ -246,44 +245,14 @@ function Editor({
         </div>
         <div className={styles.barActions}>
           {!readOnly && (
-            <div className={styles.templateMenu}>
-              <button
-                ref={menuButton}
-                type="button"
-                className={styles.darkButton}
-                aria-expanded={menuOpen}
-                aria-haspopup="true"
-                onClick={() => setMenuOpen((o) => !o)}
-                onKeyDown={(e) => e.key === 'Escape' && setMenuOpen(false)}
-              >
-                Template
-              </button>
-              {menuOpen && (
-                <ul className={styles.menu} aria-label="Templates">
-                  {TEMPLATES.map((t) => (
-                    <li key={t.id}>
-                      <button
-                        type="button"
-                        className={styles.menuItem}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Escape') {
-                            setMenuOpen(false);
-                            menuButton.current?.focus();
-                          }
-                        }}
-                        onClick={() => {
-                          onChange({ js: t.js, css: t.css });
-                          setMenuOpen(false);
-                          menuButton.current?.focus();
-                        }}
-                      >
-                        {t.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <button
+              type="button"
+              className={styles.darkButton}
+              aria-haspopup="dialog"
+              onClick={() => setMenuOpen(true)}
+            >
+              Template
+            </button>
           )}
           <button
             type="button"
@@ -339,6 +308,23 @@ function Editor({
         >
           This experiment is live: saved code reaches visitors within about a minute.
         </p>
+      )}
+      {menuOpen && (
+        <TemplatePicker
+          hasCode={Boolean(code.js.trim() || code.css.trim())}
+          onClose={() => setMenuOpen(false)}
+          onPick={(t, mode) => {
+            onChange(
+              mode === 'append'
+                ? {
+                    js: [code.js.trimEnd(), t.js].filter(Boolean).join('\n\n'),
+                    css: [code.css.trimEnd(), t.css].filter(Boolean).join('\n\n'),
+                  }
+                : { js: t.js, css: t.css },
+            );
+            setMenuOpen(false);
+          }}
+        />
       )}
     </section>
   );
