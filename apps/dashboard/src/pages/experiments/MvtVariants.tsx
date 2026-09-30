@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { CodeEditor } from '../../components/CodeEditor';
 import type { MvtFactor, MvtLevel } from '../../data/api';
 import { useSetMvt } from '../../data/queries';
@@ -13,9 +13,9 @@ const LEVEL_KEYS = 'abcdefgh';
 const original = (): MvtLevel => ({ key: 'a', name: 'Original', js: '', css: '' });
 
 /**
- * Experiment step 2 for multivariate tests: sections (factors), each with versions
- * (levels). Saving generates one variant per combination; the first version of each
- * section is the original page.
+ * Experiment step 2 for multivariate tests: sections (factors), each with variations
+ * (levels). A new section starts with only its original; the user adds and names
+ * variations. Saving generates one variant per combination.
  */
 export function MvtVariants() {
   const { experiment } = useExperiment();
@@ -27,8 +27,8 @@ export function MvtVariants() {
       : null,
   );
   const [file, setFile] = useState<'js' | 'css'>('js');
-  // Name field to focus after adding a section or version, so it gets a real name.
-  const [focusName, setFocusName] = useState<'section' | 'version' | null>(null);
+  // A new section's name is focused and selected, so it gets a real name.
+  const [focusName, setFocusName] = useState<'section' | null>(null);
   const selectOnMount = (el: HTMLInputElement | null) => {
     if (el && document.activeElement !== el) {
       el.focus();
@@ -75,21 +75,17 @@ export function MvtVariants() {
       {
         key,
         name: `Section ${n}`,
-        levels: [original(), { key: 'b', name: 'Version B', js: '', css: '' }],
+        levels: [original()],
       },
     ]);
-    setSel({ f: factors.length, l: 1 });
+    setSel({ f: factors.length, l: 0 });
     setFocusName('section');
   };
-  const addLevel = (fi: number) => {
+  const addLevel = (fi: number, name: string) => {
     const f = factors[fi]!;
     const key = LEVEL_KEYS[f.levels.length]!;
-    edit(fi, (x) => ({
-      ...x,
-      levels: [...x.levels, { key, name: `Version ${key.toUpperCase()}`, js: '', css: '' }],
-    }));
+    edit(fi, (x) => ({ ...x, levels: [...x.levels, { key, name, js: '', css: '' }] }));
     setSel({ f: fi, l: f.levels.length });
-    setFocusName('version');
   };
   const removeLevel = (fi: number, li: number) => {
     edit(fi, (x) => ({
@@ -121,7 +117,7 @@ export function MvtVariants() {
         {factors.length === 0 && (
           <p className={own.empty}>
             Add a section for each part of the page you want to change, such as the headline or the
-            main button. Give each section one or more new versions.
+            main button. Then add variations to each section.
           </p>
         )}
         <ul className={own.sections}>
@@ -156,28 +152,19 @@ export function MvtVariants() {
               <ul className={styles.variantList}>
                 {f.levels.map((l, li) => (
                   <li key={l.key}>
-                    <button
-                      type="button"
-                      className={styles.variant}
-                      aria-current={sel?.f === fi && sel.l === li ? 'true' : undefined}
-                      onClick={() => setSel({ f: fi, l: li })}
-                    >
-                      <span className={styles.variantName}>{l.name}</span>
-                      <span className={styles.variantMeta}>
-                        {li === 0
-                          ? 'Unchanged'
-                          : l.js.trim() || l.css.trim()
-                            ? 'Has code'
-                            : 'No code yet'}
-                      </span>
-                    </button>
+                    <LevelRow
+                      level={l}
+                      isOriginal={li === 0}
+                      selected={sel?.f === fi && sel.l === li}
+                      canRename={!readOnly && li > 0}
+                      onSelect={() => setSel({ f: fi, l: li })}
+                      onRename={(name) => editLevel(fi, li, { name })}
+                    />
                   </li>
                 ))}
               </ul>
               {isDraft && f.levels.length < MVT_LIMITS.levels && (
-                <button type="button" className={own.addLevel} onClick={() => addLevel(fi)}>
-                  + Add version
-                </button>
+                <AddVariation onAdd={(name) => addLevel(fi, name)} />
               )}
             </li>
           ))}
@@ -211,10 +198,9 @@ export function MvtVariants() {
           </div>
           <div className={own.levelBar}>
             <label htmlFor={`${tabId}-lname`} className={own.levelLabel}>
-              Version name
+              Variation name
             </label>
             <input
-              ref={focusName === 'version' ? selectOnMount : undefined}
               id={`${tabId}-lname`}
               className={own.levelName}
               value={level.name}
@@ -227,9 +213,8 @@ export function MvtVariants() {
                 type="button"
                 className={own.levelRemove}
                 onClick={() => removeLevel(sel.f, sel.l)}
-                disabled={factor.levels.length <= 2}
               >
-                Remove version
+                Remove variation
               </button>
             )}
           </div>
@@ -255,12 +240,14 @@ export function MvtVariants() {
         <section className={styles.editor} aria-label="Original">
           <div className={styles.control}>
             <strong style={{ color: '#fff' }}>
-              {factor ? `${factor.name}: original` : 'No version selected'}
+              {factor ? `${factor.name}: original` : 'No variation selected'}
             </strong>
             <span>
               {factor
-                ? 'The first version of each section is the page as it is. Pick a new version to edit its code.'
-                : 'Add a section, then write the code for each new version.'}
+                ? factor.levels.length > 1
+                  ? 'The original is the page as it is. Pick a variation to edit its code.'
+                  : 'The original is the page as it is. Add a variation to this section to write its code.'
+                : 'Add a section, then add variations to it and write their code.'}
             </span>
           </div>
         </section>
@@ -272,12 +259,13 @@ export function MvtVariants() {
             {count} combination{count === 1 ? '' : 's'}
           </h2>
           <p className={own.hint}>
-            {factors.map((f) => f.levels.length).join(' × ') || '0'} versions. Traffic is split
-            evenly, so each combination gets about {Math.round(100 / count)}% of visitors.
+            {factors.map((f) => f.levels.length).join(' × ') || '0'} (original plus variations per
+            section). Traffic is split evenly, so each combination gets about{' '}
+            {Math.round(100 / count)}% of visitors.
           </p>
           {tooMany && (
             <p role="alert" className={own.bad}>
-              At most {MVT_LIMITS.combinations} combinations. Remove a version or a section.
+              At most {MVT_LIMITS.combinations} combinations. Remove a variation or a section.
             </p>
           )}
           {errors.map((e) => (
@@ -311,5 +299,149 @@ export function MvtVariants() {
         </section>
       </aside>
     </div>
+  );
+}
+
+/** One entry in a section: select it to edit its code; variations can be renamed here. */
+function LevelRow({
+  level,
+  isOriginal,
+  selected,
+  canRename,
+  onSelect,
+  onRename,
+}: {
+  level: MvtLevel;
+  isOriginal: boolean;
+  selected: boolean;
+  canRename: boolean;
+  onSelect(): void;
+  onRename(name: string): void;
+}) {
+  const [renaming, setRenaming] = useState(false);
+  const [name, setName] = useState(level.name);
+  const id = useId();
+
+  if (renaming) {
+    const done = () => {
+      if (name.trim()) onRename(name.trim());
+      else setName(level.name);
+      setRenaming(false);
+    };
+    return (
+      <div className={own.renameRow}>
+        <label htmlFor={id} className="visually-hidden">
+          Variation name
+        </label>
+        <input
+          id={id}
+          className={own.renameInput}
+          value={name}
+          maxLength={40}
+          autoFocus
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={done}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') done();
+            if (e.key === 'Escape') {
+              setName(level.name);
+              setRenaming(false);
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={own.levelRow}>
+      <button
+        type="button"
+        className={styles.variant}
+        aria-current={selected ? 'true' : undefined}
+        onClick={onSelect}
+      >
+        <span className={styles.variantName}>{level.name}</span>
+        <span className={styles.variantMeta}>
+          {isOriginal
+            ? 'Unchanged'
+            : level.js.trim() || level.css.trim()
+              ? 'Has code'
+              : 'No code yet'}
+        </span>
+      </button>
+      {canRename && (
+        <button
+          type="button"
+          className={own.rename}
+          aria-label={`Rename ${level.name}`}
+          title="Rename"
+          onClick={() => {
+            setName(level.name);
+            setRenaming(true);
+          }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M13.5 3.5l3 3L7 16H4v-3z" />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** "+ Add variation", asking for its name first. */
+function AddVariation({ onAdd }: { onAdd(name: string): void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const id = useId();
+  if (!open)
+    return (
+      <button type="button" className={own.addLevel} onClick={() => setOpen(true)}>
+        + Add variation
+      </button>
+    );
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onAdd(name.trim());
+    setName('');
+    setOpen(false);
+  };
+  return (
+    <form className={own.addForm} onSubmit={submit}>
+      <label htmlFor={id} className={own.addLabel}>
+        New variation name
+      </label>
+      <input
+        id={id}
+        className={own.renameInput}
+        value={name}
+        maxLength={40}
+        placeholder="e.g. Shorter headline"
+        autoFocus
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+      />
+      <div className={own.addActions}>
+        <button type="submit" className={own.addPrimary} disabled={!name.trim()}>
+          Add
+        </button>
+        <button type="button" className={own.addCancel} onClick={() => setOpen(false)}>
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }

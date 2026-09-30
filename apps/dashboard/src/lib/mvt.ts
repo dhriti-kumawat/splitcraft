@@ -2,7 +2,8 @@ import type { MvtFactor, NewVariant } from '../data/api';
 import { compareConversion, type Arm, type Comparison } from './stats';
 
 /** Limits that keep every combination's share of traffic useful. */
-export const MVT_LIMITS = { factors: 3, levels: 4, combinations: 16 } as const;
+/** Sections, entries per section (the original plus variations) and combinations. */
+export const MVT_LIMITS = { factors: 3, levels: 6, combinations: 16 } as const;
 
 /** Number of combinations the sections make (the full factorial). */
 export function combinationCount(factors: MvtFactor[]): number {

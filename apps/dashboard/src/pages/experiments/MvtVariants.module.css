@@ -29,21 +29,23 @@
 .sectionName {
   flex: 1;
   min-width: 0;
-  height: 30px;
-  padding: 0 6px;
-  border: 1px solid transparent;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
   border-radius: var(--r-md);
-  background: transparent;
+  background: var(--surface);
   font: 700 13px var(--font-ui);
   color: var(--ink);
 }
 
-.sectionName:hover:not(:read-only) {
-  border-color: var(--line);
+.sectionName:read-only {
+  border-color: transparent;
+  background: transparent;
 }
 
 .sectionName:focus,
-.levelName:focus {
+.levelName:focus,
+.renameInput:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(15, 107, 87, 0.14);
@@ -159,4 +161,103 @@
 .combos .mono {
   color: var(--muted);
   font-size: 11.5px;
+}
+
+.levelRow {
+  position: relative;
+}
+
+.levelRow > button:first-child {
+  padding-right: 40px;
+}
+
+.rename {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.rename:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.rename:focus-visible,
+.addPrimary:focus-visible,
+.addCancel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.renameRow {
+  padding: 8px;
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.renameInput {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font: 500 14px var(--font-ui);
+  color: var(--ink);
+}
+
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.addLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.addActions {
+  display: flex;
+  gap: 8px;
+}
+
+.addPrimary,
+.addCancel {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--r-md);
+  font: 600 13px var(--font-ui);
+  cursor: pointer;
+}
+
+.addPrimary {
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+}
+
+.addPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.addCancel {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
 }

@@ -16,7 +16,7 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
 | ----------------- | ---------------------------------------------------- | ------------------------------------------- |
 | A/B test          | JS and CSS that change the page                      | One idea, such as a sticky Book button      |
 | Split URL test    | Separate page URLs; the SDK redirects to them        | Redesigned pages, different page templates  |
-| Multivariate test | Every combination of section versions (generated)    | Several changes at once, to find the best mix |
+| Multivariate test | Every combination of section variations (generated)  | Several changes at once, to find the best mix |
 
 ### Split URL tests
 
@@ -31,22 +31,25 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
 
 ### Multivariate tests (MVT)
 
-- Step 2 (**Sections**) holds up to 3 sections (for example Headline, Hero image, Button), each with
-  up to 4 versions. The first version of each section is the original page; the others get JS and CSS.
+- Step 2 (**Sections**) holds up to 3 sections (for example Headline, Hero image, Button). A new
+  section starts with only its **Original** (the page as it is); **+ Add variation** asks for a
+  name, and each section can have up to 5 variations. Rename a section in its name field and a
+  variation with the pencil next to it (or in the editor). Variations get JS and CSS.
 - **Save and build combinations** creates one variant per combination (the full factorial, at most
   16) with equal weights. All originals is Control. Keys are `v` plus one digit per section, so
-  `v10` is version 2 of section 1 with the original of section 2. Each version's code runs in its
-  own block, so versions can reuse variable names.
-- Sections and versions can only be added or removed in a draft; code can change while live.
-- Results list every combination, best first, and add a table per section: each version pooled over
-  all combinations that show it, compared with that section's original (the main effect).
+  `v10` is the first variation of section 1 with the original of section 2. Each variation's code
+  runs in its own block, so variations can reuse variable names.
+- Sections and variations can only be added or removed in a draft; code and names can change while
+  live.
+- Results list every combination, best first, and add a table per section: each variation pooled
+  over all combinations that show it, compared with that section's original (the main effect).
 
 ## The five steps
 
 | Step            | What you set                                                                            |
 | --------------- | --------------------------------------------------------------------------------------- |
 | 1 Basics        | Name, hypothesis, **test page**, traffic split, sample-size planner, launch checklist   |
-| 2 Variants      | A/B: JS and CSS per variant, templates, version history. Split URL: a page per variant. MVT: sections and versions |
+| 2 Variants      | A/B: JS and CSS per variant, templates, version history. Split URL: a page per variant. MVT: sections and their variations |
 | 3 Targeting     | WHO / WHERE / HOW / WHEN, evaluation settings, reach estimate, URL tester (see [Targeting](targeting)) |
 | 4 Goals         | One primary goal, secondary goals, guardrails (see [Metrics](metrics))                  |
 | 5 Results       | Verdict, uplift and range, chance to win, SRM, cumulative chart (see [Results](results)) |
@@ -106,7 +109,7 @@ A step shows a tick when it's done.
 
 **Launch experiment** is enabled when the checklist passes: the snippet is installed, a primary goal
 is set, and variant code is saved without errors (split URL: every variant has a URL and WHERE is
-limited; MVT: at least one section with a new version). The checklist also reminds you to preview on the
+limited; MVT: at least one section with a variation). The checklist also reminds you to preview on the
 site first (recommended, not required). While live:
 
 - **Pause** stops showing variants (visitors see the original) and **Resume** restarts.

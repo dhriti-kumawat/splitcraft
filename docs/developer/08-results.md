@@ -33,7 +33,7 @@ control, and an SRM p-value of 0.53.
 
 Each combination is a variant, so the table and tests above apply to it, with the best
 combinations listed first and the top three in the chart. A table per section then pools each
-version over every combination that shows it and compares it with the section's original (the
+variation over every combination that shows it and compares it with the section's original (the
 main effect), with the same z-test and chance to win. Main effects assume the sections don't
 interact much; the combination table shows when they do.
 
