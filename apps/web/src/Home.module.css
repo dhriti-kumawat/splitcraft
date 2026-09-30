@@ -633,11 +633,17 @@
 }
 
 .artRow {
-  display: flex;
-  gap: 8px;
+  /* A fixed label column, so WHO / WHERE / HOW / WHEN line their text up. */
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px;
   align-items: center;
   font-size: 13px;
   font-weight: 600;
+}
+
+.artRow > .chip {
+  justify-content: center;
 }
 
 .artRow .mono {
@@ -1323,6 +1329,25 @@
   gap: 10px;
 }
 
+@media (max-width: 700px) {
+  /* Phones: pictures take the height they need, code scrolls instead of being cut off. */
+  .art {
+    height: auto;
+    min-height: 160px;
+  }
+  .artDark pre {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .devLinks {
+    flex-direction: column;
+  }
+  .devLinks a {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
 /* ------------------------------------------------------------ hero trust row */
 
 .trust {
@@ -1777,7 +1802,7 @@
   }
   .stackList {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px 16px;
   }
   .stackList li {

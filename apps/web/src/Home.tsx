@@ -811,7 +811,7 @@ function Developers() {
                 ✓
               </span>
               <span>
-                <b>Under 7 KB gzipped</b>, loaded async, no dependencies
+                <b>Under 8 KB gzipped</b>, loaded async, no dependencies
               </span>
             </li>
             <li>
