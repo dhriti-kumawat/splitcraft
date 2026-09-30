@@ -240,6 +240,7 @@ export function MvtVariants() {
             aria-labelledby={`${tabId}-${file}`}
           >
             <CodeEditor
+              fill
               key={`${factor.key}-${level.key}-${file}`}
               language={file === 'js' ? 'javascript' : 'css'}
               label={`${factor.name} ${level.name} ${file.toUpperCase()}`}

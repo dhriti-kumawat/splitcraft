@@ -177,6 +177,7 @@
 }
 
 .code {
+  position: relative;
   flex-grow: 1;
   min-height: 420px;
 }

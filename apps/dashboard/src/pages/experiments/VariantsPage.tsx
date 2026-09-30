@@ -310,6 +310,7 @@ function Editor({
         aria-labelledby={`${tabId}-${file}`}
       >
         <CodeEditor
+          fill
           key={file}
           language={file === 'js' ? 'javascript' : 'css'}
           label={`${variant.name} ${file.toUpperCase()}`}
