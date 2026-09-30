@@ -27,18 +27,26 @@ describe('variants list', () => {
     expect(buttons[1]).toHaveAttribute('aria-current', 'true');
   });
 
-  it('explains Control has no code', async () => {
+  it('explains the original has no code and lets it be renamed', async () => {
     const user = userEvent.setup();
-    await open();
+    const { variantPatches } = await open();
     await user.click(screen.getByRole('button', { name: /^Control/ }));
-    expect(screen.getByText('Control is the original page')).toBeInTheDocument();
+    expect(screen.getByText('Control is the page as it is')).toBeInTheDocument();
+    const name = screen.getByLabelText('Name');
+    await user.clear(name);
+    await user.type(name, 'Original');
+    await user.tab();
+    await vi.waitFor(() =>
+      expect(variantPatches).toContainEqual({ id: 'trust-c', patch: { name: 'Original' } }),
+    );
+    expect(screen.queryByRole('button', { name: 'Delete variant' })).toBeNull();
   });
 
   it('adds a variant and rebalances the split in a draft', async () => {
     const user = userEvent.setup();
     const { variantPatches } = await open();
-    await user.click(screen.getByRole('button', { name: '+ Add variant' }));
-    const name = screen.getByRole('textbox', { name: 'New variant name' });
+    await user.click(screen.getByRole('button', { name: '+ Add variation' }));
+    const name = screen.getByRole('textbox', { name: 'New variation name' });
     expect(name).toHaveFocus();
     expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
     await user.type(name, 'Price first{Enter}');
@@ -53,11 +61,11 @@ describe('variants list', () => {
     const user = userEvent.setup();
     const { experimentsNow } = await open();
     for (const n of ['C one', 'D one', 'E one', 'F one']) {
-      await user.click(screen.getByRole('button', { name: '+ Add variant' }));
-      await user.type(screen.getByRole('textbox', { name: 'New variant name' }), `${n}{Enter}`);
+      await user.click(screen.getByRole('button', { name: '+ Add variation' }));
+      await user.type(screen.getByRole('textbox', { name: 'New variation name' }), `${n}{Enter}`);
       // The form closes once the variant is added and the split saved.
       await vi.waitFor(() =>
-        expect(screen.queryByRole('textbox', { name: 'New variant name' })).toBeNull(),
+        expect(screen.queryByRole('textbox', { name: 'New variation name' })).toBeNull(),
       );
       await screen.findByRole('button', { name: new RegExp(`^${n}0 lines`) });
     }
@@ -78,7 +86,7 @@ describe('variants list', () => {
 
   it('does not add variants once started', async () => {
     await open('sticky');
-    expect(screen.getByRole('button', { name: '+ Add variant' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '+ Add variation' })).toBeDisabled();
   });
 });
 

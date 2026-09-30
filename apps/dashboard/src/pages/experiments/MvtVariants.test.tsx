@@ -6,72 +6,86 @@ import { renderApp } from '../../test/renderApp';
 const mvtData = () =>
   fakeData({
     experiments: EXPERIMENTS.map((e) =>
-      e.id === 'trust' ? { ...e, type: 'mvt', variants: [e.variants[0]!] } : e,
+      e.id === 'trust'
+        ? { ...e, type: 'mvt', variants: [{ ...e.variants[0]!, name: 'Original' }] }
+        : e,
     ),
   });
 
 async function open(data = mvtData()) {
   renderApp('/p/trip-demo/experiments/trust/variants', { data: data.api });
-  await screen.findByRole('region', { name: 'Sections' });
+  await screen.findByRole('region', { name: 'Variations' });
   return data;
 }
 
-const sections = () => screen.getByRole('region', { name: 'Sections' });
+const list = () => screen.getByRole('region', { name: /^(Variations|Sections)$/ });
+const entries = () =>
+  within(list())
+    .getAllByRole('button')
+    .filter((b) => /Unchanged|code/.test(b.textContent ?? ''))
+    .map((b) => b.textContent);
 
 async function addVariation(user: ReturnType<typeof userEvent.setup>, index: number, name: string) {
-  await user.click(within(sections()).getAllByRole('button', { name: '+ Add variation' })[index]!);
+  await user.click(within(list()).getAllByRole('button', { name: '+ Add variation' })[index]!);
   await user.type(
-    within(sections()).getByRole('textbox', { name: 'New variation name' }),
+    within(list()).getByRole('textbox', { name: 'New variation name' }),
     `${name}{Enter}`,
   );
 }
 
 describe('MVT variants', () => {
-  it('starts a section with only its original, and names it at once', async () => {
-    const user = userEvent.setup();
+  it('opens ready: the Original and + Add variation, no section to create first', async () => {
     await open();
-    await user.click(screen.getByRole('button', { name: '+ Add section' }));
-    const name = within(sections()).getByRole('textbox', { name: 'Section name' });
-    expect(name).toHaveFocus();
-    await user.keyboard('Headline');
-    expect(name).toHaveValue('Headline');
-    const entries = within(sections())
-      .getAllByRole('button')
-      .filter((b) => b.textContent?.includes('Unchanged') || b.textContent?.includes('code'));
-    expect(entries.map((b) => b.textContent)).toEqual(['OriginalUnchanged']);
-    expect(screen.getByText(/Add a variation to this section/)).toBeInTheDocument();
+    expect(entries()).toEqual(['OriginalUnchanged']);
+    expect(within(list()).queryByRole('textbox', { name: 'Section name' })).toBeNull();
+    expect(within(list()).getByRole('button', { name: '+ Add variation' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '1 combination' })).toBeInTheDocument();
   });
 
-  it('adds named variations, renames them and builds every combination', async () => {
+  it('renames the Original and variations, and a single section saves plain names', async () => {
     const user = userEvent.setup();
     const { experimentsNow } = await open();
-    await user.click(screen.getByRole('button', { name: '+ Add section' }));
-    await user.keyboard('Headline');
-    const addButton = within(sections()).getByRole('button', { name: '+ Add variation' });
-    await user.click(addButton);
-    expect(within(sections()).getByRole('button', { name: 'Add' })).toBeDisabled();
-    await user.type(
-      within(sections()).getByRole('textbox', { name: 'New variation name' }),
-      'Short{Enter}',
+    await user.click(within(list()).getByRole('button', { name: 'Rename Original' }));
+    const original = within(list()).getByRole('textbox', { name: 'Original name' });
+    await user.clear(original);
+    await user.type(original, 'Current page{Enter}');
+
+    await addVariation(user, 0, 'Short headline');
+    expect(entries()).toEqual(['Current pageUnchanged', 'Short headlineNo code yet']);
+    await user.click(within(list()).getByRole('button', { name: 'Rename Short headline' }));
+    const rename = within(list()).getByRole('textbox', { name: 'Variation name' });
+    await user.clear(rename);
+    await user.type(rename, 'Shorter{Enter}');
+
+    await user.click(screen.getByRole('button', { name: 'Save and build combinations' }));
+    await vi.waitFor(() =>
+      expect(
+        experimentsNow()
+          .find((e) => e.id === 'trust')!
+          .variants.map((v) => [v.key, v.name]),
+      ).toEqual([
+        ['control', 'Current page'],
+        ['v1', 'Shorter'],
+      ]),
     );
-    fireEvent.change(screen.getByRole('textbox', { name: 'Headline Short JS' }), {
+  });
+
+  it('adds another section and builds every combination', async () => {
+    const user = userEvent.setup();
+    const { experimentsNow } = await open();
+    await addVariation(user, 0, 'Short');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Section 1 Short JS' }), {
       target: { value: 'document.title = "B"' },
     });
 
-    await user.click(screen.getByRole('button', { name: '+ Add section' }));
+    await user.click(screen.getByRole('button', { name: '+ Add another section' }));
+    const names = within(list()).getAllByRole('textbox', { name: 'Section name' });
+    expect(names).toHaveLength(2);
+    expect(names[1]).toHaveFocus();
     await user.keyboard('Button');
     await addVariation(user, 1, 'Green');
     await addVariation(user, 1, 'Big');
     expect(screen.getByRole('heading', { name: '6 combinations' })).toBeInTheDocument();
-
-    // Rename in the list.
-    await user.click(within(sections()).getByRole('button', { name: 'Rename Big' }));
-    const rename = within(sections()).getByRole('textbox', { name: 'Variation name' });
-    await user.clear(rename);
-    await user.type(rename, 'Large{Enter}');
-    expect(
-      within(sections()).getByRole('button', { name: /^LargeNo code yet/ }),
-    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Save and build combinations' }));
     await vi.waitFor(() =>
@@ -82,18 +96,16 @@ describe('MVT variants', () => {
       ).toEqual(['control', 'v01', 'v02', 'v10', 'v11', 'v12']),
     );
     const trust = experimentsNow().find((e) => e.id === 'trust')!;
-    expect(trust.factors.map((f) => f.name)).toEqual(['Headline', 'Button']);
-    expect(trust.factors[1]!.levels.map((l) => l.name)).toEqual(['Original', 'Green', 'Large']);
+    expect(trust.factors.map((f) => f.name)).toEqual(['Section 1', 'Button']);
     expect(trust.variants.find((v) => v.key === 'v10')).toMatchObject({
-      name: 'Headline: Short',
-      js: '// Headline: Short\n{\ndocument.title = "B"\n}',
+      name: 'Section 1: Short',
+      js: '// Section 1: Short\n{\ndocument.title = "B"\n}',
     });
   });
 
   it('blocks saving while a variation has a JS error', async () => {
     const user = userEvent.setup();
     await open();
-    await user.click(screen.getByRole('button', { name: '+ Add section' }));
     await addVariation(user, 0, 'Broken');
     fireEvent.change(screen.getByRole('textbox', { name: 'Section 1 Broken JS' }), {
       target: { value: 'if (' },

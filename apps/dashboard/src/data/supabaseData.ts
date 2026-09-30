@@ -553,9 +553,9 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         check(
           await supabase.from('variants').insert(
             type === 'mvt'
-              ? [{ experiment_id: id, key: 'control', name: 'Control', weight: 100 }]
+              ? [{ experiment_id: id, key: 'control', name: 'Original', weight: 100 }]
               : [
-                  { experiment_id: id, key: 'control', name: 'Control', weight: 50 },
+                  { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
                   { experiment_id: id, key: 'b', name: 'B', weight: 50 },
                 ],
           ),

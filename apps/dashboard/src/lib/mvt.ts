@@ -20,7 +20,7 @@ export function levelsOf(key: string, factorCount: number): number[] | null {
 
 /**
  * Every combination of the sections' versions as a variant, with equal weights. The first
- * version of each section is the original, so all-originals is Control. Each version's
+ * version of each section is the original, so all-originals is the Original (key `control`). Each version's
  * code sits in its own block, so two versions can declare the same variable names.
  */
 export function combinations(factors: MvtFactor[]): NewVariant[] {
@@ -35,9 +35,13 @@ export function combinations(factors: MvtFactor[]): NewVariant[] {
     );
     return {
       key: c.every((l) => l === 0) ? 'control' : `v${c.join('')}`,
-      name: picked.length
-        ? picked.map(({ f, l }) => `${f.name}: ${l.name}`).join(' · ')
-        : 'Control',
+      // With one section, a variation is named on its own ("Short headline").
+      name:
+        factors.length === 1
+          ? factors[0]!.levels[c[0]!]!.name
+          : picked.length
+            ? picked.map(({ f, l }) => `${f.name}: ${l.name}`).join(' · ')
+            : 'Original',
       weight,
       js: picked
         .filter(({ l }) => l.js.trim())

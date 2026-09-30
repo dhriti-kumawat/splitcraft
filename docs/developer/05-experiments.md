@@ -31,12 +31,16 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
 
 ### Multivariate tests (MVT)
 
-- Step 2 (**Sections**) holds up to 3 sections (for example Headline, Hero image, Button). A new
-  section starts with only its **Original** (the page as it is); **+ Add variation** asks for a
-  name, and each section can have up to 5 variations. Rename a section in its name field and a
-  variation with the pencil next to it (or in the editor). Variations get JS and CSS.
+- Step 2 (**Variations**) opens ready: the **Original** (the page as it is) and **+ Add variation**,
+  which asks for the variation's name. Rename the Original or a variation with the pencil next to
+  it. Variations get JS and CSS.
+- To test a second part of the page as well (say the headline and the button), use **+ Add another
+  section**. Each section has its own Original and variations (up to 5), there are at most 3
+  sections, and section names show once there are two. This is how VWO and Optimizely
+  (sections) and AB Tasty (subtests) group a multivariate test; VWO makes one per element you edit.
 - **Save and build combinations** creates one variant per combination (the full factorial, at most
-  16) with equal weights. All originals is Control. Keys are `v` plus one digit per section, so
+  16) with equal weights. All originals is the Original (key `control`). With one section the
+  variants are simply named after its variations. Keys are `v` plus one digit per section, so
   `v10` is the first variation of section 1 with the original of section 2. Each variation's code
   runs in its own block, so variations can reuse variable names.
 - Sections and variations can only be added or removed in a draft; code and names can change while
@@ -90,7 +94,8 @@ A step shows a tick when it's done.
 
 ## Variant code
 
-- Control is usually empty. Each other variant gets JS and CSS, with `splitcraft.*` helpers in scope
+- New tests call the unchanged page **Original** (key `control`); rename it like any variation.
+  It has no code. Each other variant gets JS and CSS, with `splitcraft.*` helpers in scope
   (see [SDK reference](sdk#variant-code)).
 - **Template** opens a gallery of working starting points (headline swap, button copy and colour,
   promo banner, sticky bar, reorder sections, image swap, trust row, hide element). If the variant

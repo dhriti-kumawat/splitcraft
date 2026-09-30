@@ -11,21 +11,27 @@ import styles from './VariantsPage.module.css';
 
 const LEVEL_KEYS = 'abcdefgh';
 const original = (): MvtLevel => ({ key: 'a', name: 'Original', js: '', css: '' });
+const firstSection = (): MvtFactor => ({ key: 's1', name: 'Section 1', levels: [original()] });
+/** Sections without variations change nothing, so they don't count in combinations. */
+const inUse = (fs: MvtFactor[]) => fs.filter((f) => f.levels.length > 1);
 
 /**
- * Experiment step 2 for multivariate tests: sections (factors), each with variations
- * (levels). A new section starts with only its original; the user adds and names
- * variations. Saving generates one variant per combination.
+ * Experiment step 2 for multivariate tests: the page opens ready, with the Original and
+ * "+ Add variation". Variations of one part of the page make a section (factor); "+ Add
+ * another section" tests a second part, and every combination becomes a variant, as in
+ * VWO (sections), Optimizely (sections) and AB Tasty (subtests). Section names only show
+ * once there are two or more.
  */
 export function MvtVariants() {
   const { experiment } = useExperiment();
   const setMvt = useSetMvt(experiment);
-  const [factors, setFactors] = useState<MvtFactor[]>(experiment.factors);
-  const [sel, setSel] = useState<{ f: number; l: number } | null>(
-    experiment.factors.length
-      ? { f: 0, l: Math.min(1, experiment.factors[0]!.levels.length - 1) }
-      : null,
+  const [factors, setFactors] = useState<MvtFactor[]>(() =>
+    experiment.factors.length ? experiment.factors : [firstSection()],
   );
+  const [sel, setSel] = useState<{ f: number; l: number } | null>(() => ({
+    f: 0,
+    l: Math.min(1, (experiment.factors[0]?.levels.length ?? 1) - 1),
+  }));
   const [file, setFile] = useState<'js' | 'css'>('js');
   // A new section's name is focused and selected, so it gets a real name.
   const [focusName, setFocusName] = useState<'section' | null>(null);
@@ -39,8 +45,10 @@ export function MvtVariants() {
   const tabId = useId();
   const isDraft = experiment.status === 'draft';
   const readOnly = experiment.status === 'ended';
-  const count = combinationCount(factors);
-  const dirty = JSON.stringify(factors) !== JSON.stringify(experiment.factors);
+  const used = inUse(factors);
+  const count = combinationCount(used);
+  const dirty = JSON.stringify(used) !== JSON.stringify(inUse(experiment.factors));
+  const multi = factors.length > 1;
   const errors = factors.flatMap((f) =>
     f.levels.flatMap((l) => {
       const e = syntaxError(l.js);
@@ -54,9 +62,9 @@ export function MvtVariants() {
   const live = preview?.experimentKey === experiment.key;
   useEffect(() => {
     if (!live || tooMany) return;
-    const t = setTimeout(() => updatePreview(previewState(experiment, combinations(factors))), 400);
+    const t = setTimeout(() => updatePreview(previewState(experiment, combinations(used))), 400);
     return () => clearTimeout(t);
-  }, [live, tooMany, experiment, factors]);
+  }, [live, tooMany, experiment, used]);
 
   const edit = (fi: number, fn: (f: MvtFactor) => MvtFactor) =>
     setFactors((fs) => fs.map((f, i) => (i === fi ? fn(f) : f)));
@@ -96,13 +104,16 @@ export function MvtVariants() {
     setSel({ f: fi, l: 0 });
   };
   const removeSection = (fi: number) => {
-    setFactors((fs) => fs.filter((_, i) => i !== fi));
-    setSel(null);
+    setFactors((fs) => {
+      const rest = fs.filter((_, i) => i !== fi);
+      return rest.length ? rest : [firstSection()];
+    });
+    setSel({ f: 0, l: 0 });
   };
 
   const save = () => {
     if (!dirty || errors.length || tooMany || setMvt.isPending) return;
-    setMvt.mutate({ factors, variants: combinations(factors) });
+    setMvt.mutate({ factors: used, variants: combinations(used) });
   };
 
   const level = sel ? factors[sel.f]?.levels[sel.l] : undefined;
@@ -112,43 +123,41 @@ export function MvtVariants() {
     <div className={styles.layout}>
       <section className={styles.variants} aria-labelledby="sections-label">
         <span className={styles.lbl} id="sections-label">
-          Sections
+          {multi ? 'Sections' : 'Variations'}
         </span>
-        {factors.length === 0 && (
-          <p className={own.empty}>
-            Add a section for each part of the page you want to change, such as the headline or the
-            main button. Then add variations to each section.
-          </p>
-        )}
         <ul className={own.sections}>
           {factors.map((f, fi) => (
             <li key={f.key} className={own.section}>
-              <div className={own.sectionHead}>
-                <label htmlFor={`${tabId}-f${fi}`} className="visually-hidden">
-                  Section name
-                </label>
-                <input
-                  ref={
-                    focusName === 'section' && fi === factors.length - 1 ? selectOnMount : undefined
-                  }
-                  id={`${tabId}-f${fi}`}
-                  className={own.sectionName}
-                  value={f.name}
-                  maxLength={40}
-                  readOnly={!isDraft}
-                  onChange={(e) => edit(fi, (x) => ({ ...x, name: e.target.value }))}
-                />
-                {isDraft && (
-                  <button
-                    type="button"
-                    className={own.remove}
-                    aria-label={`Remove section ${f.name}`}
-                    onClick={() => removeSection(fi)}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
+              {multi && (
+                <div className={own.sectionHead}>
+                  <label htmlFor={`${tabId}-f${fi}`} className="visually-hidden">
+                    Section name
+                  </label>
+                  <input
+                    ref={
+                      focusName === 'section' && fi === factors.length - 1
+                        ? selectOnMount
+                        : undefined
+                    }
+                    id={`${tabId}-f${fi}`}
+                    className={own.sectionName}
+                    value={f.name}
+                    maxLength={40}
+                    readOnly={!isDraft}
+                    onChange={(e) => edit(fi, (x) => ({ ...x, name: e.target.value }))}
+                  />
+                  {isDraft && (
+                    <button
+                      type="button"
+                      className={own.remove}
+                      aria-label={`Remove section ${f.name}`}
+                      onClick={() => removeSection(fi)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              )}
               <ul className={styles.variantList}>
                 {f.levels.map((l, li) => (
                   <li key={l.key}>
@@ -156,7 +165,7 @@ export function MvtVariants() {
                       level={l}
                       isOriginal={li === 0}
                       selected={sel?.f === fi && sel.l === li}
-                      canRename={!readOnly && li > 0}
+                      canRename={!readOnly}
                       onSelect={() => setSel({ f: fi, l: li })}
                       onRename={(name) => editLevel(fi, li, { name })}
                     />
@@ -170,9 +179,17 @@ export function MvtVariants() {
           ))}
         </ul>
         {isDraft && factors.length < MVT_LIMITS.factors && (
-          <button type="button" className={styles.add} onClick={addSection}>
-            + Add section
-          </button>
+          <>
+            <button type="button" className={styles.add} onClick={addSection}>
+              + Add another section
+            </button>
+            {!multi && (
+              <p className={own.empty}>
+                To test changes to another part of the page too (say the headline and the button),
+                add a section: every combination of their variations is tested.
+              </p>
+            )}
+          </>
         )}
       </section>
 
@@ -246,8 +263,8 @@ export function MvtVariants() {
               {factor
                 ? factor.levels.length > 1
                   ? 'The original is the page as it is. Pick a variation to edit its code.'
-                  : 'The original is the page as it is. Add a variation to this section to write its code.'
-                : 'Add a section, then add variations to it and write their code.'}
+                  : 'The original is the page as it is. Add a variation to write its code.'
+                : 'Add a variation to write its code.'}
             </span>
           </div>
         </section>
@@ -259,9 +276,11 @@ export function MvtVariants() {
             {count} combination{count === 1 ? '' : 's'}
           </h2>
           <p className={own.hint}>
-            {factors.map((f) => f.levels.length).join(' × ') || '0'} (original plus variations per
-            section). Traffic is split evenly, so each combination gets about{' '}
-            {Math.round(100 / count)}% of visitors.
+            {used.length > 1
+              ? `${used.map((f) => f.levels.length).join(' × ')} (original plus variations per section). `
+              : ''}
+            Traffic is split evenly, so each combination gets about {Math.round(100 / count)}% of
+            visitors.
           </p>
           {tooMany && (
             <p role="alert" className={own.bad}>
@@ -331,7 +350,7 @@ function LevelRow({
     return (
       <div className={own.renameRow}>
         <label htmlFor={id} className="visually-hidden">
-          Variation name
+          {isOriginal ? 'Original name' : 'Variation name'}
         </label>
         <input
           id={id}

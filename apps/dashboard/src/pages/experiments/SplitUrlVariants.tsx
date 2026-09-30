@@ -43,7 +43,7 @@ export function SplitUrlVariants() {
       <AddVariant
         experiment={experiment}
         buttonClassName={styles.add}
-        label="+ Add variant page"
+        label="+ Add variation page"
         placeholder="e.g. Redesigned landing page"
       />
       <section className={styles.row} aria-label="Traffic split">

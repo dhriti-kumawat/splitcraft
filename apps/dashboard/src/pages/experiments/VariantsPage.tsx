@@ -160,20 +160,18 @@ function CodeVariants() {
       />
 
       <aside className={styles.aside} aria-label="Variant details">
-        {selected.key !== control && (
-          <VariantSettings
-            key={selected.id}
-            experiment={experiment}
-            variant={selected}
-            onDeleted={() =>
-              select(
-                experiment.variants.find((v) => v.key !== control && v.id !== selected.id)?.id ??
-                  experiment.variants[0]!.id,
-              )
-            }
-            remove={edits.remove}
-          />
-        )}
+        <VariantSettings
+          key={selected.id}
+          experiment={experiment}
+          variant={selected}
+          onDeleted={() =>
+            select(
+              experiment.variants.find((v) => v.key !== control && v.id !== selected.id)?.id ??
+                experiment.variants[0]!.id,
+            )
+          }
+          remove={edits.remove}
+        />
         <section className={styles.card} aria-label="Traffic split">
           <TrafficSplit experiment={experiment} />
         </section>
@@ -254,9 +252,10 @@ function Editor({
     return (
       <section className={styles.editor} aria-label="Control">
         <div className={styles.control}>
-          <strong style={{ color: '#fff' }}>Control is the original page</strong>
+          <strong style={{ color: '#fff' }}>{variant.name} is the page as it is</strong>
           <span>
-            Visitors in Control see your site unchanged. Pick another variant to edit its code.
+            Visitors here see your site unchanged, so it has no code. Rename it on the right, or
+            pick a variation to edit its code.
           </span>
         </div>
       </section>
@@ -388,7 +387,7 @@ function VariantSettings({
   return (
     <section className={styles.card} aria-labelledby={`${id}-h`}>
       <h2 className={styles.cardTitle} id={`${id}-h`}>
-        Variant
+        {variant.key === controlKey(experiment) ? 'Original' : 'Variation'}
       </h2>
       <div className={styles.field}>
         <label htmlFor={id} className={styles.fieldLabel}>
@@ -410,16 +409,18 @@ function VariantSettings({
           Key: {variant.key}
         </span>
       </div>
-      {experiment.status === 'draft' && nonControl > 1 && (
-        <button
-          type="button"
-          className={styles.danger}
-          disabled={remove.isPending}
-          onClick={() => remove.mutate(variant.id, { onSuccess: onDeleted })}
-        >
-          Delete variant
-        </button>
-      )}
+      {experiment.status === 'draft' &&
+        variant.key !== controlKey(experiment) &&
+        nonControl > 1 && (
+          <button
+            type="button"
+            className={styles.danger}
+            disabled={remove.isPending}
+            onClick={() => remove.mutate(variant.id, { onSuccess: onDeleted })}
+          >
+            Delete variant
+          </button>
+        )}
     </section>
   );
 }

@@ -25,7 +25,7 @@ describe('combinations', () => {
     expect(combinationCount(factors)).toBe(6);
     expect(vs.map((v) => v.key)).toEqual(['control', 'v01', 'v02', 'v10', 'v11', 'v12']);
     expect(vs.every((v) => v.weight === 16.67)).toBe(true);
-    expect(vs[0]).toEqual({ key: 'control', name: 'Control', weight: 16.67, js: '', css: '' });
+    expect(vs[0]).toEqual({ key: 'control', name: 'Original', weight: 16.67, js: '', css: '' });
     expect(vs[5]!.name).toBe('Headline: Short · Button: Big');
   });
 
@@ -39,9 +39,16 @@ describe('combinations', () => {
     );
   });
 
+  it('names variations on their own with a single section', () => {
+    expect(combinations([factors[0]!]).map((v) => [v.key, v.name])).toEqual([
+      ['control', 'Original'],
+      ['v1', 'Short'],
+    ]);
+  });
+
   it('is just Control without sections', () => {
     expect(combinations([])).toEqual([
-      { key: 'control', name: 'Control', weight: 100, js: '', css: '' },
+      { key: 'control', name: 'Original', weight: 100, js: '', css: '' },
     ]);
   });
 });

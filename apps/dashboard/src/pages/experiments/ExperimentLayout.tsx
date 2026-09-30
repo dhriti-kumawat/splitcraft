@@ -42,7 +42,7 @@ import { TypeTag } from './TypeTag';
 const VARIANTS_STEP = {
   ab: 'Variants & code',
   split_url: 'Variant pages',
-  mvt: 'Sections',
+  mvt: 'Variations',
 } as const;
 
 const STATUS = { draft: 'Draft', live: 'Live', paused: 'Paused', ended: 'Ended' } as const;

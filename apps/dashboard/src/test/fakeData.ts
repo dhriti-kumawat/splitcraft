@@ -785,7 +785,11 @@ export function fakeData(
         id,
         name,
         type,
-        ...(type === 'mvt' && { variants: [{ ...variants(id)[0]!, weight: 100 }] }),
+        // New tests call the unchanged page Original.
+        variants:
+          type === 'mvt'
+            ? [{ ...variants(id)[0]!, name: 'Original', weight: 100 }]
+            : variants(id).map((v) => (v.key === 'control' ? { ...v, name: 'Original' } : v)),
         status: 'draft',
         projectId,
         primaryMetricId: null,
