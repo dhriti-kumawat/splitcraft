@@ -33,6 +33,7 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 
 ## Working rules
 - Small, focused commits using Conventional Commits (`feat(sdk): add bucketing`, `fix(dashboard): …`, `test(sdk): …`).
+- Branches: `main` (production: Vercel deploys it) and `dev` (integration). Make a short-lived branch from `dev` per change and open its pull request into `dev`; GitHub deletes the branch after merge. Release by opening a pull request from `dev` into `main`. Run `npx supabase db push` and redeploy changed Edge Functions only after a change reaches `main`.
 - Write tests for every SDK function before marking it done.
 - Never commit `.env` files or Supabase keys. Use `.env.example` for placeholders.
 - Ask before adding a new dependency to `packages/sdk`.

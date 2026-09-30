@@ -7,6 +7,11 @@ description: Conventions, where decisions live, and fixes for common problems.
 
 ## Conventions
 
+- **Branches**: `main` is production (Vercel deploys every push). `dev` is where work comes
+  together. Branch from `dev` for each change, open the pull request into `dev`, and release with
+  a pull request from `dev` into `main`. Merged branches are deleted automatically. Apply
+  database migrations and redeploy Edge Functions once a change is on `main`.
+
 - Small, focused commits with [Conventional Commits](https://www.conventionalcommits.org):
   `feat(sdk): …`, `fix(dashboard): …`, `test(backend): …`, `docs: …`.
 - Every SDK function has tests before it's done; the SDK stays dependency-free and inside its size
