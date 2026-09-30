@@ -44,14 +44,14 @@ describe('anti-flicker switch', () => {
 });
 
 describe('preview bookmarklet', () => {
-  it('loads the SDK for this project without hiding the page, once', () => {
-    const link = bookmarklet(values);
+  it('loads the preview bundle with the dashboard and config it may use', () => {
+    const link = bookmarklet({ configUrl: values.configUrl, dashboard: 'https://dash.test' });
     expect(link.startsWith('javascript:')).toBe(true);
     const code = decodeURIComponent(link.slice('javascript:'.length));
-    expect(code).toContain(`s.src=${JSON.stringify(values.sdkUrl)}`);
-    expect(code).toContain(`'data-project',${JSON.stringify(values.publicKey)}`);
+    expect(code).toContain('s.src="https://splitcraft.vercel.app/sdk/splitcraft-preview.iife.js"');
     expect(code).toContain(`'data-config',${JSON.stringify(values.configUrl)}`);
-    expect(code).toContain("'data-antiflicker','off'");
+    expect(code).toContain(`'data-dashboard',"https://dash.test"`);
+    expect(code).toContain("'data-mode','bookmark'");
     expect(code).toContain('if(window.splitcraft)');
     expect(() => new Function(code)).not.toThrow();
   });

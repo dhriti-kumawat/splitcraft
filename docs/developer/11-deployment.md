@@ -19,8 +19,11 @@ two Vercel projects from this repository; the backend is a Supabase project.
 
 Import the repository twice and set **Root Directory** to `apps/web` and `apps/dashboard`. Each has a
 `vercel.json`. The web project's `build:deploy` script builds the SDK, checks its size, builds the
-site and docs, and copies `v1.js`, `splitcraft-qa.iife.js` and `splitcraft-metrics.iife.js` to
-`/sdk/`.
+preview extension (`apps/extension`), builds the site and docs, and copies `v1.js`,
+`splitcraft-qa.iife.js`, `splitcraft-metrics.iife.js` and `splitcraft-preview.iife.js` to `/sdk/`
+and the extension zip to `/extension/splitcraft-preview.zip`. The extension only talks to the
+dashboards listed in `apps/extension/src/protocol.ts` and its manifest; add a new dashboard domain
+in both.
 
 Environment variables:
 

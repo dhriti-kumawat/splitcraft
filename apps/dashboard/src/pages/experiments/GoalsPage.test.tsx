@@ -11,19 +11,23 @@ async function open(id: string, data = fakeData()) {
 }
 
 describe('goals', () => {
-  it('shows the primary goal with how it is counted, locked after launch', async () => {
-    await open('sticky');
+  it('shows the primary goal with how it is counted, and lets it change after launch', async () => {
+    const user = userEvent.setup();
+    const { patches } = await open('sticky');
     expect(
       await screen.findByText('Click on .book-now-btn · unique conversions · higher is better'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Locked since launch')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Change to')).not.toBeInTheDocument();
+    expect(screen.getByText(/results are recalculated/)).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText('Change to'), 'Purchase');
+    await vi.waitFor(() =>
+      expect(patches).toContainEqual({ id: 'sticky', patch: { primaryMetricId: 'm-purchase' } }),
+    );
   });
 
   it('changes the primary goal of a draft', async () => {
     const user = userEvent.setup();
     const { patches } = await open('trust');
-    expect(screen.getByText('Locks at launch')).toBeInTheDocument();
+    expect(screen.queryByText(/results are recalculated/)).not.toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Change to'), 'Purchase');
     await vi.waitFor(() =>
       expect(patches).toContainEqual({ id: 'trust', patch: { primaryMetricId: 'm-purchase' } }),
@@ -81,11 +85,15 @@ describe('goals', () => {
     const aside = screen.getByRole('complementary', { name: 'Add a goal' });
     expect(within(aside).getByRole('link', { name: /Custom event/ })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=custom-js',
+      '/p/trip-demo/metrics/new?source=custom-js&experiment=trust&role=secondary',
     );
     expect(within(aside).getByRole('link', { name: /Web Vitals/ })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=web-vitals',
+      '/p/trip-demo/metrics/new?source=web-vitals&experiment=trust&role=secondary',
+    );
+    expect(screen.getByRole('link', { name: 'or create a new metric' })).toHaveAttribute(
+      'href',
+      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=primary',
     );
     expect(within(aside).queryByText(/Coming later/)).not.toBeInTheDocument();
     expect(within(aside).queryByText(/Formula/)).not.toBeInTheDocument();

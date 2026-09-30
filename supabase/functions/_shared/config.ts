@@ -99,6 +99,8 @@ export function toSdkConfig(
         weight: Number(v.weight),
         ...(v.js && { js: v.js }),
         ...(v.css && { css: v.css }),
+        // Split URL tests: the SDK sends this variant's visitors here.
+        ...(v.url && { url: v.url }),
       })),
       targeting: e.preview ? {} : toSdkTargeting(e.targeting ?? {}, source.segments),
     })),

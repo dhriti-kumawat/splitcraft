@@ -1,11 +1,12 @@
-// Fail the build when a CDN bundle grows past its gzipped budget (decisions #17 and #21).
+// Fail the build when a CDN bundle grows past its gzipped budget (decisions #17, #21, #27 and #29).
 import { readFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
 const budgets = [
   { file: 'dist/splitcraft.iife.js', maxBytes: 8000 },
   { file: 'dist/splitcraft-qa.iife.js', maxBytes: 3000 },
-  { file: 'dist/splitcraft-metrics.iife.js', maxBytes: 2000 },
+  { file: 'dist/splitcraft-metrics.iife.js', maxBytes: 2500 },
+  { file: 'dist/splitcraft-preview.iife.js', maxBytes: 4000 },
 ];
 
 let failed = false;

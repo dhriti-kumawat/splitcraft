@@ -7,6 +7,7 @@ import {
 } from './runtime';
 
 export const VERSION = '1.0.0';
+const CDN = 'https://splitcraft.vercel.app/sdk/';
 
 // Public API. In the CDN build these become `window.splitcraft.*`.
 export { injectStyles, onceInView, onRouteChange, waitForElement } from './helpers';
@@ -26,7 +27,7 @@ export function trackEvent(...args: TrackArgs): void {
 
 /** Start with a config already in hand (npm use). The CDN script starts itself. */
 export function start(config: ProjectConfig, opts?: StartOptions): Runtime {
-  return attach(startRuntime(config, opts));
+  return attach(startRuntime(config, { metricsUrl: `${CDN}splitcraft-metrics.iife.js`, ...opts }));
 }
 
 function attach(rt: Runtime): Runtime {
@@ -76,7 +77,7 @@ export interface InitOptions {
  */
 export function init(opts: InitOptions): Promise<Runtime | null> {
   const s = document.createElement('script');
-  s.setAttribute('src', new URL('v1.js', opts.base ?? 'https://splitcraft.vercel.app/sdk/').href);
+  s.setAttribute('src', new URL('v1.js', opts.base ?? CDN).href);
   s.setAttribute('data-project', opts.project);
   if (opts.configUrl) s.setAttribute('data-config', opts.configUrl);
   if (!opts.antiFlicker) s.setAttribute('data-antiflicker', 'off');

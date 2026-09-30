@@ -91,13 +91,20 @@ Batches go to the events endpoint as `text/plain` JSON `{ projectKey, events }` 
 
 If storage is blocked the SDK still works, with per-page state.
 
+## Split URL redirects
+
+A variant with a `url` (split URL tests) isn't applied as code. The SDK sends the exposure, keeps
+the page hidden and calls `location.replace` with the variant URL plus the current query string
+and hash (the variant URL's own parameters win). On the variant page itself nothing redirects.
+
 ## Files and size budgets
 
 | File                          | Gzipped budget | Loaded                                                  |
 | ----------------------------- | -------------- | ------------------------------------------------------- |
 | `v1.js` (`splitcraft.iife.js`) | 8 KB           | Always                                                  |
 | `splitcraft-qa.iife.js`       | 3 KB           | Only with `?splitcraft_force`                           |
-| `splitcraft-metrics.iife.js`  | 2 KB           | Only when a live experiment uses browsing or Web Vitals |
+| `splitcraft-metrics.iife.js`  | 2.5 KB         | Only when a live experiment uses browsing, Web Vitals, dataLayer or purchase goals |
+| `splitcraft-preview.iife.js`  | 4 KB           | Only by the preview extension or bookmark (`window.splitcraftPreview`) |
 
 `npm run size -w packages/sdk` checks them; CI fails when a file is over budget. The SDK has no
 runtime dependencies.

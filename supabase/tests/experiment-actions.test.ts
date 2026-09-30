@@ -117,6 +117,47 @@ describe('duplicate_experiment', () => {
     ).toEqual([{ metric_id: metric, role: 'guardrail', limit: { max: 0.02 } }]);
   });
 
+  it('copies the test type, MVT sections and split URLs', async () => {
+    const src = await newExperiment('split');
+    const factors = [{ key: 'headline', name: 'Headline', levels: [{ key: 'a', name: 'A' }] }];
+    await as(db, owner, () =>
+      q(`update experiments set type = 'split_url', factors = $2 where id = $1`, [
+        src,
+        JSON.stringify(factors),
+      ]),
+    );
+    await as(db, owner, () =>
+      q(`update variants set url = 'https://p.dev/b' where experiment_id = $1 and key = 'b'`, [
+        src,
+      ]),
+    );
+    const id = await duplicate(owner, src);
+    const [copy] = await as(db, owner, () =>
+      q('select type, factors from experiments where id = $1', [id]),
+    );
+    expect(copy).toEqual({ type: 'split_url', factors });
+    expect(
+      await as(db, owner, () =>
+        q('select key, url from variants where experiment_id = $1 order by key', [id]),
+      ),
+    ).toEqual([
+      { key: 'b', url: 'https://p.dev/b' },
+      { key: 'control', url: null },
+    ]);
+  });
+
+  it('rejects unknown types and non-http variant URLs', async () => {
+    const src = await newExperiment('checks');
+    await expect(
+      as(db, owner, () => q(`update experiments set type = 'bandit' where id = $1`, [src])),
+    ).rejects.toThrow();
+    await expect(
+      as(db, owner, () =>
+        q(`update variants set url = 'javascript:alert(1)' where experiment_id = $1`, [src]),
+      ),
+    ).rejects.toThrow();
+  });
+
   it('picks the next free key', async () => {
     const src = await newExperiment('hero');
     await duplicate(owner, src);

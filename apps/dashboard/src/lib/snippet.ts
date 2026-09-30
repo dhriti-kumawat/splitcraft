@@ -60,13 +60,17 @@ export function snippet(target: InstallTarget, v: SnippetValues): string {
   }
 }
 
+/** The preview bundle and the extension zip, next to the SDK file on the site. */
+export const PREVIEW_BUNDLE_URL = new URL('splitcraft-preview.iife.js', SDK_URL).href;
+export const EXTENSION_ZIP_URL = new URL('/extension/splitcraft-preview.zip', SDK_URL).href;
+
 /**
- * A bookmarklet that loads the SDK on the current page, for previews on pages that don't
- * have the snippet yet (decision #25). With `?splitcraft_force=` in the URL (Preview on
- * site adds it) it shows the forced variant and the QA panel. Does nothing if the SDK is
- * already there.
+ * The preview bookmarklet (decisions #25, #29): loads the preview bundle on the current
+ * page. It takes live edits from the dashboard tab that opened the page, or else the saved
+ * code named by the preview link. On a page that already has the snippet, the snippet
+ * shows the preview, so the bookmark says so instead.
  */
-export function bookmarklet(v: SnippetValues): string {
-  const code = `(function(){if(window.splitcraft){alert('Splitcraft is already on this page.');return}var s=document.createElement('script');s.src=${JSON.stringify(v.sdkUrl)};s.setAttribute('data-project',${JSON.stringify(v.publicKey)});s.setAttribute('data-config',${JSON.stringify(v.configUrl)});s.setAttribute('data-antiflicker','off');document.head.appendChild(s)})()`;
+export function bookmarklet(v: { configUrl: string; dashboard: string }): string {
+  const code = `(function(){if(window.splitcraftPreview)return;if(window.splitcraft){alert('Splitcraft is already on this page, so it shows the preview itself. Open the page with Preview on site.');return}var s=document.createElement('script');s.src=${JSON.stringify(PREVIEW_BUNDLE_URL)};s.setAttribute('data-mode','bookmark');s.setAttribute('data-dashboard',${JSON.stringify(v.dashboard)});s.setAttribute('data-config',${JSON.stringify(v.configUrl)});document.head.appendChild(s)})()`;
   return `javascript:${encodeURIComponent(code)}`;
 }

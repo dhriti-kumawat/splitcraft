@@ -52,10 +52,16 @@ describe('launchChecks', () => {
 describe('previewUrl', () => {
   it('forces the first variant on the main domain', () => {
     expect(previewUrl(draft, project)).toBe(
-      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
+      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
+        '#splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
     );
     expect(previewUrl(draft, { ...project, mainDomain: 'localhost:5173' }, 'control')).toBe(
-      'http://localhost:5173/?splitcraft_force=trust%3Acontrol&splitcraft_preview=tok-trust',
+      'http://localhost:5173/?splitcraft_force=trust%3Acontrol&splitcraft_preview=tok-trust' +
+        '#splitcraft_force=trust%3Acontrol&splitcraft_preview=tok-trust',
+    );
+    // Hash routers keep their hash.
+    expect(previewUrl({ ...draft, previewUrl: 'https://mytrips.dev/#/trips' }, project)).toBe(
+      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/trips',
     );
   });
 });
@@ -90,7 +96,41 @@ describe('test page', () => {
   it('opens the test page with the force parameter, keeping its query', () => {
     const withPage = { ...draft, previewUrl: 'https://mytrips.dev/trips/norway?ref=a' };
     expect(previewUrl(withPage, project as never)).toBe(
-      'https://mytrips.dev/trips/norway?ref=a&splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
+      'https://mytrips.dev/trips/norway?ref=a&splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
+        '#splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
     );
+  });
+});
+
+describe('launch checks by test type', () => {
+  it('split URL: every variant needs a URL and WHERE must be limited', () => {
+    const split = { ...draft, type: 'split_url' as const };
+    expect(variantsReady(split)).toBe(false);
+    const withUrl = {
+      ...split,
+      variants: split.variants.map((v) =>
+        v.key === 'b' ? { ...v, url: 'https://mytrips.dev/b' } : v,
+      ),
+    };
+    expect(variantsReady(withUrl)).toBe(true);
+    const where = (exp: typeof withUrl) =>
+      launchChecks(exp, project, true).find((c) => c.id === 'where');
+    expect(where(withUrl)).toMatchObject({ ok: false, blocking: true });
+    expect(
+      where({ ...withUrl, targeting: { where: { include: [{ op: 'is', value: '/a' }] } } }),
+    ).toMatchObject({ ok: true });
+    expect(launchChecks(draft, project, true).some((c) => c.id === 'where')).toBe(false);
+  });
+
+  it('MVT: combinations may be empty of code but must parse', () => {
+    const mvt = { ...draft, type: 'mvt' as const };
+    expect(variantsReady(mvt)).toBe(true);
+    expect(variantsReady({ ...mvt, variants: [mvt.variants[0]!] })).toBe(false);
+    expect(
+      variantsReady({
+        ...mvt,
+        variants: mvt.variants.map((v) => (v.key === 'b' ? { ...v, js: 'if (' } : v)),
+      }),
+    ).toBe(false);
   });
 });

@@ -29,6 +29,14 @@ Worked example (tested in `apps/dashboard/src/lib/stats.test.ts`): Control 12,48
 conversions and B 12,380 / 677 give +9.7% uplift (95% range −1.4% to +20.8%), 96% chance to beat
 control, and an SRM p-value of 0.53.
 
+## Multivariate tests
+
+Each combination is a variant, so the table and tests above apply to it, with the best
+combinations listed first and the top three in the chart. A table per section then pools each
+version over every combination that shows it and compares it with the section's original (the
+main effect), with the same z-test and chance to win. Main effects assume the sections don't
+interact much; the combination table shows when they do.
+
 ## The verdict
 
 The results page says in plain words whether there is a winner, a loser, or not enough data yet,
