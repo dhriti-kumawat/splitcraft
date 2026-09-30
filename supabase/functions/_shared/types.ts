@@ -27,6 +27,8 @@ export interface ConfigSource {
   experiments: Array<{
     key: string;
     name: string;
+    /** Not live: included only for a preview request (preview token). */
+    preview?: boolean;
     trafficPct: number;
     targeting: StoredTargeting;
     metricIds: string[];

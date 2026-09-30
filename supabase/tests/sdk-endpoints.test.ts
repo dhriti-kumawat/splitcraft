@@ -179,6 +179,42 @@ describe('sdk_config_source + toSdkConfig', () => {
     );
   });
 
+  it('adds a draft only for its preview token, with no targeting', async () => {
+    const [draft] = await as(db, owner, () =>
+      rows<{ id: string; preview_token: string }>(
+        `insert into experiments (project_id, key, name, status, targeting, traffic_pct)
+         values ($1, 'draft-preview', 'Draft', 'draft', '{"where":{"include":[{"op":"is","value":"/x"}]}}', 20)
+         returning id, preview_token`,
+        [projectId],
+      ),
+    );
+    const keys = (c: ConfigSource | null) => c!.experiments.map((e) => e.key);
+    expect(keys(await configSource(publicKey))).not.toContain('draft-preview');
+
+    const [row] = await as(db, service, () =>
+      rows<{ c: ConfigSource }>('select public.sdk_config_source($1, $2) as c', [
+        publicKey,
+        draft.preview_token,
+      ]),
+    );
+    expect(keys(row.c)).toContain('draft-preview');
+    const sdk = toSdkConfig(row.c, publicKey, '/e').experiments.find(
+      (e) => e.key === 'draft-preview',
+    )!;
+    expect(sdk).toMatchObject({ trafficPct: 100, targeting: {} });
+
+    const [wrong] = await as(db, service, () =>
+      rows<{ c: ConfigSource }>('select public.sdk_config_source($1, $2) as c', [
+        publicKey,
+        '00000000-0000-0000-0000-000000000000',
+      ]),
+    );
+    expect(keys(wrong.c)).not.toContain('draft-preview');
+    await as(db, owner, () =>
+      rows('delete from experiments where id = $1 returning id', [draft.id]),
+    );
+  });
+
   it('returns null for an unknown public key', async () => {
     expect(await configSource('prj_00000000000000000000000000000000')).toBeNull();
   });
