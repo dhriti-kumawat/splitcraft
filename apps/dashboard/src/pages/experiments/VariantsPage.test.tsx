@@ -84,15 +84,37 @@ describe('editor', () => {
     expect(editor('B JS')).toHaveValue('console.log(1)');
   });
 
-  it('fills the editor from a template', async () => {
+  it('fills an empty variant from the template gallery', async () => {
     const user = userEvent.setup();
     await open();
     await user.click(screen.getByRole('button', { name: 'Template' }));
-    await user.click(screen.getByRole('button', { name: 'Trust row' }));
+    const gallery = screen.getByRole('dialog', { name: 'Start from a template' });
+    await user.click(within(gallery).getByRole('button', { name: /Trust row/ }));
     expect((editor('B JS') as HTMLTextAreaElement).value).toContain(
       "splitcraft.trackEvent('trust_badges_seen')",
     );
-    expect(screen.getByRole('button', { name: 'Template' })).toHaveFocus();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('asks before replacing code, and can add the template below', async () => {
+    const user = userEvent.setup();
+    await open();
+    type('B JS', 'mine()');
+    await user.click(screen.getByRole('button', { name: 'Template' }));
+    await user.click(screen.getByRole('button', { name: /Promo banner/ }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Use “Promo banner”?' })).getByRole('button', {
+        name: 'Add below',
+      }),
+    );
+    const value = (editor('B JS') as HTMLTextAreaElement).value;
+    expect(value.startsWith('mine()')).toBe(true);
+    expect(value).toContain("bar.className = 'spl-promo'");
+
+    await user.click(screen.getByRole('button', { name: 'Template' }));
+    await user.click(screen.getByRole('button', { name: /Headline swap/ }));
+    await user.click(screen.getByRole('button', { name: 'Replace code' }));
+    expect((editor('B JS') as HTMLTextAreaElement).value).not.toContain('mine()');
   });
 
   it('keeps earlier versions and loads one back', async () => {

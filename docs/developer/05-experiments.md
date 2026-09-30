@@ -38,6 +38,9 @@ A step shows a tick when it's done.
 
 - Control is usually empty. Each other variant gets JS and CSS, with `splitcraft.*` helpers in scope
   (see [SDK reference](sdk#variant-code)).
+- **Template** opens a gallery of working starting points (headline swap, button copy and colour,
+  promo banner, sticky bar, reorder sections, image swap, trust row, hide element). If the variant
+  already has code, you choose to replace it or add the template below.
 - The editor checks syntax as you type; saving keeps the previous code as a version you can restore.
 - Weights set the split (e.g. 50 / 50); **traffic** (Basics) sets how many matching visitors enter at all.
 

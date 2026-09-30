@@ -176,44 +176,6 @@
   cursor: default;
 }
 
-.templateMenu {
-  position: relative;
-}
-
-.menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 10;
-  min-width: 170px;
-  margin: 0;
-  padding: 6px;
-  list-style: none;
-  border-radius: 8px;
-  border: 1px solid #3a4044;
-  background: var(--ink-2);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-}
-
-.menuItem {
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: #d8dcd5;
-  font: 500 13px var(--font-ui);
-  text-align: left;
-  cursor: pointer;
-}
-
-.menuItem:hover,
-.menuItem:focus-visible {
-  background: var(--ink-3);
-  color: #ffffff;
-  outline: none;
-}
-
 .code {
   flex-grow: 1;
   min-height: 420px;
