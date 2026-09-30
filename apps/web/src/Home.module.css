@@ -2,7 +2,8 @@
    the layout stacks for tablets and phones (down to 390 px). */
 
 .page {
-  overflow-x: hidden;
+  /* clip, not hidden: hidden makes this a scroll container, which stops the sticky header. */
+  overflow-x: clip;
 }
 
 .wrap {
