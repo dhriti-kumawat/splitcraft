@@ -8,7 +8,8 @@ export default defineConfig({
   base: process.env.WEB_BASE ?? '/',
   plugins: [react(), docsDev()],
   // The dashboard uses 5173 in development.
-  server: { port: 5174 },
+  // PORT lets the preview tool run a second copy next to one already on 5174.
+  server: { port: Number(process.env.PORT) || 5174 },
   test: {
     globals: true,
     environment: 'jsdom',
