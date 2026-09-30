@@ -1,5 +1,6 @@
 import { onceInView, waitForElement } from '../helpers';
 import { onRouteChange } from '../router';
+import { FORCE_PARAM, PREVIEW_PARAM } from '../qa/force';
 import { nav, splitTarget } from '../split';
 import { mountPanel, type Panel } from './panel';
 import { addSheet } from './sheets';
@@ -58,7 +59,7 @@ export function createPreview(): PreviewApi {
     }
   };
 
-  return {
+  const api: PreviewApi = {
     helpers,
     start(next, o = {}) {
       state = next;
@@ -76,7 +77,11 @@ export function createPreview(): PreviewApi {
       applyCss();
       panel = mountPanel({
         onSwitch: (variantKey) => o.onAction?.({ type: 'switch', variantKey }),
-        onStop: () => o.onAction?.({ type: 'stop' }),
+        onStop: () => {
+          // Gone at once; the extension then reloads the page without it.
+          api.stop();
+          o.onAction?.({ type: 'stop' });
+        },
       });
       runJs();
       render();
@@ -104,7 +109,30 @@ export function createPreview(): PreviewApi {
       panel = null;
       if (state) delete w[OWNED]?.[state.experimentKey];
       state = null;
+      forget();
     },
     error: setError,
   };
+  return api;
+}
+
+/** Forget the preview for this tab, so reloading shows the page as visitors see it. */
+function forget(): void {
+  const keys = [PREVIEW_PARAM, FORCE_PARAM, 'splitcraft_preview_force'];
+  try {
+    for (const k of keys) sessionStorage.removeItem(k);
+  } catch {
+    // Storage blocked: nothing was remembered.
+  }
+  const url = new URL(location.href);
+  const hash = new URLSearchParams(url.hash.slice(1));
+  let changed = false;
+  for (const k of keys) {
+    changed = url.searchParams.has(k) || hash.has(k) || changed;
+    url.searchParams.delete(k);
+    hash.delete(k);
+  }
+  if (!changed) return;
+  url.hash = hash.toString();
+  history.replaceState(history.state, '', url.href.replace(/#$/, ''));
 }

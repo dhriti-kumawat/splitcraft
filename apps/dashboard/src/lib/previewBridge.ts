@@ -225,6 +225,16 @@ export function updatePreview(state: PreviewState, select = false): void {
 export function stopPreview(): void {
   if (session?.mode === 'extension')
     void request({ type: 'stop', experimentKey: session.experimentKey }).catch(() => {});
+  if (bookmarkTab?.origin) {
+    try {
+      bookmarkTab.win.postMessage(
+        { source: 'splitcraft-dashboard', type: 'stop' },
+        bookmarkTab.origin,
+      );
+    } catch {
+      // The tab is gone.
+    }
+  }
   bookmarkTab = null;
   setSession(null);
 }

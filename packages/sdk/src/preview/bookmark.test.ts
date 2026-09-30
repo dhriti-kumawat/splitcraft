@@ -100,6 +100,16 @@ describe('preview bookmark', () => {
       { source: 'splitcraft-preview', type: 'switch', variantKey: 'control' },
       DASH,
     );
+
+    // Stop in the dashboard ends the preview on the page.
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: { source: 'splitcraft-dashboard', type: 'stop' },
+        origin: DASH,
+        source: opener as unknown as Window,
+      }),
+    );
+    expect(api.stop).toHaveBeenCalled();
     stop();
   });
 });
