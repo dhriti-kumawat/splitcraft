@@ -198,14 +198,18 @@ describe('launching', () => {
   it('marks QA as done when previewing on the site', async () => {
     const user = userEvent.setup();
     await open('/p/trip-demo/experiments/trust/basics', withExperiments(ready));
-    const preview = screen.getByRole('link', { name: 'Preview on site' });
-    expect(preview).toHaveAttribute(
-      'href',
-      `https://${PROJECTS[0]!.mainDomain}/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust`,
+    await user.click(screen.getByRole('button', { name: 'Preview on site' }));
+    const dialog = screen.getByRole('dialog', { name: 'Preview on site' });
+    const snippet = within(dialog).getByRole('link', { name: 'Open with the snippet' });
+    expect(snippet.getAttribute('href')).toMatch(
+      new RegExp(
+        `^https://${PROJECTS[0]!.mainDomain}/\\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#`,
+      ),
     );
-    expect(preview).toHaveAttribute('target', '_blank');
-    preview.addEventListener('click', (e) => e.preventDefault());
-    await user.click(preview);
+    expect(snippet).toHaveAttribute('target', '_blank');
+    snippet.addEventListener('click', (e) => e.preventDefault());
+    await user.click(snippet);
+    expect(localStorage.getItem('splitcraft_qa_trust')).toBe('1');
     localStorage.removeItem('splitcraft_qa_trust');
   });
 
@@ -246,9 +250,11 @@ describe('test page', () => {
         patch: { previewUrl: 'https://mytrips.dev/trips/norway' },
       }),
     );
-    expect(screen.getByRole('link', { name: 'Preview on site' })).toHaveAttribute(
-      'href',
-      'https://mytrips.dev/trips/norway?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
+    await user.click(screen.getByRole('button', { name: 'Preview on site' }));
+    expect(
+      screen.getByRole('link', { name: 'Open with the snippet' }).getAttribute('href'),
+    ).toMatch(
+      /^https:\/\/mytrips\.dev\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/,
     );
   });
 

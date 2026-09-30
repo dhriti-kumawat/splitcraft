@@ -103,17 +103,25 @@ export function markQaDone(experimentId: string): void {
   }
 }
 
+/** The experiment's test page, or the site's home page. */
+export function testPage(exp: Experiment, project: Pick<Project, 'mainDomain'>): string {
+  return exp.previewUrl ?? `${schemeFor(project.mainDomain)}://${project.mainDomain}/`;
+}
+
 /** URL that opens the site with a variant forced and the QA panel shown. */
 export function previewUrl(exp: Experiment, project: Project, variantKey?: string): string {
   const key =
     variantKey ?? exp.variants.find((v) => v.key !== controlKey(exp))?.key ?? controlKey(exp);
-  // The experiment's test page, or the site's home page.
-  const url = new URL(
-    exp.previewUrl ?? `${schemeFor(project.mainDomain)}://${project.mainDomain}/`,
-  );
-  url.searchParams.set('splitcraft_force', `${exp.key}:${key}`);
-  // Loads this experiment even while it's a draft (or paused), on any page.
-  url.searchParams.set('splitcraft_preview', exp.previewToken);
+  const url = new URL(testPage(exp, project));
+  const params = new URLSearchParams({
+    splitcraft_force: `${exp.key}:${key}`,
+    // Loads this experiment even while it's a draft (or paused), on any page.
+    splitcraft_preview: exp.previewToken,
+  });
+  params.forEach((v, k) => url.searchParams.set(k, v));
+  // Repeated in the hash, which survives redirects that drop the query string. Skipped
+  // when the page uses the hash itself (hash routers).
+  if (!url.hash) url.hash = params.toString();
   return url.href;
 }
 

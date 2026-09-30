@@ -1,9 +1,8 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { Project, ProjectSettings } from '../../data/api';
 import { useProjectMutations } from '../../data/queries';
 import { SUPABASE_URL } from '../../lib/env';
 import {
-  bookmarklet,
   configUrl,
   INSTALL_TARGETS,
   SDK_URL,
@@ -115,11 +114,6 @@ const SWITCHES: Array<{ key: keyof ProjectSettings; label: string; hint: string 
   { key: 'antiFlicker', label: 'Anti-flicker', hint: 'Hide page until variants apply, max 400 ms' },
   { key: 'spa', label: 'Single-page app mode', hint: 'Re-check targeting on every route change' },
   { key: 'ga4', label: 'Send events to GA4', hint: 'Push exposures to window.dataLayer' },
-  {
-    key: 'previewAnywhere',
-    label: 'Preview on pages without the snippet',
-    hint: 'Adds a preview bookmark that loads Splitcraft on any page of your site',
-  },
 ];
 
 /** Per-project SDK switches, saved as soon as they change. */
@@ -158,7 +152,10 @@ function SdkSwitches({ project }: { project: Project }) {
           </button>
         </div>
       ))}
-      {settings.previewAnywhere && <PreviewBookmark project={project} />}
+      <p className={styles.note}>
+        To preview a test before the snippet is on a page, use <b>Preview on site</b> in the
+        experiment: the Splitcraft Preview extension or bookmark shows it on any page.
+      </p>
       {update.isError ? (
         <p role="alert" className={styles.warn}>
           Couldn't save: {update.error.message}
@@ -170,55 +167,6 @@ function SdkSwitches({ project }: { project: Project }) {
           </p>
         )
       )}
-    </div>
-  );
-}
-
-/**
- * The preview bookmarklet as a link to drag to the bookmarks bar. React refuses
- * `javascript:` URLs in `href`, so it is set on the element directly.
- */
-function PreviewBookmark({ project }: { project: Project }) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const [copied, setCopied] = useState(false);
-  const code = bookmarklet({
-    sdkUrl: SDK_URL,
-    publicKey: project.publicKey,
-    configUrl: configUrl(SUPABASE_URL, project.publicKey),
-  });
-  useEffect(() => {
-    ref.current?.setAttribute('href', code);
-  }, [code]);
-  return (
-    <div className={styles.bookmark}>
-      <a
-        ref={ref}
-        className={styles.bookmarkLink}
-        onClick={(e) => e.preventDefault()}
-        aria-describedby={`${project.id}-bookmark-help`}
-      >
-        Splitcraft preview
-      </a>
-      <button
-        type="button"
-        className={styles.copyBookmark}
-        onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(code);
-            setCopied(true);
-          } catch {
-            setCopied(false);
-          }
-        }}
-      >
-        {copied ? 'Copied: paste it as a new bookmark’s URL' : 'Copy bookmark code'}
-      </button>
-      <p id={`${project.id}-bookmark-help`} className={styles.note}>
-        Drag this to your bookmarks bar. Then use <b>Preview on site</b> on an experiment and, on
-        the page that opens, click the bookmark. It loads Splitcraft with the forced variant and the
-        QA panel, for you only. Visitors still need the snippet, and some sites block bookmarklets
-        with a Content-Security-Policy.
-      </p>
     </div>
   );
 }

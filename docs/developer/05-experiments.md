@@ -57,15 +57,33 @@ A step shows a tick when it's done.
 
 - **Test page** (Basics): the page the experiment runs on, as a path (`/trips/norway`) or a full URL
   on one of the project's domains. The dashboard warns when it isn't matched by the WHERE rules.
-- **Preview on site** opens the test page (or the home page) with
-  `?splitcraft_force=<experiment>:<variant>&splitcraft_preview=<token>`. The force parameter picks
-  the variant and opens the QA panel; the secret preview token makes the config include this
-  experiment **even as a draft or paused**, with its targeting removed, so your change shows on
-  whatever page you open. The token is remembered for the browser tab.
-- **Pages without the snippet**: switch on **Preview on pages without the snippet** under the
-  project's install code, drag the **Splitcraft preview** bookmark to your bookmarks bar, open
-  Preview on site and click the bookmark. It loads the SDK on that page for you only (sites with a
-  strict Content-Security-Policy block it). Visitors still need the snippet.
+- **Preview on site** shows a variant on the real page, only to you, before launch. It opens the
+  test page (or the home page) in a new tab. Three ways, most reliable first:
+
+  | Way | Needs | Shows | Live edits |
+  | --- | --- | --- | --- |
+  | **Splitcraft Preview extension** | Chrome, Edge, Brave or Arc, installed once | Any page of the project's domains, snippet or not | Yes: CSS as you type, JS with an automatic reload |
+  | **Preview bookmark** | Dragging a bookmark once | Pages without the snippet | Yes, while the dashboard tab that opened the page stays open; otherwise the saved code |
+  | **With the snippet** | The snippet on the page | Saved code, with the QA panel | No: save, then reload |
+
+  With the extension installed, **Preview on site** opens the preview at once; the arrow next to
+  it shows the other ways. A floating **Splitcraft preview** panel on the page shows which variant
+  is on, switches variants and stops the preview. While a preview is open, the dashboard shows
+  **Previewing live**, and picking a variant in the editor shows it on the page.
+
+- **Installing the extension**: in Preview on site, download the zip (served at
+  `/extension/splitcraft-preview.zip` on the site), unzip it, open `chrome://extensions`, turn on
+  **Developer mode**, click **Load unpacked** and choose the `splitcraft-preview` folder, then
+  reload the dashboard. For sites whose Content-Security-Policy blocks running code, also turn on
+  **Allow user scripts** in the extension's **Details**: variant JS then runs through
+  `chrome.userScripts`, which the page can't block. CSS always applies (constructable style sheets).
+- **With the snippet** the link is
+  `?splitcraft_force=<experiment>:<variant>&splitcraft_preview=<token>`, repeated in the hash so it
+  survives redirects that drop the query string. The force parameter picks the variant and opens
+  the QA panel; the secret preview token makes the config include this experiment **even as a
+  draft or paused**, with its targeting removed. Both are remembered for the browser tab.
+- The extension and the bookmark own the experiment on that page: if the snippet is there too, it
+  leaves that experiment alone. Previews never send events.
 
 ## Variant code
 

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Splitcraft Preview",
+  "version": "1.0.0",
+  "description": "Preview Splitcraft experiment variants on any page, with or without the snippet. Edits in the dashboard show live.",
+  "minimum_chrome_version": "120",
+  "permissions": ["scripting", "storage", "tabs", "webNavigation", "userScripts"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Splitcraft Preview", "default_popup": "popup.html" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://splitcraft-app.vercel.app/*",
+        "http://localhost:5173/*",
+        "http://127.0.0.1:5173/*"
+      ],
+      "js": ["dashboard-bridge.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

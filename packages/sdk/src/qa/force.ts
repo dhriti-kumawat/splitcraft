@@ -2,11 +2,14 @@ export const FORCE_PARAM = 'splitcraft_force';
 const STORAGE_KEY = 'splitcraft_force';
 export const PREVIEW_PARAM = 'splitcraft_preview';
 
+/** Query string plus hash: preview links repeat their parameters in the hash, which survives redirects. */
+const linkParams = (): string => `${location.search}&${location.hash.slice(1)}`;
+
 /**
  * The preview token from `?splitcraft_preview=` ("Preview on site"), remembered for the
  * tab like forced variants. The config then includes that experiment even as a draft.
  */
-export function getPreviewToken(search = location.search): string | null {
+export function getPreviewToken(search = linkParams()): string | null {
   let token = new URLSearchParams(search).get(PREVIEW_PARAM);
   try {
     if (token) sessionStorage.setItem(PREVIEW_PARAM, token);
@@ -36,7 +39,7 @@ export function parseForce(raw: string | null): ForcedVariants {
  * Forced variants from `?splitcraft_force=`. They are remembered for the tab
  * session, so QA mode survives SPA navigation and reloads that drop the param.
  */
-export function getForcedVariants(search = location.search): ForcedVariants {
+export function getForcedVariants(search = linkParams()): ForcedVariants {
   const fromUrl = parseForce(new URLSearchParams(search).get(FORCE_PARAM));
   if (Object.keys(fromUrl).length > 0) {
     try {

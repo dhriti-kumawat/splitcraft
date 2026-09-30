@@ -1,9 +1,10 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { CodeEditor } from '../../components/CodeEditor';
 import type { MvtFactor, MvtLevel } from '../../data/api';
 import { useSetMvt } from '../../data/queries';
 import { syntaxError } from '../../lib/launch';
 import { combinationCount, combinations, MVT_LIMITS } from '../../lib/mvt';
+import { previewState, updatePreview, usePreviewSession } from '../../lib/previewBridge';
 import { useExperiment } from './experimentContext';
 import own from './MvtVariants.module.css';
 import styles from './VariantsPage.module.css';
@@ -47,6 +48,15 @@ export function MvtVariants() {
     }),
   );
   const tooMany = count > MVT_LIMITS.combinations;
+
+  // Stream unsaved section edits to the open preview as combinations.
+  const preview = usePreviewSession();
+  const live = preview?.experimentKey === experiment.key;
+  useEffect(() => {
+    if (!live || tooMany) return;
+    const t = setTimeout(() => updatePreview(previewState(experiment, combinations(factors))), 400);
+    return () => clearTimeout(t);
+  }, [live, tooMany, experiment, factors]);
 
   const edit = (fi: number, fn: (f: MvtFactor) => MvtFactor) =>
     setFactors((fs) => fs.map((f, i) => (i === fi ? fn(f) : f)));

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Splitcraft Preview</title>
+    <style>
+      body {
+        width: 300px;
+        margin: 0;
+        padding: 14px;
+        font:
+          13px/1.45 system-ui,
+          sans-serif;
+        color: #15171a;
+        background: #f4f5f2;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 14px;
+      }
+      p {
+        margin: 0 0 10px;
+        color: #5f6660;
+      }
+      #status {
+        color: #15171a;
+      }
+      .warn {
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: #fbefd9;
+        color: #8a5300;
+      }
+      button {
+        height: 32px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 6px;
+        background: #15171a;
+        color: #fff;
+        font:
+          600 13px system-ui,
+          sans-serif;
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 2px solid #0f6b57;
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Splitcraft Preview</h1>
+    <p id="status">
+      No preview in this tab. Use <b>Preview on site</b> in the Splitcraft dashboard.
+    </p>
+    <p id="scripts" class="warn" hidden>
+      To run variant JS on sites that block it, open <b>chrome://extensions</b>, choose
+      <b>Details</b> on Splitcraft Preview and turn on <b>Allow user scripts</b>.
+    </p>
+    <button id="stop" type="button" hidden>Stop preview</button>
+    <script src="popup.js"></script>
+  </body>
+</html>

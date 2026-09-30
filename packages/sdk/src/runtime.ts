@@ -146,6 +146,12 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
   let redirect: string | null = null;
 
   const runExperiment = async (exp: ExperimentConfig, st: VisitorState): Promise<void> => {
+    // The preview extension or bookmark shows this experiment on this page instead.
+    if (
+      (window as unknown as { __splitcraftPreview?: Record<string, boolean> })
+        .__splitcraftPreview?.[exp.key]
+    )
+      return;
     const t = exp.targeting;
     if (t.waitForDataLayerMs) {
       await waitForDataLayer(t, t.waitForDataLayerMs, () => {

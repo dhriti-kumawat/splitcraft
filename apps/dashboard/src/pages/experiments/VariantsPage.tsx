@@ -8,6 +8,7 @@ import {
   useVersionsQuery,
 } from '../../data/queries';
 import { controlKey } from '../../lib/experiments';
+import { previewState, updatePreview, usePreviewSession } from '../../lib/previewBridge';
 import { syntaxError } from '../../lib/launch';
 import { useExperiment } from './experimentContext';
 import { AddVariant } from './AddVariant';
@@ -62,11 +63,34 @@ function CodeVariants() {
     (addedKey && experiment.variants.find((v) => v.key === addedKey)) ||
     experiment.variants.find((v) => v.id === selectedId) ||
     experiment.variants[0]!;
+  const edits = useEditVariants(experiment);
+  const preview = usePreviewSession();
+  const live = preview?.experimentKey === experiment.key;
+  // The editor's variants as they are now, unsaved edits included.
+  const withDrafts = () => experiment.variants.map((v) => ({ ...v, ...drafts[v.id] }));
   const select = (id: string) => {
     setAddedKey(null);
     setSelectedId(id);
+    // Picking a variant here shows it in the open preview too.
+    const key = experiment.variants.find((v) => v.id === id)?.key;
+    if (live && key) updatePreview(previewState(experiment, withDrafts(), key), true);
   };
-  const edits = useEditVariants(experiment);
+
+  // Stream unsaved edits to the open preview, a moment after typing stops.
+  useEffect(() => {
+    if (!live) return;
+    const t = setTimeout(
+      () =>
+        updatePreview(
+          previewState(
+            experiment,
+            experiment.variants.map((v) => ({ ...v, ...drafts[v.id] })),
+          ),
+        ),
+      400,
+    );
+    return () => clearTimeout(t);
+  }, [live, experiment, drafts]);
 
   const current: Draft = drafts[selected.id] ?? { js: selected.js, css: selected.css };
   const dirty = (v: Variant) => {

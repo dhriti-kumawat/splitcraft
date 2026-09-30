@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useParams } from 'react-router';
 import { Button } from '../../components/Button';
 import { Dialog } from '../../components/Dialog';
@@ -19,14 +19,24 @@ import {
   canLaunch,
   launchChecks,
   markQaDone,
-  previewUrl,
+  testPage,
   qaDone,
   variantsReady,
 } from '../../lib/launch';
 import { percent } from '../../lib/experiments';
+import {
+  openWithExtension,
+  previewState,
+  projectHosts,
+  stopPreview,
+  updatePreview,
+  useExtension,
+  usePreviewSession,
+} from '../../lib/previewBridge';
 import { NotFoundPage } from '../NotFoundPage';
 import type { ExperimentContext } from './experimentContext';
 import styles from './ExperimentLayout.module.css';
+import { PreviewDialog } from './PreviewDialog';
 import { TypeTag } from './TypeTag';
 
 const VARIANTS_STEP = {
@@ -122,23 +132,7 @@ function Actions({ experiment, project }: ExperimentContext) {
         </span>
       )}
       {experiment.status !== 'ended' && !archived && (
-        <a
-          className={styles.linkButton}
-          href={previewUrl(experiment, project)}
-          title={
-            project.settings.previewAnywhere
-              ? 'Page without the snippet? Click your Splitcraft preview bookmark once it opens.'
-              : undefined
-          }
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => {
-            markQaDone(experiment.id);
-            setQa(true);
-          }}
-        >
-          Preview on site
-        </a>
+        <PreviewButton experiment={experiment} project={project} onPreviewed={() => setQa(true)} />
       )}
       {experiment.status === 'draft' && !archived && (
         <Button
@@ -310,5 +304,90 @@ function AutoPauseNote({
       {p.maxPct}% limit. Check the results before resuming; once resumed, guardrails won't pause it
       again.
     </p>
+  );
+}
+
+/**
+ * "Preview on site": with the extension installed it opens the preview at once (the
+ * arrow shows the other ways); without it, the dialog explains the options.
+ */
+function PreviewButton({
+  experiment,
+  project,
+  onPreviewed,
+}: ExperimentContext & { onPreviewed(): void }) {
+  const ext = useExtension();
+  const active = usePreviewSession();
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
+  const live = active?.experimentKey === experiment.key;
+
+  // Keep the preview in step with saved changes (the editors also send unsaved ones).
+  useEffect(() => {
+    if (live) updatePreview(previewState(experiment));
+  }, [live, experiment]);
+
+  const quick = () => {
+    setError('');
+    openWithExtension(
+      testPage(experiment, project),
+      projectHosts(project),
+      previewState(experiment),
+    ).then(
+      () => {
+        markQaDone(experiment.id);
+        onPreviewed();
+      },
+      (e: unknown) => setError(e instanceof Error ? e.message : String(e)),
+    );
+  };
+
+  return (
+    <>
+      {error && (
+        <span className={styles.error} role="alert">
+          {error}
+        </span>
+      )}
+      {live && (
+        <span className={styles.livePreview} role="status">
+          Previewing live
+          <button type="button" className={styles.stopPreview} onClick={stopPreview}>
+            Stop
+          </button>
+        </span>
+      )}
+      <span className={styles.previewGroup}>
+        <button
+          type="button"
+          className={styles.linkButton}
+          onClick={() => (ext ? quick() : setOpen(true))}
+        >
+          Preview on site
+        </button>
+        {ext && (
+          <button
+            type="button"
+            className={styles.previewMore}
+            aria-label="Other ways to preview"
+            onClick={() => setOpen(true)}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+            </svg>
+          </button>
+        )}
+      </span>
+      {open && (
+        <PreviewDialog
+          experiment={experiment}
+          project={project}
+          onClose={() => {
+            setOpen(false);
+            if (qaDone(experiment.id)) onPreviewed();
+          }}
+        />
+      )}
+    </>
   );
 }
