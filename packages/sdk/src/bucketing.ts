@@ -13,6 +13,11 @@ export interface Allocation {
   /** Share of matching visitors who enter the experiment, 0–100. */
   trafficPct: number;
   variants: VariantWeight[];
+  /**
+   * Mutual exclusion group: [name, this experiment's place, number of live experiments in
+   * the group]. A visitor belongs to one place in the group and only enters that experiment.
+   */
+  group?: [string, number, number];
 }
 
 /** Map any string to a stable bucket in 0–9999. */
@@ -28,7 +33,8 @@ export function bucketOf(input: string): number {
  * new visitors; nobody already in the experiment changes variant.
  */
 export function assignVariant(visitorId: string, allocation: Allocation): string | null {
-  const { experimentKey, trafficPct, variants } = allocation;
+  const { experimentKey, trafficPct, variants, group } = allocation;
+  if (group && bucketOf(`${group[0]}:group:${visitorId}`) % group[2] !== group[1]) return null;
 
   const trafficBucket = bucketOf(`${experimentKey}:traffic:${visitorId}`);
   if (trafficBucket >= Math.round(clamp(trafficPct, 0, 100) * 100)) return null;

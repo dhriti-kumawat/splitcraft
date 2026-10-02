@@ -13,6 +13,7 @@ splitcraft.waitForElement(selector: string, fn: (el: Element) => void, opts?: { 
 splitcraft.onceInView(el: Element, fn: () => void): void
 splitcraft.onRouteChange(fn: (url: string) => void): () => void
 splitcraft.injectStyles(css: string, id?: string): () => void
+splitcraft.isEnabled(flagKey: string): boolean
 ```
 
 | Function          | Notes                                                                                      |
@@ -22,6 +23,7 @@ splitcraft.injectStyles(css: string, id?: string): () => void
 | `onceInView`      | Runs `fn` once, the first time `el` enters the viewport.                                  |
 | `onRouteChange`   | Calls `fn` on SPA navigation (History API and back / forward). Returns an unsubscribe.    |
 | `injectStyles`    | Adds a `<style>`; calling again with the same `id` replaces it. Returns a remover.        |
+| `isEnabled`       | Whether a feature flag (Project › Feature flags) is on for this visitor. False until the config loads, and for flags that are off, rolled out to others or outside their segment. Flags use the same bucketing as experiments and send no exposure event. |
 
 Errors thrown inside your callbacks are caught and logged, never breaking the page.
 
@@ -104,7 +106,7 @@ and hash (the variant URL's own parameters win). On the variant page itself noth
 | `v1.js` (`splitcraft.iife.js`) | 8 KB           | Always                                                  |
 | `splitcraft-qa.iife.js`       | 3 KB           | Only with `?splitcraft_force`                           |
 | `splitcraft-metrics.iife.js`  | 2.5 KB         | Only when a live experiment uses browsing, Web Vitals, dataLayer or purchase goals |
-| `splitcraft-preview.iife.js`  | 4 KB           | Only by the preview extension or bookmark (`window.splitcraftPreview`) |
+| `splitcraft-preview.iife.js`  | 6 KB           | Only by the preview extension or bookmark (`window.splitcraftPreview`) |
 
 `npm run size -w packages/sdk` checks them; CI fails when a file is over budget. The SDK has no
 runtime dependencies.

@@ -126,3 +126,10 @@ export const MoreIcon = (p: IconProps) => (
     <circle cx="16" cy="10" r="2" />
   </Icon>
 );
+
+export const FlagIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 17V3.5" />
+    <path d="M5 4h9l-2 3.5 2 3.5H5" />
+  </Icon>
+);

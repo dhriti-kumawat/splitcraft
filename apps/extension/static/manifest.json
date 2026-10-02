@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Splitcraft Preview",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Preview Splitcraft experiment variants on any page, with or without the snippet. Edits in the dashboard show live.",
   "icons": {
     "16": "icons/icon-16.png",

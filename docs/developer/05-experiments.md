@@ -26,6 +26,7 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
 | A/B test          | JS and CSS that change the page                      | One idea, such as a sticky Book button      |
 | Split URL test    | Separate page URLs; the SDK redirects to them        | Redesigned pages, different page templates  |
 | Multivariate test | Every combination of section variations (generated)  | Several changes at once, to find the best mix |
+| Personalization   | One change, shown to everyone who matches (original gets 0%) | Rolling out a winner, tailoring a page to a segment |
 
 ### Split URL tests
 
@@ -57,6 +58,12 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
 - Results list every combination, best first, and add a table per section: each variation pooled
   over all combinations that show it, compared with that section's original (the main effect).
 
+### Personalization
+
+A personalization has no comparison: its original gets weight 0 and **Personalized** gets 100, so
+everyone who matches the targeting sees the change. The SDK treats it like any other test. A goal
+is optional; Results shows visitors reached and each goal's conversion rate instead of uplift.
+
 ## The five steps
 
 | Step            | What you set                                                                            |
@@ -68,6 +75,15 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
 | 5 Results       | Verdict, uplift and range, chance to win, SRM, cumulative chart (see [Results](results)) |
 
 A step shows a tick when it's done.
+
+## Exclusion groups
+
+Tests that change the same page or element can conflict. Give them the same **Exclusion group**
+(Basics › Traffic) and a visitor only ever sees one of them. The SDK hashes each visitor into one
+of the group's live tests, so live tests in a group share visitors evenly, and each still applies
+its own traffic share and targeting. Adding or removing a live test in a group moves some visitors
+between the group's tests, so set groups before launch. QA links (`?splitcraft_force=`) ignore
+groups.
 
 ## Test page and preview
 
@@ -100,6 +116,16 @@ A step shows a tick when it's done.
   draft or paused**, with its targeting removed. Both are remembered for the browser tab.
 - The extension and the bookmark own the experiment on that page: if the snippet is there too, it
   leaves that experiment alone. Previews never send events.
+
+## Visual editor
+
+In **Preview on site** (live mode, with a variation shown), the panel on the page has **Edit
+visually**. Hover outlines an element and a click selects it; then **Edit text** (elements with
+only text), **Hide**, **Text** colour or **Fill** colour. Changes show on the page at once.
+**Done** sends them to the dashboard, which adds the matching code to that variation (JS for text,
+CSS for hide and colours) and says so above the variation list. Review the code and save; nothing
+is saved before that. Selectors are generated (`#id`, or a short tag/class/`:nth-of-type` path),
+so check them on pages whose markup changes.
 
 ## Variant code
 

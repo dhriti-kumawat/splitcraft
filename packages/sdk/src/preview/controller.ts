@@ -4,6 +4,7 @@ import { FORCE_PARAM, PREVIEW_PARAM } from '../qa/force';
 import { nav, splitTarget } from '../split';
 import { mountPanel, type Panel } from './panel';
 import { addSheet } from './sheets';
+import { startVisual } from './visual';
 import type { PreviewApi, PreviewState, StartOptions } from './types';
 
 /** Experiments a preview owns; the main SDK leaves them alone (runtime.ts). */
@@ -19,6 +20,7 @@ export function createPreview(): PreviewApi {
   let opts: StartOptions = {};
   let removeCss: (() => void) | null = null;
   let panel: Panel | null = null;
+  let stopVisual: (() => void) | null = null;
   let error = '';
   let note = '';
   const w = window as unknown as Record<string, Record<string, boolean> | undefined>;
@@ -82,6 +84,19 @@ export function createPreview(): PreviewApi {
           api.stop();
           o.onAction?.({ type: 'stop' });
         },
+        onVisual: () => {
+          const variantKey = state!.variantKey;
+          stopVisual?.();
+          stopVisual = startVisual({
+            onDone: (changes) => {
+              stopVisual = null;
+              if (!changes.length) return;
+              o.onAction?.({ type: 'visual', variantKey, changes });
+              note = `${changes.length} visual ${changes.length === 1 ? 'change' : 'changes'} sent to the dashboard. Review and save them there.`;
+              render();
+            },
+          });
+        },
       });
       runJs();
       render();
@@ -103,6 +118,8 @@ export function createPreview(): PreviewApi {
       render();
     },
     stop() {
+      stopVisual?.();
+      stopVisual = null;
       removeCss?.();
       removeCss = null;
       panel?.remove();

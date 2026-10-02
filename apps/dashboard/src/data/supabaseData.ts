@@ -8,6 +8,8 @@ import type {
   SavedKind,
   SavedRules,
   DataApi,
+  FeatureFlag,
+  ProjectAlert,
   SiteScan,
   Invite,
   Experiment,
@@ -76,6 +78,7 @@ interface ExperimentRow {
   ended_at: string | null;
   archived_at: string | null;
   preview_url: string | null;
+  exclusion_group?: string | null;
   preview_token: string;
   auto_paused: Experiment['autoPaused'];
   created_at: string;
@@ -106,6 +109,7 @@ export function toExperiment(row: ExperimentRow): Experiment {
     endedAt: row.ended_at,
     archivedAt: row.archived_at,
     previewUrl: row.preview_url ?? null,
+    exclusionGroup: row.exclusion_group ?? null,
     previewToken: row.preview_token,
     autoPaused: row.auto_paused ?? null,
     createdAt: row.created_at,
@@ -119,6 +123,24 @@ export function toExperiment(row: ExperimentRow): Experiment {
 }
 
 /** "Trust badges under Book button" → "trust-badges-under-book-button". */
+const FLAG_COLUMNS = 'id, key, name, enabled, rollout_pct, segment_ids';
+interface FlagRow {
+  id: string;
+  key: string;
+  name: string;
+  enabled: boolean;
+  rollout_pct: number | string;
+  segment_ids: string[];
+}
+const toFlag = (r: FlagRow): FeatureFlag => ({
+  id: r.id,
+  key: r.key,
+  name: r.name,
+  enabled: r.enabled,
+  rolloutPct: Number(r.rollout_pct),
+  segmentIds: r.segment_ids ?? [],
+});
+
 export function experimentKey(name: string): string {
   const key = name
     .toLowerCase()
@@ -143,6 +165,7 @@ const PATCH_COLUMNS: Record<keyof ExperimentPatch, string> = {
   endedAt: 'ended_at',
   archivedAt: 'archived_at',
   previewUrl: 'preview_url',
+  exclusionGroup: 'exclusion_group',
   factors: 'factors',
 };
 
@@ -555,10 +578,15 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
           await supabase.from('variants').insert(
             type === 'mvt'
               ? [{ experiment_id: id, key: 'control', name: 'Original', weight: 100 }]
-              : [
-                  { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
-                  { experiment_id: id, key: 'b', name: 'Variation 1', weight: 50 },
-                ],
+              : type === 'personalization'
+                ? [
+                    { experiment_id: id, key: 'control', name: 'Original', weight: 0 },
+                    { experiment_id: id, key: 'b', name: 'Personalized', weight: 100 },
+                  ]
+                : [
+                    { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
+                    { experiment_id: id, key: 'b', name: 'Variation 1', weight: 50 },
+                  ],
           ),
         );
         const row = check(
@@ -765,6 +793,75 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
 
     async deleteMetric(metricId) {
       check(await supabase.from('metrics').delete().eq('id', metricId));
+    },
+
+    async listFlags(projectId) {
+      const rows = check(
+        await supabase
+          .from('feature_flags')
+          .select(FLAG_COLUMNS)
+          .eq('project_id', projectId)
+          .order('created_at'),
+      ) as FlagRow[];
+      return rows.map(toFlag);
+    },
+
+    async createFlag(projectId, flag) {
+      const { data, error } = await supabase
+        .from('feature_flags')
+        .insert({ project_id: projectId, ...flag })
+        .select(FLAG_COLUMNS)
+        .single();
+      if (error?.code === '23505') throw new Error(`The key "${flag.key}" is already used.`);
+      if (error) throw new Error(error.message);
+      return toFlag(data as FlagRow);
+    },
+
+    async updateFlag(flagId, patch) {
+      check(
+        await supabase
+          .from('feature_flags')
+          .update({
+            ...(patch.name !== undefined && { name: patch.name }),
+            ...(patch.enabled !== undefined && { enabled: patch.enabled }),
+            ...(patch.rolloutPct !== undefined && { rollout_pct: patch.rolloutPct }),
+            ...(patch.segmentIds !== undefined && { segment_ids: patch.segmentIds }),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', flagId),
+      );
+    },
+
+    async deleteFlag(flagId) {
+      check(await supabase.from('feature_flags').delete().eq('id', flagId));
+    },
+
+    async listAlerts(projectId) {
+      return check(
+        await supabase
+          .from('project_alerts')
+          .select('id, kind, url, events')
+          .eq('project_id', projectId)
+          .order('created_at'),
+      ) as ProjectAlert[];
+    },
+
+    async createAlert(projectId, alert) {
+      return check(
+        await supabase
+          .from('project_alerts')
+          .insert({ project_id: projectId, ...alert })
+          .select('id, kind, url, events')
+          .single(),
+      ) as ProjectAlert;
+    },
+
+    async deleteAlert(alertId) {
+      check(await supabase.from('project_alerts').delete().eq('id', alertId));
+    },
+
+    async testAlert(alertId) {
+      check(await supabase.rpc('send_test_alert', { p_alert: alertId }));
     },
 
     async listSegments(projectId) {

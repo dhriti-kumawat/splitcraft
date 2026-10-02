@@ -1,5 +1,7 @@
+import { visualChanges } from './protocol';
+
 // Content script in a previewed tab (isolated world): passes the preview panel's
-// "switch variant" and "stop" to the service worker. Nothing else is accepted from the
+// "switch variant", "stop" and visual editor changes to the service worker. Nothing else is accepted from the
 // page, so a site can't send code through it.
 if (!(window as unknown as { __splitcraftBridge?: boolean }).__splitcraftBridge) {
   (window as unknown as { __splitcraftBridge?: boolean }).__splitcraftBridge = true;
@@ -13,5 +15,13 @@ if (!(window as unknown as { __splitcraftBridge?: boolean }).__splitcraftBridge)
       });
     else if (d.type === 'stop')
       void chrome.runtime.sendMessage({ from: 'page', request: { type: 'stop' } });
+    else if (d.type === 'visual' && typeof d.variantKey === 'string') {
+      const changes = visualChanges((d as { changes?: unknown }).changes);
+      if (changes)
+        void chrome.runtime.sendMessage({
+          from: 'page',
+          request: { type: 'visual', variantKey: d.variantKey, changes },
+        });
+    }
   });
 }

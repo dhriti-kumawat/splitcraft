@@ -55,6 +55,14 @@ export function variant(experimentKey: string): string | null {
   return runtime?.variant(experimentKey) ?? null;
 }
 
+/**
+ * Whether a feature flag is on for this visitor. False until the config has loaded and
+ * for flags that are off, rolled out to others, or outside their segments.
+ */
+export function isEnabled(flagKey: string): boolean {
+  return runtime?.variant(flagKey) === 'on';
+}
+
 /** True once the first page's experiments have been decided. */
 export function ready(): boolean {
   return runtime?.ready() ?? false;

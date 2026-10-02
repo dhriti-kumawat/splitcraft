@@ -5,6 +5,8 @@ import type { ConditionGroup } from '../lib/targeting';
 import { TEMPLATES } from '../lib/templates';
 import type {
   Experiment,
+  FlagPatch,
+  ProjectAlert,
   ExperimentSuggestion,
   ExperimentGoal,
   ExperimentPatch,
@@ -285,11 +287,17 @@ export function useAttachGoal(projectId: string) {
     }: {
       experimentId: string;
       metricId: string;
-      role: 'primary' | 'secondary';
+      role: 'primary' | ExperimentGoal['role'];
     }) => {
       if (role === 'primary')
         await api.updateExperiment(experimentId, { primaryMetricId: metricId });
-      else await api.setExperimentGoal(experimentId, metricId, 'secondary', null);
+      else
+        await api.setExperimentGoal(
+          experimentId,
+          metricId,
+          role,
+          role === 'guardrail' ? { maxPct: 2 } : null,
+        );
     },
     onSuccess: (_, { experimentId }) => {
       for (const key of [
@@ -301,6 +309,31 @@ export function useAttachGoal(projectId: string) {
       ])
         void client.invalidateQueries({ queryKey: key });
     },
+  });
+}
+
+/** A ready-made metric as a goal: reuses the project's metric with that event key, or creates it. */
+export function useAddReadyGoal(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const attach = useAttachGoal(projectId);
+  return useMutation({
+    mutationFn: async ({
+      experimentId,
+      metric,
+      role,
+    }: {
+      experimentId: string;
+      metric: Omit<Metric, 'id' | 'projectId'>;
+      role: 'primary' | ExperimentGoal['role'];
+    }) => {
+      const existing = (await api.listMetrics(projectId)).find(
+        (m) => m.eventKey === metric.eventKey,
+      );
+      const saved = existing ?? (await api.createMetric({ projectId, ...metric }));
+      await attach.mutateAsync({ experimentId, metricId: saved.id, role });
+    },
+    onSuccess: () => void client.invalidateQueries({ queryKey: keys.metrics(projectId) }),
   });
 }
 
@@ -415,6 +448,47 @@ export function useEditVariants(experiment: Experiment) {
     onSuccess: refresh,
   });
   return { add, remove };
+}
+
+export function useFlagsQuery(projectId: string) {
+  const api = useData();
+  return useQuery({ queryKey: ['flags', projectId], queryFn: () => api.listFlags(projectId) });
+}
+
+export function useFlagMutations(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => void client.invalidateQueries({ queryKey: ['flags', projectId] });
+  return {
+    create: useMutation({
+      mutationFn: (flag: { key: string; name: string }) => api.createFlag(projectId, flag),
+      onSuccess: refresh,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, patch }: { id: string; patch: FlagPatch }) => api.updateFlag(id, patch),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => api.deleteFlag(id), onSuccess: refresh }),
+  };
+}
+
+export function useAlertsQuery(projectId: string) {
+  const api = useData();
+  return useQuery({ queryKey: ['alerts', projectId], queryFn: () => api.listAlerts(projectId) });
+}
+
+export function useAlertMutations(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => void client.invalidateQueries({ queryKey: ['alerts', projectId] });
+  return {
+    create: useMutation({
+      mutationFn: (alert: Omit<ProjectAlert, 'id'>) => api.createAlert(projectId, alert),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => api.deleteAlert(id), onSuccess: refresh }),
+    test: useMutation({ mutationFn: (id: string) => api.testAlert(id) }),
+  };
 }
 
 export function useSegmentsQuery(projectId: string, enabled = true) {

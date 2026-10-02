@@ -8,7 +8,13 @@ import {
   useVersionsQuery,
 } from '../../data/queries';
 import { controlKey } from '../../lib/experiments';
-import { previewState, updatePreview, usePreviewSession } from '../../lib/previewBridge';
+import {
+  onVisualEdit,
+  previewState,
+  updatePreview,
+  usePreviewSession,
+} from '../../lib/previewBridge';
+import { appendCode, visualCode } from '../../lib/visual';
 import { syntaxError } from '../../lib/launch';
 import { useExperiment } from './experimentContext';
 import { AddVariant } from './AddVariant';
@@ -94,6 +100,31 @@ function CodeVariants() {
     return () => clearTimeout(t);
   }, [live, experiment, drafts]);
 
+  // "Edit visually" on the site: add the generated code to that variant's draft.
+  const [visualNote, setVisualNote] = useState('');
+  useEffect(
+    () =>
+      onVisualEdit((edit) => {
+        if (edit.experimentKey !== experiment.key) return;
+        const variant = experiment.variants.find((v) => v.key === edit.variantKey);
+        const code = visualCode(edit.changes);
+        if (!variant || (!code.js && !code.css)) return;
+        setDrafts((d) => {
+          const now = d[variant.id] ?? { js: variant.js, css: variant.css };
+          return {
+            ...d,
+            [variant.id]: { js: appendCode(now.js, code.js), css: appendCode(now.css, code.css) },
+          };
+        });
+        setAddedKey(null);
+        setSelectedId(variant.id);
+        setVisualNote(
+          `Added ${edit.changes.length} visual ${edit.changes.length === 1 ? 'change' : 'changes'} to ${variant.name}. Check the code, then save.`,
+        );
+      }),
+    [experiment],
+  );
+
   const current: Draft = drafts[selected.id] ?? { js: selected.js, css: selected.css };
   const dirty = (v: Variant) => {
     const d = drafts[v.id];
@@ -106,6 +137,11 @@ function CodeVariants() {
         <span className={styles.lbl} id="variants-label">
           Variations
         </span>
+        {visualNote && (
+          <p role="status" className={styles.visualNote}>
+            {visualNote}
+          </p>
+        )}
         <ul className={styles.variantList}>
           {experiment.variants.map((v, i) => {
             const code = drafts[v.id] ?? v;
@@ -143,11 +179,21 @@ function CodeVariants() {
             );
           })}
         </ul>
-        <AddVariant
-          experiment={experiment}
-          buttonClassName={styles.add}
-          onAdded={(key) => setAddedKey(key)}
-        />
+        {experiment.type === 'personalization' ? (
+          <p className={styles.muted}>
+            Everyone who matches the targeting sees Personalized. The original stays as is.
+          </p>
+        ) : (
+          <AddVariant
+            experiment={experiment}
+            buttonClassName={styles.add}
+            onAdded={(key) => setAddedKey(key)}
+          />
+        )}
+        <p className={styles.visualTip}>
+          No code needed for simple changes: open <b>Preview on site</b>, pick a variation and click{' '}
+          <b>Edit visually</b> on the page. Point at text to rewrite it, recolour it or hide it.
+        </p>
       </section>
 
       <Editor
@@ -181,9 +227,11 @@ function CodeVariants() {
           }
           remove={edits.remove}
         />
-        <section className={styles.card} aria-label="Traffic split">
-          <TrafficSplit experiment={experiment} />
-        </section>
+        {experiment.type !== 'personalization' && (
+          <section className={styles.card} aria-label="Traffic split">
+            <TrafficSplit experiment={experiment} />
+          </section>
+        )}
         <section className={styles.card} aria-labelledby="helpers-h">
           <h2 className={styles.cardTitle} id="helpers-h">
             Built-in helpers

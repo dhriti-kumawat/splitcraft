@@ -1,7 +1,12 @@
 import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router';
 import type { Experiment, Project } from '../../data/api';
-import { useGoalsQuery, useOverviewQuery, useUpdateExperiment } from '../../data/queries';
+import {
+  useExperimentsQuery,
+  useGoalsQuery,
+  useOverviewQuery,
+  useUpdateExperiment,
+} from '../../data/queries';
 import { useWorkspace } from '../../data/workspace';
 import { matchWhereUrl } from '../../../../../packages/sdk/src/targeting';
 import { launchChecks, qaDone, testPageUrl } from '../../lib/launch';
@@ -240,19 +245,83 @@ function Traffic({ experiment }: { experiment: Experiment }) {
           {trafficError}
         </span>
       )}
-      <div className={styles.splitBar} aria-hidden="true">
-        {experiment.variants.map((v, i) => (
-          <div
-            key={v.id}
-            title={`${v.name} · ${Math.round((v.weight / total) * 100)}%`}
-            style={{ width: `${(v.weight / total) * 100}%`, background: COLORS[i % COLORS.length] }}
-          >
-            {v.name} · {Math.round((v.weight / total) * 100)}%
+      {experiment.type === 'personalization' ? (
+        <span className={styles.hint}>
+          Personalization: everyone included sees the change. There is no comparison group.
+        </span>
+      ) : (
+        <>
+          <div className={styles.splitBar} aria-hidden="true">
+            {experiment.variants.map((v, i) => (
+              <div
+                key={v.id}
+                title={`${v.name} · ${Math.round((v.weight / total) * 100)}%`}
+                style={{
+                  width: `${(v.weight / total) * 100}%`,
+                  background: COLORS[i % COLORS.length],
+                }}
+              >
+                {v.name} · {Math.round((v.weight / total) * 100)}%
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <TrafficSplit experiment={experiment} />
+          <TrafficSplit experiment={experiment} />
+        </>
+      )}
+      <ExclusionGroup experiment={experiment} />
     </section>
+  );
+}
+
+/** Mutual exclusion: tests in one group never show to the same visitor. */
+function ExclusionGroup({ experiment }: { experiment: Experiment }) {
+  const update = useUpdateExperiment(experiment);
+  const experiments = useExperimentsQuery(experiment.projectId);
+  const [group, setGroup] = useState(experiment.exclusionGroup ?? '');
+  const id = useId();
+  const others = (experiments.data ?? []).filter((e) => e.id !== experiment.id && !e.archivedAt);
+  const names = [...new Set(others.map((e) => e.exclusionGroup).filter(Boolean))] as string[];
+  const value = group.trim();
+  const sharing = others.filter((e) => value && e.exclusionGroup === value);
+  const live = sharing.filter((e) => e.status === 'live');
+  const error = value.length > 60 ? 'Use 60 characters or fewer.' : '';
+
+  const save = () => {
+    if (!error && (value || null) !== experiment.exclusionGroup)
+      update.mutate({ exclusionGroup: value || null });
+  };
+
+  return (
+    <div className={styles.field}>
+      <label htmlFor={id} className={styles.label}>
+        Exclusion group <span className={styles.hint}>· optional</span>
+      </label>
+      <input
+        id={id}
+        className={styles.input}
+        list={`${id}-list`}
+        value={group}
+        placeholder="e.g. checkout"
+        maxLength={80}
+        onChange={(e) => setGroup(e.target.value)}
+        onBlur={save}
+        aria-invalid={Boolean(error)}
+        aria-describedby={`${id}-help`}
+      />
+      <datalist id={`${id}-list`}>
+        {names.map((n) => (
+          <option key={n} value={n} />
+        ))}
+      </datalist>
+      <span id={`${id}-help`} className={error ? styles.error : styles.hint}>
+        {error ||
+          (value
+            ? sharing.length
+              ? `A visitor sees only one of: this test, ${sharing.map((e) => e.name).join(', ')}. Live tests in the group share visitors evenly${live.length ? ` (${live.length + 1} if this one is live)` : ''}.`
+              : 'No other test is in this group yet. Give tests on the same page or element the same group.'
+            : 'Tests with the same group never show to the same visitor. Use it for tests that change the same page or element.')}
+      </span>
+    </div>
   );
 }
 

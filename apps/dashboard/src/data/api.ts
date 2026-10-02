@@ -132,7 +132,7 @@ export interface NewProject {
 export type ExperimentStatus = 'draft' | 'live' | 'paused' | 'ended';
 
 /** A/B: code changes on one page. Split URL: each variant is its own page. MVT: every combination of section versions. */
-export type ExperimentType = 'ab' | 'split_url' | 'mvt';
+export type ExperimentType = 'ab' | 'split_url' | 'mvt' | 'personalization';
 
 /** One version of an MVT section. The first version of each section is the original (no code). */
 export interface MvtLevel {
@@ -184,6 +184,8 @@ export interface Experiment {
   archivedAt: string | null;
   /** The page it runs on, opened by "Preview on site". Null: the home page. */
   previewUrl: string | null;
+  /** Mutual exclusion group: live tests in the same group never show to the same visitor. */
+  exclusionGroup: string | null;
   /** Secret that lets a preview link load this experiment even before launch. */
   previewToken: string;
   /** Set when a crossed guardrail paused it automatically (it isn't paused again after). */
@@ -227,6 +229,7 @@ export type ExperimentPatch = Partial<
     | 'endedAt'
     | 'archivedAt'
     | 'previewUrl'
+    | 'exclusionGroup'
     | 'factors'
   >
 >;
@@ -343,6 +346,31 @@ export interface SiteScan {
   suggestions: ExperimentSuggestion[];
 }
 
+/** A feature flag: on for `rolloutPct`% of visitors, optionally only in some segments. */
+export interface FeatureFlag {
+  id: string;
+  key: string;
+  name: string;
+  enabled: boolean;
+  rolloutPct: number;
+  /** Empty: everyone. Otherwise visitors in any of these segments. */
+  segmentIds: string[];
+}
+
+export type FlagPatch = Partial<
+  Pick<FeatureFlag, 'name' | 'enabled' | 'rolloutPct' | 'segmentIds'>
+>;
+
+export type AlertEvent = 'guardrail_paused' | 'sample_reached' | 'winner_found';
+
+/** Where a project sends alerts: a Slack incoming webhook or any HTTPS endpoint. */
+export interface ProjectAlert {
+  id: string;
+  kind: 'slack' | 'webhook';
+  url: string;
+  events: AlertEvent[];
+}
+
 /** Everything the dashboard reads and writes. Supabase implements it; tests use a fake. */
 export interface DataApi {
   listWorkspaces(userId: string): Promise<Workspace[]>;
@@ -410,6 +438,15 @@ export interface DataApi {
   updateMetric(metricId: string, patch: Partial<Omit<Metric, 'id' | 'projectId'>>): Promise<Metric>;
   deleteMetric(metricId: string): Promise<void>;
   listSegments(projectId: string): Promise<Segment[]>;
+  listFlags(projectId: string): Promise<FeatureFlag[]>;
+  createFlag(projectId: string, flag: { key: string; name: string }): Promise<FeatureFlag>;
+  updateFlag(flagId: string, patch: FlagPatch): Promise<void>;
+  deleteFlag(flagId: string): Promise<void>;
+  listAlerts(projectId: string): Promise<ProjectAlert[]>;
+  createAlert(projectId: string, alert: Omit<ProjectAlert, 'id'>): Promise<ProjectAlert>;
+  deleteAlert(alertId: string): Promise<void>;
+  /** Posts a test message to the alert's URL. */
+  testAlert(alertId: string): Promise<void>;
   createSegment(projectId: string, name: string, rules: ConditionGroup): Promise<Segment>;
   updateSegment(
     segmentId: string,

@@ -127,7 +127,14 @@ describe('sidebar', () => {
     const links = within(projectNav)
       .getAllByRole('link')
       .map((a) => a.textContent);
-    expect(links).toEqual(['Experiments', 'Audiences', 'Metrics', 'Install', 'Settings']);
+    expect(links).toEqual([
+      'Experiments',
+      'Audiences',
+      'Metrics',
+      'Feature flags',
+      'Install',
+      'Settings',
+    ]);
     expect(within(projectNav).getByRole('link', { name: 'Audiences' })).toHaveAttribute(
       'aria-current',
       'page',

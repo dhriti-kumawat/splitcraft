@@ -497,3 +497,22 @@ describe('session ping', () => {
     });
   });
 });
+
+describe('feature flags', () => {
+  const flag = (key: string, trafficPct: number): ExperimentConfig => ({
+    key,
+    name: key,
+    trafficPct,
+    variants: [{ key: 'on', name: 'On', weight: 1 }],
+    targeting: {},
+    flag: true,
+  });
+
+  it('turns a flag on by rollout share and sends no exposure for it', async () => {
+    runtime = start(config([flag('new-search', 100), flag('dark-mode', 0)]));
+    await settle();
+    expect(runtime.variant('new-search')).toBe('on');
+    expect(runtime.variant('dark-mode')).toBeNull();
+    expect(await sentEvents()).toEqual([]);
+  });
+});

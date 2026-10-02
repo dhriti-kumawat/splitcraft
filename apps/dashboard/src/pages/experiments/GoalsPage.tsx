@@ -1,13 +1,15 @@
 import { useId, useState } from 'react';
 import { Link } from 'react-router';
+import { Button } from '../../components/Button';
 import type { ExperimentGoal, Metric } from '../../data/api';
 import {
+  useAddReadyGoal,
   useGoalMutations,
   useGoalsQuery,
   useMetricsQuery,
   useUpdateExperiment,
 } from '../../data/queries';
-import { MEASURES, metricDetail } from '../../lib/metrics';
+import { MEASURES, metricDetail, READY_METRICS } from '../../lib/metrics';
 import { useExperiment } from './experimentContext';
 import styles from './GoalsPage.module.css';
 
@@ -45,9 +47,15 @@ export function GoalsPage() {
   ]);
   const unused = (metrics.data ?? []).filter((m) => !usedIds.has(m.id));
   const started = experiment.status !== 'draft';
-  const newMetric = (src: string, role: 'primary' | 'secondary') =>
+  const ready = useAddReadyGoal(project.id);
+  const usedKeys = new Set(
+    (metrics.data ?? []).filter((m) => usedIds.has(m.id)).map((m) => m.eventKey),
+  );
+  const readyLeft = READY_METRICS.filter((r) => !usedKeys.has(r.metric.eventKey));
+  const nextRole = primary ? ('secondary' as const) : ('primary' as const);
+  const newMetric = (src: string, role: 'primary' | 'secondary' | 'guardrail') =>
     `/p/${project.id}/metrics/new?source=${src}&experiment=${experiment.id}&role=${role}`;
-  const failed = update.error ?? set.error ?? remove.error;
+  const failed = update.error ?? set.error ?? remove.error ?? ready.error;
   const ids = { primary: useId(), secondary: useId(), guard: useId() };
 
   const setPrimary = (metricId: string) => {
@@ -166,6 +174,7 @@ export function GoalsPage() {
           )}
           <AddGoal
             label="Add secondary goal"
+            newHref={newMetric('click', 'secondary')}
             metrics={unused}
             onAdd={(id) => set.mutate({ metricId: id, role: 'secondary', limit: null })}
           />
@@ -190,6 +199,7 @@ export function GoalsPage() {
           ))}
           <AddGoal
             label="Add guardrail"
+            newHref={newMetric('click', 'guardrail')}
             metrics={unused}
             onAdd={(id) => set.mutate({ metricId: id, role: 'guardrail', limit: { maxPct: 2 } })}
           />
@@ -207,6 +217,37 @@ export function GoalsPage() {
             All metrics
           </Link>
         </div>
+        {readyLeft.length > 0 && (
+          <>
+            <span className={styles.sub}>Ready-made, one click</span>
+            <ul className={styles.readyList}>
+              {readyLeft.map((r) => (
+                <li key={r.metric.eventKey} className={styles.ready}>
+                  <span>
+                    <span className={styles.gn}>{r.metric.name}</span>
+                    <span className={styles.gd}>{r.text}</span>
+                  </span>
+                  <Button
+                    variant="secondary"
+                    className={styles.readyAdd}
+                    disabled={ready.isPending}
+                    aria-label={`Add ${r.metric.name} as ${nextRole} goal`}
+                    onClick={() =>
+                      ready.mutate({
+                        experimentId: experiment.id,
+                        metric: r.metric,
+                        role: nextRole,
+                      })
+                    }
+                  >
+                    Add
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            <span className={styles.sub}>Or build your own</span>
+          </>
+        )}
         {[
           { source: 'click', name: 'Action', text: 'Click on an element, by CSS selector' },
           {
@@ -258,33 +299,41 @@ export function GoalsPage() {
 
 function AddGoal({
   label,
+  newHref,
   metrics,
   onAdd,
 }: {
   label: string;
+  newHref: string;
   metrics: Metric[];
   onAdd(id: string): void;
 }) {
   const id = useId();
-  if (metrics.length === 0) return null;
   return (
     <div className={styles.addRow}>
-      <label htmlFor={id} className="visually-hidden">
-        {label}
-      </label>
-      <select
-        id={id}
-        className={styles.select}
-        value=""
-        onChange={(e) => e.target.value && onAdd(e.target.value)}
-      >
-        <option value="">+ {label}</option>
-        {metrics.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.name}
-          </option>
-        ))}
-      </select>
+      {metrics.length > 0 && (
+        <>
+          <label htmlFor={id} className="visually-hidden">
+            {label}
+          </label>
+          <select
+            id={id}
+            className={styles.select}
+            value=""
+            onChange={(e) => e.target.value && onAdd(e.target.value)}
+          >
+            <option value="">+ {label}</option>
+            {metrics.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
+      <Link to={newHref} className={styles.newLink} aria-label={`${label}: create a new metric`}>
+        {metrics.length > 0 ? 'or create a new metric' : `+ ${label}: create a metric`}
+      </Link>
     </div>
   );
 }

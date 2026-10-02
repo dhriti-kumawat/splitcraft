@@ -31,6 +31,8 @@ export interface ConfigSource {
     preview?: boolean;
     trafficPct: number;
     targeting: StoredTargeting;
+    /** Exclusion group: [name, this test's place among its live tests, their count]. */
+    group?: [string, number, number] | null;
     metricIds: string[];
     variants: Array<{
       key: string;
@@ -45,6 +47,8 @@ export interface ConfigSource {
   metrics: Array<{ id: string; eventKey: string; source: string; sourceConfig: Json }>;
   /** projects.settings: `{ antiFlicker?, spa?, ga4? }`, each on unless false. */
   settings?: Json;
+  /** Enabled feature flags. */
+  flags?: Array<{ key: string; name: string; rolloutPct: number | string; segmentIds: string[] }>;
 }
 
 export interface SdkProjectConfig {
@@ -54,6 +58,10 @@ export interface SdkProjectConfig {
     key: string;
     name: string;
     trafficPct: number;
+    /** Exclusion group: [name, place, count]; see sdk bucketing. */
+    group?: [string, number, number];
+    /** A feature flag: one variant `on`; no code and no exposure event. */
+    flag?: true;
     variants: Array<{
       key: string;
       name: string;

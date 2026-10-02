@@ -18,6 +18,8 @@ import type {
   VariantStats,
   Workspace,
   SiteScan,
+  FeatureFlag,
+  ProjectAlert,
 } from '../data/api';
 
 export const WORKSPACE: Workspace = {
@@ -132,6 +134,7 @@ const experiment = (
   endedAt: null,
   archivedAt: null,
   previewUrl: null,
+  exclusionGroup: null,
   previewToken: `tok-${e.id}`,
   autoPaused: null,
   createdAt: daysAgo(30),
@@ -461,6 +464,7 @@ export function fakeData(
     triggers?: Saved<'triggers'>[];
     pageSets?: Saved<'page_sets'>[];
     siteScan?: SiteScan | Error;
+    flags?: FeatureFlag[];
   } = {},
 ) {
   const projects = (opts.projects ?? PROJECTS).map((p) => ({
@@ -491,6 +495,12 @@ export function fakeData(
     Array<{ id: string; js: string; css: string; note: string; createdAt: string }>
   > = {};
   const createdExperiments: string[] = [];
+  const flags: Array<FeatureFlag & { projectId: string }> = (opts.flags ?? []).map((f) => ({
+    ...f,
+    projectId: 'trip-demo',
+  }));
+  const alerts: Array<ProjectAlert & { projectId: string }> = [];
+  const testedAlerts: string[] = [];
   const created: NewProject[] = [];
   let installNext = false;
 
@@ -701,6 +711,63 @@ export function fakeData(
         };
       });
     },
+    listFlags: async (projectId) =>
+      flags
+        .filter((f) => f.projectId === projectId)
+        .map((f) => ({
+          id: f.id,
+          key: f.key,
+          name: f.name,
+          enabled: f.enabled,
+          rolloutPct: f.rolloutPct,
+          segmentIds: [...f.segmentIds],
+        })),
+    async createFlag(projectId, { key, name }) {
+      if (flags.some((f) => f.projectId === projectId && f.key === key))
+        throw new Error(`The key "${key}" is already used.`);
+      const row = {
+        id: `flag-${flags.length + 1}`,
+        projectId,
+        key,
+        name,
+        enabled: false,
+        rolloutPct: 100,
+        segmentIds: [],
+      };
+      flags.push(row);
+      return { ...row };
+    },
+    async updateFlag(id, patch) {
+      Object.assign(
+        flags.find((f) => f.id === id)!,
+        patch,
+      );
+    },
+    async deleteFlag(id) {
+      flags.splice(
+        flags.findIndex((f) => f.id === id),
+        1,
+      );
+    },
+    listAlerts: async (projectId) =>
+      alerts
+        .filter((a) => a.projectId === projectId)
+        .map((a) => ({ id: a.id, kind: a.kind, url: a.url, events: [...a.events] })),
+    async createAlert(projectId, alert) {
+      if (!/^https:\/\/[^\s/]+\.\S+$/.test(alert.url)) throw new Error('violates check constraint');
+      const row = { ...alert, id: `alert-${alerts.length + 1}`, projectId };
+      alerts.push(row);
+      return { id: row.id, kind: row.kind, url: row.url, events: [...row.events] };
+    },
+    async deleteAlert(id) {
+      alerts.splice(
+        alerts.findIndex((a) => a.id === id),
+        1,
+      );
+    },
+    async testAlert(id) {
+      testedAlerts.push(id);
+    },
     listSegments: async (projectId) =>
       segments.filter((x) => x.projectId === projectId).map((x) => ({ ...x })),
     async createSegment(projectId, name, rules) {
@@ -826,7 +893,13 @@ export function fakeData(
             ? [{ ...variants(id)[0]!, name: 'Original', weight: 100 }]
             : variants(id).map((v) => ({
                 ...v,
-                name: v.key === 'control' ? 'Original' : 'Variation 1',
+                name:
+                  v.key === 'control'
+                    ? 'Original'
+                    : type === 'personalization'
+                      ? 'Personalized'
+                      : 'Variation 1',
+                ...(type === 'personalization' && { weight: v.key === 'control' ? 0 : 100 }),
               })),
         status: 'draft',
         projectId,
@@ -868,6 +941,9 @@ export function fakeData(
       invitesByToken[token] = { invite: full, workspaceName };
     },
     goalsNow: () => goals,
+    flagsNow: () => flags,
+    alertsNow: () => alerts,
+    testedAlerts,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;
