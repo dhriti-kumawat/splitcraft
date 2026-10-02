@@ -29,6 +29,7 @@ policies at all: only the contact function writes it, and you read it in the Sup
 | `guardrail_status`, `auto_pause_guardrails` | Guardrail checks and the 15-minute auto pause (pg_cron) |
 | `project_overview`, `workspace_events_this_month` | Project cards and the usage meter      |
 | `workspace_activity`             | Recent activity                                         |
+| `pending_alerts`, `send_alerts`, `send_test_alert` | Slack and webhook alerts (pg_cron every 15 minutes, posted with pg_net); `alert_deliveries` keeps each alert to one send per test |
 | `project_session_sample`         | Reach estimates                                         |
 | `duplicate_experiment`           | Duplicate                                               |
 | `workspace_people`, `invite_details`, `accept_invite` | Team and invites                   |

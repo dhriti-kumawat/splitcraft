@@ -18,6 +18,7 @@ import type {
   VariantStats,
   Workspace,
   SiteScan,
+  ProjectAlert,
 } from '../data/api';
 
 export const WORKSPACE: Workspace = {
@@ -492,6 +493,8 @@ export function fakeData(
     Array<{ id: string; js: string; css: string; note: string; createdAt: string }>
   > = {};
   const createdExperiments: string[] = [];
+  const alerts: Array<ProjectAlert & { projectId: string }> = [];
+  const testedAlerts: string[] = [];
   const created: NewProject[] = [];
   let installNext = false;
 
@@ -702,6 +705,25 @@ export function fakeData(
         };
       });
     },
+    listAlerts: async (projectId) =>
+      alerts
+        .filter((a) => a.projectId === projectId)
+        .map((a) => ({ id: a.id, kind: a.kind, url: a.url, events: [...a.events] })),
+    async createAlert(projectId, alert) {
+      if (!/^https:\/\/[^\s/]+\.\S+$/.test(alert.url)) throw new Error('violates check constraint');
+      const row = { ...alert, id: `alert-${alerts.length + 1}`, projectId };
+      alerts.push(row);
+      return { id: row.id, kind: row.kind, url: row.url, events: [...row.events] };
+    },
+    async deleteAlert(id) {
+      alerts.splice(
+        alerts.findIndex((a) => a.id === id),
+        1,
+      );
+    },
+    async testAlert(id) {
+      testedAlerts.push(id);
+    },
     listSegments: async (projectId) =>
       segments.filter((x) => x.projectId === projectId).map((x) => ({ ...x })),
     async createSegment(projectId, name, rules) {
@@ -875,6 +897,8 @@ export function fakeData(
       invitesByToken[token] = { invite: full, workspaceName };
     },
     goalsNow: () => goals,
+    alertsNow: () => alerts,
+    testedAlerts,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;

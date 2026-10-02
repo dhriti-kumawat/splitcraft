@@ -89,3 +89,55 @@ describe('project settings', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('alerts', () => {
+  it('adds a Slack alert, sends a test and removes it', async () => {
+    const user = userEvent.setup();
+    const { alertsNow, testedAlerts } = await open();
+    const section = screen.getByRole('region', { name: 'Alerts' });
+    expect(await within(section).findByText('No alerts yet.')).toBeInTheDocument();
+
+    await user.click(within(section).getByRole('button', { name: 'Add alert' }));
+    expect(within(section).getByText(/Paste the Slack incoming webhook URL/)).toBeInTheDocument();
+
+    await user.type(
+      within(section).getByLabelText('Slack webhook URL'),
+      'https://hooks.slack.com/services/T0/B0/secret',
+    );
+    await user.click(
+      within(section).getByRole('checkbox', { name: 'The planned sample is reached' }),
+    );
+    await user.click(within(section).getByRole('button', { name: 'Add alert' }));
+    expect(await within(section).findByText('https://hooks.slack.com/…')).toBeInTheDocument();
+    expect(alertsNow()[0]).toMatchObject({
+      kind: 'slack',
+      events: ['winner_found', 'guardrail_paused'],
+    });
+
+    await user.click(within(section).getByRole('button', { name: 'Send a test to Slack alert' }));
+    await vi.waitFor(() => expect(testedAlerts).toEqual(['alert-1']));
+    expect(
+      within(section).getByRole('button', { name: 'Send a test to Slack alert' }),
+    ).toHaveTextContent('Sent');
+
+    await user.click(within(section).getByRole('button', { name: 'Remove Slack alert' }));
+    expect(await within(section).findByText('No alerts yet.')).toBeInTheDocument();
+  });
+
+  it('needs an https webhook URL and at least one alert', async () => {
+    const user = userEvent.setup();
+    await open();
+    const section = screen.getByRole('region', { name: 'Alerts' });
+    await user.selectOptions(within(section).getByLabelText('Send to'), 'webhook');
+    await user.type(within(section).getByLabelText('Webhook URL'), 'http://x.dev/hook');
+    for (const name of [
+      'A clear winner on the primary goal',
+      'The planned sample is reached',
+      'A guardrail paused a test',
+    ])
+      await user.click(within(section).getByRole('checkbox', { name }));
+    await user.click(within(section).getByRole('button', { name: 'Add alert' }));
+    expect(within(section).getByText('Enter an https:// URL.')).toBeInTheDocument();
+    expect(within(section).getByText('Pick at least one alert.')).toBeInTheDocument();
+  });
+});

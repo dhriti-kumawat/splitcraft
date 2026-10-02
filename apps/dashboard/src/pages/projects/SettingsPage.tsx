@@ -5,15 +5,15 @@ import { Dialog } from '../../components/Dialog';
 import dialogStyles from '../../components/Dialog.module.css';
 import { DomainInput } from '../../components/DomainInput';
 import { PageHeader } from '../../components/PageHeader';
-import type { Project } from '../../data/api';
-import { useProjectMutations } from '../../data/queries';
+import type { AlertEvent, Project, ProjectAlert } from '../../data/api';
+import { useAlertMutations, useAlertsQuery, useProjectMutations } from '../../data/queries';
 import { useCurrentProject, useWorkspace } from '../../data/workspace';
 import { isValidMainDomain, normalizeDomain } from '../../lib/domains';
 import styles from './SettingsPage.module.css';
 
 const date = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-/** Project › Settings: details, SDK key and deleting the project. */
+/** Project › Settings: details, SDK key, alerts and deleting the project. */
 export function SettingsPage() {
   const project = useCurrentProject()!;
   return (
@@ -22,6 +22,7 @@ export function SettingsPage() {
       <div className={styles.page}>
         <General key={project.id} project={project} />
         <Sdk project={project} />
+        <Alerts project={project} />
         <DangerZone project={project} />
       </div>
     </>
@@ -213,6 +214,169 @@ function Sdk({ project }: { project: Project }) {
       <Link to={`/p/${project.id}/install`} className={styles.sub} style={{ fontWeight: 600 }}>
         View install code
       </Link>
+    </section>
+  );
+}
+
+const ALERT_EVENTS: Array<{ id: AlertEvent; label: string }> = [
+  { id: 'winner_found', label: 'A clear winner on the primary goal' },
+  { id: 'sample_reached', label: 'The planned sample is reached' },
+  { id: 'guardrail_paused', label: 'A guardrail paused a test' },
+];
+
+const KIND_LABEL: Record<ProjectAlert['kind'], string> = { slack: 'Slack', webhook: 'Webhook' };
+
+function Alerts({ project }: { project: Project }) {
+  const alerts = useAlertsQuery(project.id);
+  const { create, remove, test } = useAlertMutations(project.id);
+  const [kind, setKind] = useState<ProjectAlert['kind']>('slack');
+  const [url, setUrl] = useState('');
+  const [events, setEvents] = useState<AlertEvent[]>(ALERT_EVENTS.map((e) => e.id));
+  const [submitted, setSubmitted] = useState(false);
+  const ids = { kind: useId(), url: useId(), events: useId() };
+  const urlError = /^https:\/\/[^\s/]+\.\S+$/.test(url.trim())
+    ? ''
+    : kind === 'slack'
+      ? 'Paste the Slack incoming webhook URL, starting with https://hooks.slack.com/.'
+      : 'Enter an https:// URL.';
+  const eventsError = events.length ? '' : 'Pick at least one alert.';
+
+  const add = () => {
+    setSubmitted(true);
+    if (urlError || eventsError) return;
+    create.mutate(
+      { kind, url: url.trim(), events },
+      {
+        onSuccess: () => {
+          setUrl('');
+          setSubmitted(false);
+        },
+      },
+    );
+  };
+  const failed = create.error ?? remove.error ?? test.error;
+
+  return (
+    <section className={styles.section} aria-labelledby="alerts-h">
+      <div className={styles.head}>
+        <h2 className={styles.title} id="alerts-h">
+          Alerts
+        </h2>
+        <p className={styles.sub}>
+          Get a message in Slack or at your own webhook when a test needs you. Checked every 15
+          minutes; each test sends each alert once.
+        </p>
+      </div>
+
+      {failed && (
+        <p role="alert" className={styles.error}>
+          Couldn't save: {failed.message}
+        </p>
+      )}
+
+      {alerts.isPending ? (
+        <p className={styles.sub} aria-busy="true">
+          Loading alerts…
+        </p>
+      ) : alerts.isError ? (
+        <p role="alert" className={styles.error}>
+          Couldn't load alerts.
+        </p>
+      ) : alerts.data.length === 0 ? (
+        <p className={styles.sub}>No alerts yet.</p>
+      ) : (
+        <ul className={styles.alertList}>
+          {alerts.data.map((a) => (
+            <li key={a.id} className={styles.alertItem}>
+              <span className={styles.alertText}>
+                <b>{KIND_LABEL[a.kind]}</b>{' '}
+                <span className={styles.mono}>
+                  {a.url.replace(/^(https:\/\/[^/]+\/).{8,}$/, '$1…')}
+                </span>
+                <span className={styles.sub}>
+                  {ALERT_EVENTS.filter((e) => a.events.includes(e.id))
+                    .map((e) => e.label)
+                    .join(' · ')}
+                </span>
+              </span>
+              <Button
+                variant="secondary"
+                onClick={() => test.mutate(a.id)}
+                disabled={test.isPending}
+                aria-label={`Send a test to ${KIND_LABEL[a.kind]} alert`}
+              >
+                {test.isSuccess && test.variables === a.id ? 'Sent' : 'Send test'}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => remove.mutate(a.id)}
+                aria-label={`Remove ${KIND_LABEL[a.kind]} alert`}
+              >
+                Remove
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className={styles.row}>
+        <div className={styles.field} style={{ flex: '0 0 140px', minWidth: 0 }}>
+          <label htmlFor={ids.kind} className={styles.label}>
+            Send to
+          </label>
+          <select
+            id={ids.kind}
+            className={styles.input}
+            value={kind}
+            onChange={(e) => setKind(e.target.value as ProjectAlert['kind'])}
+          >
+            <option value="slack">Slack</option>
+            <option value="webhook">Webhook</option>
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor={ids.url} className={styles.label}>
+            {kind === 'slack' ? 'Slack webhook URL' : 'Webhook URL'}
+          </label>
+          <input
+            id={ids.url}
+            className={styles.input}
+            value={url}
+            placeholder={kind === 'slack' ? 'https://hooks.slack.com/services/…' : 'https://'}
+            onChange={(e) => setUrl(e.target.value)}
+            aria-invalid={submitted && Boolean(urlError)}
+            aria-describedby={submitted && urlError ? `${ids.url}-err` : undefined}
+          />
+          {submitted && urlError && (
+            <span id={`${ids.url}-err`} className={styles.error}>
+              {urlError}
+            </span>
+          )}
+        </div>
+      </div>
+      <fieldset className={styles.checks}>
+        <legend className={styles.label}>Alert me when</legend>
+        {ALERT_EVENTS.map((e) => (
+          <label key={e.id} className={styles.check}>
+            <input
+              type="checkbox"
+              checked={events.includes(e.id)}
+              onChange={(ev) =>
+                setEvents((list) =>
+                  ev.target.checked ? [...list, e.id] : list.filter((x) => x !== e.id),
+                )
+              }
+            />
+            {e.label}
+          </label>
+        ))}
+        {submitted && eventsError && <span className={styles.error}>{eventsError}</span>}
+      </fieldset>
+      <div>
+        <Button onClick={add} disabled={create.isPending}>
+          {create.isPending ? 'Adding…' : 'Add alert'}
+        </Button>
+      </div>
     </section>
   );
 }
