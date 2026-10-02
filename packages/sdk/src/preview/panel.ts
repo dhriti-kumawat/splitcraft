@@ -29,7 +29,11 @@ export interface Panel {
 }
 
 /** The floating preview panel: which variant shows, switch buttons, stop. */
-export function mountPanel(handlers: { onSwitch(key: string): void; onStop(): void }): Panel {
+export function mountPanel(handlers: {
+  onSwitch(key: string): void;
+  onStop(): void;
+  onVisual(): void;
+}): Panel {
   document.getElementById(PANEL_ID)?.remove();
   const host = document.createElement('div');
   host.id = PANEL_ID;
@@ -83,7 +87,15 @@ export function mountPanel(handlers: { onSwitch(key: string): void; onStop(): vo
       if (note) parts.push(el('p', { class: 'msg' }, note));
       const stop = el('button', { type: 'button', class: 'ghost' }, 'Stop preview');
       stop.onclick = handlers.onStop;
-      parts.push(el('div', { class: 'actions' }, stop));
+      const actions = el('div', { class: 'actions' });
+      // Visual edits go back to the open dashboard, so only in live mode, on a variation.
+      if (state.source === 'live' && state.variantKey !== state.variants[0]?.key) {
+        const edit = el('button', { type: 'button' }, 'Edit visually');
+        edit.onclick = handlers.onVisual;
+        actions.append(edit);
+      }
+      actions.append(stop);
+      parts.push(actions);
     }
     section.replaceChildren(...parts);
   };
@@ -96,7 +108,7 @@ export function mountPanel(handlers: { onSwitch(key: string): void; onStop(): vo
 }
 
 /** Build an element. Text goes in as text, never HTML, so names are safe. */
-function el<K extends keyof HTMLElementTagNameMap>(
+export function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   attrs: Record<string, string> = {},
   ...children: Array<Node | string>

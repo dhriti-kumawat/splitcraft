@@ -7,6 +7,7 @@ import {
   type PageRequest,
   type PingReply,
   type PreviewState,
+  visualChanges,
 } from './protocol';
 import { currentJs, hostAllowed, userScriptCode, type Session } from './sessions';
 
@@ -164,6 +165,15 @@ async function fromPage(msg: PageRequest, tabId: number): Promise<void> {
       variantKey: msg.variantKey,
     });
     await chrome.tabs.reload(tabId);
+  } else if (msg.type === 'visual' && s.state.variants.some((v) => v.key === msg.variantKey)) {
+    const changes = visualChanges(msg.changes);
+    if (changes)
+      tellDashboard(s, {
+        type: 'visual',
+        experimentKey: s.state.experimentKey,
+        variantKey: msg.variantKey,
+        changes,
+      });
   } else if (msg.type === 'stop') {
     await dropSession(tabId);
     tellDashboard(s, { type: 'stopped', experimentKey: s.state.experimentKey });
