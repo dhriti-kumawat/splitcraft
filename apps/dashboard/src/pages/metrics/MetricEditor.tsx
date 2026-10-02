@@ -100,14 +100,16 @@ function Form({
   const { create, update, remove } = useMetricMutations(projectId);
   const experiments = useExperimentsQuery(projectId);
   const attach = useAttachGoal(projectId);
-  // ?experiment=<id>&role=primary|secondary: opened from that experiment's Goals step.
+  // ?experiment=<id>&role=primary|secondary|guardrail: opened from that experiment's Goals step.
   const [params] = useSearchParams();
   const forId = params.get('experiment');
   const goalFor =
     !metric && forId && experiments.data?.some((e) => e.id === forId)
       ? {
           experimentId: forId,
-          role: params.get('role') === 'primary' ? ('primary' as const) : ('secondary' as const),
+          role:
+            (['primary', 'guardrail'] as const).find((r) => r === params.get('role')) ??
+            ('secondary' as const),
         }
       : null;
   const cfg = metric?.sourceConfig ?? {};
