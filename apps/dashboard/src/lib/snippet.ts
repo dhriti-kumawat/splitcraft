@@ -60,6 +60,10 @@ export function snippet(target: InstallTarget, v: SnippetValues): string {
   }
 }
 
+/** The marketing site and its docs, which host the SDK too. */
+export const SITE_URL = new URL('/', SDK_URL).href;
+export const DOCS_URL = new URL('/docs/', SDK_URL).href;
+
 /** The preview bundle and the extension zip, next to the SDK file on the site. */
 export const PREVIEW_BUNDLE_URL = new URL('splitcraft-preview.iife.js', SDK_URL).href;
 export const EXTENSION_ZIP_URL = new URL('/extension/splitcraft-preview.zip', SDK_URL).href;

@@ -17,3 +17,6 @@ verify_jwt = false
 [auth]
 site_url = "https://splitcraft-app.vercel.app"
 additional_redirect_urls = ["https://splitcraft-app.vercel.app/**", "http://localhost:5173/**"]
+
+[functions.suggest]
+verify_jwt = true

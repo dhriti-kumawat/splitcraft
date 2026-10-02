@@ -24,24 +24,35 @@ async function signUp(id: string, email: string, meta: Record<string, unknown> |
 }
 
 describe('new user', () => {
-  it('gets a workspace named after their company, as owner, not after them', async () => {
+  it('gets no workspace until they set one up', async () => {
     const result = await signUp('00000000-0000-0000-0000-000000000001', 'jo@acme.co.uk', {
       full_name: 'Jo Smith',
     });
-    expect(result.workspaces).toEqual([{ name: 'Acme' }]);
-    expect(result.members).toEqual([{ role: 'owner' }]);
+    expect(result).toEqual({ workspaces: [], members: [] });
   });
 
-  it('gets "My workspace" with a personal email address', async () => {
-    const result = await signUp('00000000-0000-0000-0000-000000000002', 'Sam@Gmail.com', null);
-    expect(result.workspaces).toEqual([{ name: 'My workspace' }]);
-  });
-
-  it('only sees their own new workspace', async () => {
-    const result = await signUp('00000000-0000-0000-0000-000000000003', 'alex@example.com', {
-      full_name: '  Alex  ',
+  it('can create their first workspace and owns it', async () => {
+    const id = '00000000-0000-0000-0000-000000000002';
+    await signUp(id, 'sam@gmail.com', null);
+    const rows = await as(db, { role: 'authenticated', userId: id }, async () => {
+      await db.query(`insert into workspaces (name) values ('Sam Studio')`);
+      return (
+        await db.query<{ name: string; role: string }>(
+          'select w.name, m.role from workspaces w join workspace_members m on m.workspace_id = w.id',
+        )
+      ).rows;
     });
-    expect(result.workspaces).toEqual([{ name: 'Example' }]);
+    expect(rows).toEqual([{ name: 'Sam Studio', role: 'owner' }]);
+  });
+});
+
+describe('default_workspace_name', () => {
+  it('still names workspaces after a work domain, for anything that uses it', async () => {
+    const name = async (email: string) =>
+      (await db.query<{ n: string }>('select public.default_workspace_name($1) as n', [email]))
+        .rows[0]!.n;
+    expect(await name('jo@acme.co.uk')).toBe('Acme');
+    expect(await name('sam@gmail.com')).toBe('My workspace');
   });
 });
 

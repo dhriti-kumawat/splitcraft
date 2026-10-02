@@ -2,8 +2,10 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 import { MAX_VARIANTS } from '../lib/chartColors';
 import { evenWeights } from '../lib/experiments';
 import type { ConditionGroup } from '../lib/targeting';
+import { TEMPLATES } from '../lib/templates';
 import type {
   Experiment,
+  ExperimentSuggestion,
   ExperimentGoal,
   ExperimentPatch,
   GuardrailLimit,
@@ -200,6 +202,30 @@ export function useCreateExperiment(projectId: string) {
   return useMutation({
     mutationFn: ({ name, type }: { name: string; type: ExperimentType }) =>
       api.createExperiment(projectId, name, type),
+    onSuccess: () => void client.invalidateQueries({ queryKey: keys.experiments(projectId) }),
+  });
+}
+
+/** Scans the project's site for experiment ideas. Runs on request: it fetches the live site. */
+export function useSuggestExperiments(projectId: string) {
+  const api = useData();
+  return useMutation({ mutationFn: () => api.suggestExperiments(projectId) });
+}
+
+/** One click: a draft with the idea's hypothesis, page and template code in Variation 1. */
+export function useCreateFromSuggestion(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (idea: ExperimentSuggestion) => {
+      const exp = await api.createExperiment(projectId, idea.name, 'ab');
+      await api.updateExperiment(exp.id, { hypothesis: idea.hypothesis, previewUrl: idea.page });
+      const template = TEMPLATES.find((t) => t.id === idea.template);
+      const variant = exp.variants.find((v) => v.key !== 'control');
+      if (template && variant)
+        await api.updateVariant(variant.id, { js: template.js, css: template.css });
+      return exp;
+    },
     onSuccess: () => void client.invalidateQueries({ queryKey: keys.experiments(projectId) }),
   });
 }
