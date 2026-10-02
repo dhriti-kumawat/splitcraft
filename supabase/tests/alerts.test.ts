@@ -103,7 +103,7 @@ describe('alert settings', () => {
 
   it('hides alerts and the test send from other workspaces', async () => {
     expect(await as(db, stranger, () => q('select * from project_alerts'))).toEqual([]);
-    const [{ id }] = await q<{ id: string }>('select id from project_alerts limit 1');
+    const { id } = (await q<{ id: string }>('select id from project_alerts limit 1'))[0]!;
     await expect(as(db, stranger, () => q('select send_test_alert($1)', [id]))).rejects.toThrow(
       'Alert not found',
     );
@@ -159,14 +159,16 @@ describe('pending alerts', () => {
   });
 
   it('formats Slack and webhook bodies', async () => {
-    const [{ id }] = await q<{ id: string }>(`select id from experiments where key = 'winner'`);
-    const [{ slack, hook }] = await q<{
-      slack: unknown;
-      hook: { event: string; experiment: { key: string } };
-    }>(
-      `select alert_body('slack', 'winner_found', $1, 'Hi') as slack, alert_body('webhook', 'winner_found', $1, 'Hi') as hook`,
-      [id],
-    );
+    const { id } = (await q<{ id: string }>(`select id from experiments where key = 'winner'`))[0]!;
+    const { slack, hook } = (
+      await q<{
+        slack: unknown;
+        hook: { event: string; experiment: { key: string } };
+      }>(
+        `select alert_body('slack', 'winner_found', $1, 'Hi') as slack, alert_body('webhook', 'winner_found', $1, 'Hi') as hook`,
+        [id],
+      )
+    )[0]!;
     expect(slack).toEqual({ text: 'Splitcraft: Hi' });
     expect(hook).toMatchObject({
       event: 'winner_found',
