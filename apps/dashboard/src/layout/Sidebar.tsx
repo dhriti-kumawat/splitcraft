@@ -16,6 +16,7 @@ import {
 import { Switcher } from '../components/Switcher';
 import { EVENT_LIMIT } from '../data/api';
 import { useEventsThisMonthQuery } from '../data/queries';
+import { DOCS_URL, SITE_URL } from '../lib/snippet';
 import { initials, useCurrentProject, useWorkspace } from '../data/workspace';
 import styles from './Sidebar.module.css';
 
@@ -168,6 +169,25 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose(): void }) {
         </div>
       )}
 
+      <nav className={styles.external} aria-label="Splitcraft site">
+        <a href={DOCS_URL} target="_blank" rel="noreferrer" className={styles.externalLink}>
+          Documentation
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a href={SITE_URL} target="_blank" rel="noreferrer" className={styles.externalLink}>
+          Splitcraft website
+          <span aria-hidden="true">↗</span>
+        </a>
+      </nav>
+
+      {events.isError && (
+        <div className={styles.usage}>
+          <span className={styles.usageLabel}>Events this month</span>
+          <span className={`${styles.usageValue} mono`} role="alert">
+            Couldn't load
+          </span>
+        </div>
+      )}
       {events.data !== undefined && (
         <div className={styles.usage}>
           <span className={styles.usageLabel} id="events-usage-label">

@@ -17,6 +17,7 @@ import type {
   Segment,
   VariantStats,
   Workspace,
+  SiteScan,
 } from '../data/api';
 
 export const WORKSPACE: Workspace = {
@@ -417,6 +418,34 @@ export const PEOPLE: Person[] = [
 ];
 
 /** In-memory DataApi seeded with the design's projects. */
+export const SITE_SCAN: SiteScan = {
+  source: 'rules',
+  pages: [
+    {
+      url: 'https://mytrips.dev/',
+      title: 'MyTrips',
+      h1: 'Small-group trips',
+      ctas: ['Book now'],
+      endpoints: ['/api/search'],
+    },
+    { url: 'https://mytrips.dev/pricing', title: 'Pricing', h1: 'Plans', ctas: [], endpoints: [] },
+  ],
+  suggestions: [
+    {
+      name: 'Headline on home page',
+      hypothesis: 'A headline that names the main benefit will keep more visitors on the page.',
+      page: 'https://mytrips.dev/',
+      template: 'headline',
+    },
+    {
+      name: 'Reviews near prices on /pricing',
+      hypothesis: 'Showing reviews next to prices will reduce doubt and raise conversions.',
+      page: 'https://mytrips.dev/pricing',
+      template: 'trust',
+    },
+  ],
+};
+
 export function fakeData(
   opts: {
     projects?: Project[];
@@ -431,6 +460,7 @@ export function fakeData(
     sessionSample?: SessionSample;
     triggers?: Saved<'triggers'>[];
     pageSets?: Saved<'page_sets'>[];
+    siteScan?: SiteScan | Error;
   } = {},
 ) {
   const projects = (opts.projects ?? PROJECTS).map((p) => ({
@@ -777,6 +807,11 @@ export function fakeData(
           'Only owners and admins can delete an experiment, and not while it is live.',
         );
       experiments.splice(experiments.indexOf(e!), 1);
+    },
+    async suggestExperiments() {
+      const scan = opts.siteScan ?? SITE_SCAN;
+      if (scan instanceof Error) throw scan;
+      return structuredClone(scan);
     },
     async createExperiment(projectId, name, type = 'ab') {
       createdExperiments.push(name);

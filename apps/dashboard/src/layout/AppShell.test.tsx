@@ -24,6 +24,19 @@ const breadcrumb = () =>
     .map((li) => li.textContent);
 
 describe('routing', () => {
+  it('links to the docs and the website from the sidebar', async () => {
+    renderApp('/projects');
+    const nav = await screen.findByRole('navigation', { name: 'Splitcraft site' });
+    expect(within(nav).getByRole('link', { name: /Documentation/ })).toHaveAttribute(
+      'href',
+      'https://splitcraft.vercel.app/docs/',
+    );
+    expect(within(nav).getByRole('link', { name: /Splitcraft website/ })).toHaveAttribute(
+      'href',
+      'https://splitcraft.vercel.app/',
+    );
+  });
+
   it('redirects / to /projects', async () => {
     const router = await renderAt('/');
     expect(router.state.location.pathname).toBe('/projects');

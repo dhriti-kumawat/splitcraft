@@ -1,3 +1,5 @@
+import { Menu } from '../../components/Menu';
+import { PlusIcon } from '../../components/icons';
 import { useId, useState } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button';
@@ -134,23 +136,32 @@ export function TargetingPage() {
                 </button>
               </span>
             ))}
-            {available.length > 0 && (
-              <select
-                className={styles.select}
-                aria-label="Add segment"
-                value=""
-                onChange={(e) => e.target.value && setSegmentIds((ids) => [...ids, e.target.value])}
-              >
-                <option value="">+ Segment</option>
-                {available.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+            {/* Pick a saved segment, or build a new one in another tab (it shows up here
+                when you come back, so unsaved targeting isn't lost). */}
+            <Menu
+              label="Add segment"
+              items={[
+                ...available.map((seg) => ({
+                  label: seg.name,
+                  onSelect: () => setSegmentIds((ids) => [...ids, seg.id]),
+                })),
+                {
+                  label: 'Create new segment…',
+                  onSelect: () =>
+                    window.open(`/p/${project.id}/audiences/new`, '_blank', 'noopener'),
+                },
+              ]}
+            >
+              <PlusIcon />
+            </Menu>
+            {segments.isPending && <span className={styles.sub}>Loading segments…</span>}
+            {segments.isError && (
+              <span className={styles.sub} role="alert">
+                Couldn't load segments.
+              </span>
             )}
             {segments.isSuccess && segments.data.length === 0 && (
-              <span className={styles.sub}>No saved segments yet.</span>
+              <span className={styles.sub}>No saved segments yet: create one with +.</span>
             )}
           </div>
         </section>

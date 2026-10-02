@@ -8,6 +8,15 @@ description: Test types, the five steps, variant code, previews, launching, and 
 An experiment belongs to a project and has a unique **key** (made from its name, e.g.
 `sticky-book-now-bar`). The key is what the SDK, QA links and the npm hook use.
 
+## Experiment ideas
+
+**Scan site** on the Experiments page reads the project's main domain (home page, sitemap and a few
+key pages) and suggests tests: a new headline, button copy, reviews near prices, a sticky call to
+action, an offer bar, or hiding a distraction near a form. **Create draft** makes an A/B draft in
+one click with the idea's hypothesis, the page as its test page, and the matching template's code in
+Variation 1, then opens the Variants step. Change the template's example selectors and copy to fit
+your page before launching.
+
 ## Test types
 
 Pick the type in **New experiment**. It can't change later; duplicate the experiment instead.

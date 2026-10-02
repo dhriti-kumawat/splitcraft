@@ -326,6 +326,23 @@ export const EVENT_LIMIT: Record<Workspace['plan'], number | null> = {
   pro: null,
 };
 
+/** An experiment idea from a scan of the project's site (see the `suggest` Edge Function). */
+export interface ExperimentSuggestion {
+  name: string;
+  hypothesis: string;
+  /** Page it runs on; becomes the preview URL. */
+  page: string;
+  /** Variant template id from lib/templates.ts. */
+  template: string;
+}
+
+export interface SiteScan {
+  /** 'ai' when Claude picked the suggestions, 'rules' when built-in rules did. */
+  source: 'ai' | 'rules';
+  pages: Array<{ url: string; title: string; h1: string; ctas: string[]; endpoints: string[] }>;
+  suggestions: ExperimentSuggestion[];
+}
+
 /** Everything the dashboard reads and writes. Supabase implements it; tests use a fake. */
 export interface DataApi {
   listWorkspaces(userId: string): Promise<Workspace[]>;
@@ -367,6 +384,8 @@ export interface DataApi {
   lastEventAt(projectId: string): Promise<string | null>;
   /** Creates a draft with Control and B at 50/50 (A/B, split URL) or just Control (MVT). */
   createExperiment(projectId: string, name: string, type?: ExperimentType): Promise<Experiment>;
+  /** Scans the project's main domain and suggests experiments. Slow: up to ~20 s. */
+  suggestExperiments(projectId: string): Promise<SiteScan>;
   getExperiment(experimentId: string): Promise<Experiment | null>;
   updateExperiment(experimentId: string, patch: ExperimentPatch): Promise<Experiment>;
   /** A new draft with the same setup, variant code and goals. */

@@ -37,8 +37,13 @@ export async function createDb(): Promise<Db> {
   return db;
 }
 
+/**
+ * An account that has set up its first workspace ("My workspace", as owner), the state most
+ * tests start from. Sign-up itself no longer creates one (new-user.test.ts).
+ */
 export async function createUser(db: Db, id: string): Promise<string> {
   await db.query('insert into auth.users (id) values ($1)', [id]);
+  await db.query('select public.create_workspace_for($1, null, null)', [id]);
   return id;
 }
 
