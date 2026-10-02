@@ -168,6 +168,14 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose(): void }) {
         </div>
       )}
 
+      {events.isError && (
+        <div className={styles.usage}>
+          <span className={styles.usageLabel}>Events this month</span>
+          <span className={`${styles.usageValue} mono`} role="alert">
+            Couldn't load
+          </span>
+        </div>
+      )}
       {events.data !== undefined && (
         <div className={styles.usage}>
           <span className={styles.usageLabel} id="events-usage-label">
