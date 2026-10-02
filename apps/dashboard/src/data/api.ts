@@ -132,7 +132,7 @@ export interface NewProject {
 export type ExperimentStatus = 'draft' | 'live' | 'paused' | 'ended';
 
 /** A/B: code changes on one page. Split URL: each variant is its own page. MVT: every combination of section versions. */
-export type ExperimentType = 'ab' | 'split_url' | 'mvt';
+export type ExperimentType = 'ab' | 'split_url' | 'mvt' | 'personalization';
 
 /** One version of an MVT section. The first version of each section is the original (no code). */
 export interface MvtLevel {
@@ -346,6 +346,16 @@ export interface SiteScan {
   suggestions: ExperimentSuggestion[];
 }
 
+export type AlertEvent = 'guardrail_paused' | 'sample_reached' | 'winner_found';
+
+/** Where a project sends alerts: a Slack incoming webhook or any HTTPS endpoint. */
+export interface ProjectAlert {
+  id: string;
+  kind: 'slack' | 'webhook';
+  url: string;
+  events: AlertEvent[];
+}
+
 /** Everything the dashboard reads and writes. Supabase implements it; tests use a fake. */
 export interface DataApi {
   listWorkspaces(userId: string): Promise<Workspace[]>;
@@ -413,6 +423,11 @@ export interface DataApi {
   updateMetric(metricId: string, patch: Partial<Omit<Metric, 'id' | 'projectId'>>): Promise<Metric>;
   deleteMetric(metricId: string): Promise<void>;
   listSegments(projectId: string): Promise<Segment[]>;
+  listAlerts(projectId: string): Promise<ProjectAlert[]>;
+  createAlert(projectId: string, alert: Omit<ProjectAlert, 'id'>): Promise<ProjectAlert>;
+  deleteAlert(alertId: string): Promise<void>;
+  /** Posts a test message to the alert's URL. */
+  testAlert(alertId: string): Promise<void>;
   createSegment(projectId: string, name: string, rules: ConditionGroup): Promise<Segment>;
   updateSegment(
     segmentId: string,

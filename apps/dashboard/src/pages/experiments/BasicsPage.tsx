@@ -245,18 +245,29 @@ function Traffic({ experiment }: { experiment: Experiment }) {
           {trafficError}
         </span>
       )}
-      <div className={styles.splitBar} aria-hidden="true">
-        {experiment.variants.map((v, i) => (
-          <div
-            key={v.id}
-            title={`${v.name} · ${Math.round((v.weight / total) * 100)}%`}
-            style={{ width: `${(v.weight / total) * 100}%`, background: COLORS[i % COLORS.length] }}
-          >
-            {v.name} · {Math.round((v.weight / total) * 100)}%
+      {experiment.type === 'personalization' ? (
+        <span className={styles.hint}>
+          Personalization: everyone included sees the change. There is no comparison group.
+        </span>
+      ) : (
+        <>
+          <div className={styles.splitBar} aria-hidden="true">
+            {experiment.variants.map((v, i) => (
+              <div
+                key={v.id}
+                title={`${v.name} · ${Math.round((v.weight / total) * 100)}%`}
+                style={{
+                  width: `${(v.weight / total) * 100}%`,
+                  background: COLORS[i % COLORS.length],
+                }}
+              >
+                {v.name} · {Math.round((v.weight / total) * 100)}%
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <TrafficSplit experiment={experiment} />
+          <TrafficSplit experiment={experiment} />
+        </>
+      )}
       <ExclusionGroup experiment={experiment} />
     </section>
   );

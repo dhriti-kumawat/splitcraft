@@ -37,6 +37,7 @@ const CODE_LABEL: Record<Experiment['type'], [done: string, todo: string]> = {
   ab: ['Variant code saved, no errors', 'Add variant code that runs without errors'],
   split_url: ['Every variant has a page URL', 'Give every variant a page URL'],
   mvt: ['Sections and combinations saved', 'Add sections with at least one variation'],
+  personalization: ['Personalized code saved, no errors', 'Add the code that runs without errors'],
 };
 
 export function launchChecks(exp: Experiment, project: Project, qaDone: boolean): Check[] {
@@ -49,9 +50,14 @@ export function launchChecks(exp: Experiment, project: Project, qaDone: boolean)
     },
     {
       id: 'goal',
-      label: exp.primaryMetricId ? 'Primary goal set' : 'Set a primary goal',
+      label: exp.primaryMetricId
+        ? 'Primary goal set'
+        : exp.type === 'personalization'
+          ? 'No goal: reach is still counted'
+          : 'Set a primary goal',
       ok: Boolean(exp.primaryMetricId),
-      blocking: true,
+      // A personalization compares nothing, so a goal is only nice to have.
+      blocking: exp.type !== 'personalization',
     },
     {
       id: 'code',

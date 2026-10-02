@@ -175,6 +175,27 @@ describe('new experiment', () => {
     expect(created.variants.map((v) => v.key)).toEqual(['control']);
   });
 
+  it('creates a personalization that shows the change to everyone', async () => {
+    const user = userEvent.setup();
+    const { router, experimentsNow } = await open();
+    await user.click(
+      within(screen.getByRole('banner')).getByRole('button', { name: 'New experiment' }),
+    );
+    const dialog = screen.getByRole('dialog', { name: 'New experiment' });
+    await user.type(within(dialog).getByLabelText('Name'), 'INR banner');
+    await user.click(within(dialog).getByRole('radio', { name: /Personalization/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Create draft' }));
+    await vi.waitFor(() => expect(router.state.location.pathname).toMatch(/exp-1\/basics$/));
+    const created = experimentsNow().find((e) => e.id === 'exp-1')!;
+    expect(created.type).toBe('personalization');
+    expect(created.variants.map((v) => [v.key, v.name, v.weight])).toEqual([
+      ['control', 'Original', 0],
+      ['b', 'Personalized', 100],
+    ]);
+    expect(await screen.findByText(/There is no comparison group/)).toBeInTheDocument();
+    expect(screen.getByText('No goal: reach is still counted')).toBeInTheDocument();
+  });
+
   it('closes with Escape and returns focus', async () => {
     const user = userEvent.setup();
     await open();

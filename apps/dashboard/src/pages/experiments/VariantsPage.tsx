@@ -179,11 +179,17 @@ function CodeVariants() {
             );
           })}
         </ul>
-        <AddVariant
-          experiment={experiment}
-          buttonClassName={styles.add}
-          onAdded={(key) => setAddedKey(key)}
-        />
+        {experiment.type === 'personalization' ? (
+          <p className={styles.muted}>
+            Everyone who matches the targeting sees Personalized. The original stays as is.
+          </p>
+        ) : (
+          <AddVariant
+            experiment={experiment}
+            buttonClassName={styles.add}
+            onAdded={(key) => setAddedKey(key)}
+          />
+        )}
         <p className={styles.visualTip}>
           No code needed for simple changes: open <b>Preview on site</b>, pick a variation and click{' '}
           <b>Edit visually</b> on the page. Point at text to rewrite it, recolour it or hide it.
@@ -221,9 +227,11 @@ function CodeVariants() {
           }
           remove={edits.remove}
         />
-        <section className={styles.card} aria-label="Traffic split">
-          <TrafficSplit experiment={experiment} />
-        </section>
+        {experiment.type !== 'personalization' && (
+          <section className={styles.card} aria-label="Traffic split">
+            <TrafficSplit experiment={experiment} />
+          </section>
+        )}
         <section className={styles.card} aria-labelledby="helpers-h">
           <h2 className={styles.cardTitle} id="helpers-h">
             Built-in helpers

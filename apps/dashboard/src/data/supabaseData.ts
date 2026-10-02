@@ -8,6 +8,7 @@ import type {
   SavedKind,
   SavedRules,
   DataApi,
+  ProjectAlert,
   SiteScan,
   Invite,
   Experiment,
@@ -558,10 +559,15 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
           await supabase.from('variants').insert(
             type === 'mvt'
               ? [{ experiment_id: id, key: 'control', name: 'Original', weight: 100 }]
-              : [
-                  { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
-                  { experiment_id: id, key: 'b', name: 'Variation 1', weight: 50 },
-                ],
+              : type === 'personalization'
+                ? [
+                    { experiment_id: id, key: 'control', name: 'Original', weight: 0 },
+                    { experiment_id: id, key: 'b', name: 'Personalized', weight: 100 },
+                  ]
+                : [
+                    { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
+                    { experiment_id: id, key: 'b', name: 'Variation 1', weight: 50 },
+                  ],
           ),
         );
         const row = check(
@@ -768,6 +774,34 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
 
     async deleteMetric(metricId) {
       check(await supabase.from('metrics').delete().eq('id', metricId));
+    },
+
+    async listAlerts(projectId) {
+      return check(
+        await supabase
+          .from('project_alerts')
+          .select('id, kind, url, events')
+          .eq('project_id', projectId)
+          .order('created_at'),
+      ) as ProjectAlert[];
+    },
+
+    async createAlert(projectId, alert) {
+      return check(
+        await supabase
+          .from('project_alerts')
+          .insert({ project_id: projectId, ...alert })
+          .select('id, kind, url, events')
+          .single(),
+      ) as ProjectAlert;
+    },
+
+    async deleteAlert(alertId) {
+      check(await supabase.from('project_alerts').delete().eq('id', alertId));
+    },
+
+    async testAlert(alertId) {
+      check(await supabase.rpc('send_test_alert', { p_alert: alertId }));
     },
 
     async listSegments(projectId) {
