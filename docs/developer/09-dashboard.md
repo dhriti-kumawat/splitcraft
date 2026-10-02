@@ -56,6 +56,10 @@ workspace keeps at least one owner (a database trigger enforces it).
 - **⌘K / Ctrl+K**: search pages, projects, experiments in every project, and the current project's
   audiences and metrics.
 - **Responsive**: below 1024 px the sidebar becomes a drawer; below 720 px page actions wrap.
+- **Alerts** (Project › Settings): a Slack incoming webhook or any HTTPS webhook gets a message
+  when a test has a clear winner on its primary goal (unique conversions or click-through, once
+  every variant has the planned sample), reaches its planned sample, or is paused by a guardrail.
+  Webhooks receive `{ event, text, experiment: { id, key, name, status }, sentAt }`.
 - **Preview page**: `/preview.html?path=…` renders any route with the fixtures (development only).
 
 ## Adding a screen
