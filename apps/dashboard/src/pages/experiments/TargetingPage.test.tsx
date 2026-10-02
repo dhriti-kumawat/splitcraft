@@ -6,7 +6,7 @@ import { renderApp } from '../../test/renderApp';
 async function open(id = 'trust', data = fakeData()) {
   renderApp(`/p/trip-demo/experiments/${id}/targeting`, { data: data.api });
   await screen.findByRole('heading', { name: 'Segment' });
-  await screen.findByRole('combobox', { name: 'Add segment' });
+  await screen.findByRole('button', { name: 'Add segment' });
   return data;
 }
 
@@ -14,6 +14,16 @@ const saved = (patches: Array<{ id: string; patch: unknown }>) =>
   (patches.at(-1)!.patch as { targeting: unknown }).targeting;
 
 describe('targeting', () => {
+  it('creates a new segment from the + menu in a new tab', async () => {
+    const user = userEvent.setup();
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    await open();
+    await user.click(screen.getByRole('button', { name: 'Add segment' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Create new segment…' }));
+    expect(openSpy).toHaveBeenCalledWith('/p/trip-demo/audiences/new', '_blank', 'noopener');
+    openSpy.mockRestore();
+  });
+
   it('starts as everyone, every page, every load', async () => {
     await open();
     expect(screen.getByText('everyone (no segment)')).toBeInTheDocument();
@@ -30,14 +40,10 @@ describe('targeting', () => {
     const user = userEvent.setup();
     const { patches } = await open();
 
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Add segment' }),
-      'High-intent returners',
-    );
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Add segment' }),
-      'Mobile first-timers',
-    );
+    await user.click(screen.getByRole('button', { name: 'Add segment' }));
+    await user.click(screen.getByRole('menuitem', { name: 'High-intent returners' }));
+    await user.click(screen.getByRole('button', { name: 'Add segment' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Mobile first-timers' }));
     await user.click(screen.getByRole('button', { name: 'all' }));
 
     await user.click(screen.getByRole('button', { name: '+ Rule' }));
