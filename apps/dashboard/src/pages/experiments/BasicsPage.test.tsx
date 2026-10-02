@@ -200,7 +200,7 @@ describe('launching', () => {
     await open('/p/trip-demo/experiments/trust/basics', withExperiments(ready));
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
     const dialog = screen.getByRole('dialog', { name: 'Preview on site' });
-    const snippet = within(dialog).getByRole('link', { name: 'Open with the snippet' });
+    const snippet = within(dialog).getByRole('link', { name: 'Open preview' });
     expect(snippet.getAttribute('href')).toMatch(
       new RegExp(
         `^https://${PROJECTS[0]!.mainDomain}/\\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#`,
@@ -252,7 +252,7 @@ describe('test page', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
     expect(
-      screen.getByRole('link', { name: 'Open with the snippet' }).getAttribute('href'),
+      screen.getByRole('link', { name: 'Open preview' }).getAttribute('href'),
     ).toMatch(
       /^https:\/\/mytrips\.dev\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/,
     );
