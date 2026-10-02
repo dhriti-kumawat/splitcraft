@@ -43,6 +43,7 @@ const VARIANTS_STEP = {
   ab: 'Variations & code',
   split_url: 'Variation pages',
   mvt: 'Variations',
+  personalization: 'Change & code',
 } as const;
 
 const STATUS = { draft: 'Draft', live: 'Live', paused: 'Paused', ended: 'Ended' } as const;
