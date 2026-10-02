@@ -6,6 +6,7 @@ import {
   AudiencesIcon,
   CloseIcon,
   ExperimentsIcon,
+  FlagIcon,
   InstallIcon,
   Logo,
   MetricsIcon,
@@ -156,6 +157,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose(): void }) {
             <Item to={`${base}/metrics`}>
               <MetricsIcon />
               Metrics
+            </Item>
+            <Item to={`${base}/flags`}>
+              <FlagIcon />
+              Feature flags
             </Item>
             <Item to={`${base}/install`}>
               <InstallIcon />

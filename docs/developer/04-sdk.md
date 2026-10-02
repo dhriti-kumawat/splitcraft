@@ -13,6 +13,7 @@ splitcraft.waitForElement(selector: string, fn: (el: Element) => void, opts?: { 
 splitcraft.onceInView(el: Element, fn: () => void): void
 splitcraft.onRouteChange(fn: (url: string) => void): () => void
 splitcraft.injectStyles(css: string, id?: string): () => void
+splitcraft.isEnabled(flagKey: string): boolean
 ```
 
 | Function          | Notes                                                                                      |
@@ -22,6 +23,7 @@ splitcraft.injectStyles(css: string, id?: string): () => void
 | `onceInView`      | Runs `fn` once, the first time `el` enters the viewport.                                  |
 | `onRouteChange`   | Calls `fn` on SPA navigation (History API and back / forward). Returns an unsubscribe.    |
 | `injectStyles`    | Adds a `<style>`; calling again with the same `id` replaces it. Returns a remover.        |
+| `isEnabled`       | Whether a feature flag (Project › Feature flags) is on for this visitor. False until the config loads, and for flags that are off, rolled out to others or outside their segment. Flags use the same bucketing as experiments and send no exposure event. |
 
 Errors thrown inside your callbacks are caught and logged, never breaking the page.
 

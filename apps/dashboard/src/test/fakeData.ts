@@ -18,6 +18,7 @@ import type {
   VariantStats,
   Workspace,
   SiteScan,
+  FeatureFlag,
   ProjectAlert,
 } from '../data/api';
 
@@ -463,6 +464,7 @@ export function fakeData(
     triggers?: Saved<'triggers'>[];
     pageSets?: Saved<'page_sets'>[];
     siteScan?: SiteScan | Error;
+    flags?: FeatureFlag[];
   } = {},
 ) {
   const projects = (opts.projects ?? PROJECTS).map((p) => ({
@@ -493,6 +495,10 @@ export function fakeData(
     Array<{ id: string; js: string; css: string; note: string; createdAt: string }>
   > = {};
   const createdExperiments: string[] = [];
+  const flags: Array<FeatureFlag & { projectId: string }> = (opts.flags ?? []).map((f) => ({
+    ...f,
+    projectId: 'trip-demo',
+  }));
   const alerts: Array<ProjectAlert & { projectId: string }> = [];
   const testedAlerts: string[] = [];
   const created: NewProject[] = [];
@@ -705,6 +711,44 @@ export function fakeData(
         };
       });
     },
+    listFlags: async (projectId) =>
+      flags
+        .filter((f) => f.projectId === projectId)
+        .map((f) => ({
+          id: f.id,
+          key: f.key,
+          name: f.name,
+          enabled: f.enabled,
+          rolloutPct: f.rolloutPct,
+          segmentIds: [...f.segmentIds],
+        })),
+    async createFlag(projectId, { key, name }) {
+      if (flags.some((f) => f.projectId === projectId && f.key === key))
+        throw new Error(`The key "${key}" is already used.`);
+      const row = {
+        id: `flag-${flags.length + 1}`,
+        projectId,
+        key,
+        name,
+        enabled: false,
+        rolloutPct: 100,
+        segmentIds: [],
+      };
+      flags.push(row);
+      return { ...row };
+    },
+    async updateFlag(id, patch) {
+      Object.assign(
+        flags.find((f) => f.id === id)!,
+        patch,
+      );
+    },
+    async deleteFlag(id) {
+      flags.splice(
+        flags.findIndex((f) => f.id === id),
+        1,
+      );
+    },
     listAlerts: async (projectId) =>
       alerts
         .filter((a) => a.projectId === projectId)
@@ -897,6 +941,7 @@ export function fakeData(
       invitesByToken[token] = { invite: full, workspaceName };
     },
     goalsNow: () => goals,
+    flagsNow: () => flags,
     alertsNow: () => alerts,
     testedAlerts,
     /** Make the next status poll report the first ping. */

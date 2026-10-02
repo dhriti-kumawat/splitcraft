@@ -56,6 +56,8 @@ export interface ExperimentConfig {
   trafficPct: number;
   /** Mutual exclusion group, see `Allocation.group`. */
   group?: [string, number, number];
+  /** A feature flag (variant `on`): nothing to apply and no exposure event. */
+  flag?: true;
   variants: VariantConfig[];
   targeting: Targeting;
 }
@@ -197,7 +199,8 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
         { experimentKey: exp.key, variantKey: variant.key, js: variant.js, css: variant.css },
         { trackEvent: tracker.trackEvent },
       );
-    if (tracker.exposure(exp.key, variant.key)) recordExposure(st, exp.key, Date.now());
+    if (!exp.flag && tracker.exposure(exp.key, variant.key))
+      recordExposure(st, exp.key, Date.now());
     qa.setExperiment(exp.key, {
       key: exp.key,
       name: exp.name,

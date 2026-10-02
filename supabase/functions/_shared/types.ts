@@ -47,6 +47,8 @@ export interface ConfigSource {
   metrics: Array<{ id: string; eventKey: string; source: string; sourceConfig: Json }>;
   /** projects.settings: `{ antiFlicker?, spa?, ga4? }`, each on unless false. */
   settings?: Json;
+  /** Enabled feature flags. */
+  flags?: Array<{ key: string; name: string; rolloutPct: number | string; segmentIds: string[] }>;
 }
 
 export interface SdkProjectConfig {
@@ -58,6 +60,8 @@ export interface SdkProjectConfig {
     trafficPct: number;
     /** Exclusion group: [name, place, count]; see sdk bucketing. */
     group?: [string, number, number];
+    /** A feature flag: one variant `on`; no code and no exposure event. */
+    flag?: true;
     variants: Array<{
       key: string;
       name: string;

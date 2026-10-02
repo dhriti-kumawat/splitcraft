@@ -346,6 +346,21 @@ export interface SiteScan {
   suggestions: ExperimentSuggestion[];
 }
 
+/** A feature flag: on for `rolloutPct`% of visitors, optionally only in some segments. */
+export interface FeatureFlag {
+  id: string;
+  key: string;
+  name: string;
+  enabled: boolean;
+  rolloutPct: number;
+  /** Empty: everyone. Otherwise visitors in any of these segments. */
+  segmentIds: string[];
+}
+
+export type FlagPatch = Partial<
+  Pick<FeatureFlag, 'name' | 'enabled' | 'rolloutPct' | 'segmentIds'>
+>;
+
 export type AlertEvent = 'guardrail_paused' | 'sample_reached' | 'winner_found';
 
 /** Where a project sends alerts: a Slack incoming webhook or any HTTPS endpoint. */
@@ -423,6 +438,10 @@ export interface DataApi {
   updateMetric(metricId: string, patch: Partial<Omit<Metric, 'id' | 'projectId'>>): Promise<Metric>;
   deleteMetric(metricId: string): Promise<void>;
   listSegments(projectId: string): Promise<Segment[]>;
+  listFlags(projectId: string): Promise<FeatureFlag[]>;
+  createFlag(projectId: string, flag: { key: string; name: string }): Promise<FeatureFlag>;
+  updateFlag(flagId: string, patch: FlagPatch): Promise<void>;
+  deleteFlag(flagId: string): Promise<void>;
   listAlerts(projectId: string): Promise<ProjectAlert[]>;
   createAlert(projectId: string, alert: Omit<ProjectAlert, 'id'>): Promise<ProjectAlert>;
   deleteAlert(alertId: string): Promise<void>;

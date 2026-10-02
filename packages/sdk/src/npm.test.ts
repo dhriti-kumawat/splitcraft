@@ -72,3 +72,28 @@ describe('useExperiment', () => {
     await act(async () => root.unmount());
   });
 });
+
+describe('isEnabled', () => {
+  it('is false before the config loads and reads the flag after', async () => {
+    const { isEnabled, start: startSdk } = await import('./index');
+    expect(isEnabled('beta-checkout')).toBe(false);
+    const rt = startSdk({
+      projectKey: 'prj_flags',
+      eventsUrl: 'https://e.test/events',
+      experiments: [
+        {
+          key: 'beta-checkout',
+          name: 'Beta checkout',
+          trafficPct: 100,
+          variants: [{ key: 'on', name: 'On', weight: 1 }],
+          targeting: {},
+          flag: true,
+        },
+      ],
+    });
+    await settle();
+    expect(isEnabled('beta-checkout')).toBe(true);
+    expect(isEnabled('missing')).toBe(false);
+    rt.stop();
+  });
+});
