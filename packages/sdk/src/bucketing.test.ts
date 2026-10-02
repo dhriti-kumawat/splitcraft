@@ -119,3 +119,26 @@ describe('assignVariant', () => {
     expect(Math.abs(bothB / N - 0.25)).toBeLessThan(0.01);
   });
 });
+
+describe('exclusion groups', () => {
+  const alloc = (place: number) => ({
+    experimentKey: `exp-${place}`,
+    trafficPct: 100,
+    variants: [{ key: 'control', weight: 1 }],
+    group: ['checkout', place, 3] as [string, number, number],
+  });
+
+  it('puts each visitor in exactly one experiment of the group, about evenly', () => {
+    const counts = [0, 0, 0];
+    for (let i = 0; i < 3000; i++) {
+      const entered = [0, 1, 2].filter((p) => assignVariant(`v${i}`, alloc(p)) !== null);
+      expect(entered).toHaveLength(1);
+      counts[entered[0]!]!++;
+    }
+    for (const c of counts) expect(c).toBeGreaterThan(850);
+  });
+
+  it('is stable for a visitor', () => {
+    expect(assignVariant('v42', alloc(1))).toBe(assignVariant('v42', alloc(1)));
+  });
+});

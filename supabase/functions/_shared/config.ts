@@ -93,6 +93,7 @@ export function toSdkConfig(
       name: e.name,
       // A preview shows everywhere on the open page, to everyone who has the link.
       trafficPct: e.preview ? 100 : Number(e.trafficPct),
+      ...(!e.preview && e.group && { group: e.group }),
       variants: e.variants.map((v) => ({
         key: v.key,
         name: v.name,

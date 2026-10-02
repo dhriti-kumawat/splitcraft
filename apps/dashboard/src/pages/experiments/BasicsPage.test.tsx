@@ -200,7 +200,7 @@ describe('launching', () => {
     await open('/p/trip-demo/experiments/trust/basics', withExperiments(ready));
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
     const dialog = screen.getByRole('dialog', { name: 'Preview on site' });
-    const snippet = within(dialog).getByRole('link', { name: 'Open with the snippet' });
+    const snippet = within(dialog).getByRole('link', { name: 'Open preview' });
     expect(snippet.getAttribute('href')).toMatch(
       new RegExp(
         `^https://${PROJECTS[0]!.mainDomain}/\\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#`,
@@ -251,9 +251,7 @@ describe('test page', () => {
       }),
     );
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
-    expect(
-      screen.getByRole('link', { name: 'Open with the snippet' }).getAttribute('href'),
-    ).toMatch(
+    expect(screen.getByRole('link', { name: 'Open preview' }).getAttribute('href')).toMatch(
       /^https:\/\/mytrips\.dev\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/,
     );
   });
@@ -275,5 +273,37 @@ describe('test page', () => {
     await user.clear(field);
     await user.type(field, '/checkout');
     expect(screen.getByText(/isn't in the experiment's WHERE rules/)).toBeInTheDocument();
+  });
+});
+
+describe('exclusion group', () => {
+  it('saves the group, suggests existing ones and names the tests that share it', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({
+      experiments: EXPERIMENTS.map((e) =>
+        e.id === 'sticky' ? { ...e, exclusionGroup: 'book-button' } : e,
+      ),
+    });
+    const { patches } = await open(undefined, data);
+    const input = screen.getByLabelText(/Exclusion group/);
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector(`#${CSS.escape(input.getAttribute('list')!)} option`),
+      ).toHaveAttribute('value', 'book-button'),
+    );
+    await user.type(input, 'book-button');
+    expect(
+      screen.getByText(/A visitor sees only one of: this test, Sticky Book Now bar/),
+    ).toBeInTheDocument();
+    await user.tab();
+    await vi.waitFor(() =>
+      expect(patches.at(-1)).toEqual({ id: 'trust', patch: { exclusionGroup: 'book-button' } }),
+    );
+
+    await user.clear(input);
+    await user.tab();
+    await vi.waitFor(() =>
+      expect(patches.at(-1)).toEqual({ id: 'trust', patch: { exclusionGroup: null } }),
+    );
   });
 });

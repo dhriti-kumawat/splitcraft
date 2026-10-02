@@ -103,3 +103,50 @@
   text-decoration: none;
   cursor: grab;
 }
+
+.plain {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.more > summary {
+  cursor: pointer;
+  font: 600 13px var(--font-ui);
+  color: var(--accent);
+}
+
+.more > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.more[open] > summary {
+  margin-bottom: 8px;
+}
+
+.moreBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 2px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: #fff;
+  font: 600 14px var(--font-ui);
+  text-decoration: none;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
