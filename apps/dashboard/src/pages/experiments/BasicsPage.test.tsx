@@ -277,3 +277,35 @@ describe('test page', () => {
     expect(screen.getByText(/isn't in the experiment's WHERE rules/)).toBeInTheDocument();
   });
 });
+
+describe('exclusion group', () => {
+  it('saves the group, suggests existing ones and names the tests that share it', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({
+      experiments: EXPERIMENTS.map((e) =>
+        e.id === 'sticky' ? { ...e, exclusionGroup: 'book-button' } : e,
+      ),
+    });
+    const { patches } = await open(undefined, data);
+    const input = screen.getByLabelText(/Exclusion group/);
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector(`#${CSS.escape(input.getAttribute('list')!)} option`),
+      ).toHaveAttribute('value', 'book-button'),
+    );
+    await user.type(input, 'book-button');
+    expect(
+      screen.getByText(/A visitor sees only one of: this test, Sticky Book Now bar/),
+    ).toBeInTheDocument();
+    await user.tab();
+    await vi.waitFor(() =>
+      expect(patches.at(-1)).toEqual({ id: 'trust', patch: { exclusionGroup: 'book-button' } }),
+    );
+
+    await user.clear(input);
+    await user.tab();
+    await vi.waitFor(() =>
+      expect(patches.at(-1)).toEqual({ id: 'trust', patch: { exclusionGroup: null } }),
+    );
+  });
+});
