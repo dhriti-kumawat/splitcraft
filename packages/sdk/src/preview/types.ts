@@ -31,8 +31,19 @@ export interface StartOptions {
   onAction?(action: PreviewAction): void;
 }
 
+/** One point-and-click change from the visual editor; the dashboard turns it into code. */
+export interface VisualChange {
+  selector: string;
+  kind: 'text' | 'hide' | 'color' | 'background';
+  /** New text, or a #rrggbb colour. */
+  value?: string;
+}
+
 export type PreviewAction =
-  { type: 'switch'; variantKey: string } | { type: 'stop' } | { type: 'reload' };
+  | { type: 'switch'; variantKey: string }
+  | { type: 'stop' }
+  | { type: 'reload' }
+  | { type: 'visual'; variantKey: string; changes: VisualChange[] };
 
 /** `update` result: `live` when applied in place, `rerun` when the JS changed. */
 export type UpdateResult = 'live' | 'rerun';

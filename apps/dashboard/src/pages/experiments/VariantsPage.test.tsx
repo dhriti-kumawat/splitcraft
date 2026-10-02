@@ -230,3 +230,42 @@ describe('variant settings', () => {
     );
   });
 });
+
+describe('visual editor', () => {
+  it('adds changes made on the site to the variant as code to review and save', async () => {
+    const user = userEvent.setup();
+    const { openForBookmark, previewState, stopPreview } = await import('../../lib/previewBridge');
+    vi.spyOn(window, 'open').mockReturnValue(window);
+    const { variantPatches } = await open();
+    expect(screen.getByText(/No code needed for simple changes/)).toBeInTheDocument();
+
+    const trust = EXPERIMENTS.find((e) => e.id === 'trust')!;
+    openForBookmark('https://mytrips.dev/', previewState(trust, trust.variants, 'b'));
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: window,
+        data: {
+          source: 'splitcraft-preview',
+          type: 'visual',
+          variantKey: 'b',
+          changes: [
+            { selector: 'h1', kind: 'text', value: 'Trips you will love' },
+            { selector: '.promo', kind: 'hide' },
+          ],
+        },
+      }),
+    );
+    expect(
+      await screen.findByText('Added 2 visual changes to B. Check the code, then save.'),
+    ).toHaveAttribute('role', 'status');
+    expect((editor('B JS') as HTMLTextAreaElement).value).toContain(
+      'el.textContent = "Trips you will love";',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await vi.waitFor(() => expect(variantPatches).toHaveLength(1));
+    expect(variantPatches[0]!.patch).toMatchObject({
+      css: expect.stringContaining('.promo {\n  display: none !important;\n}'),
+    });
+    stopPreview();
+  });
+});

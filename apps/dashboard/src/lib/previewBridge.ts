@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import type { VisualChange } from './visual';
 import type { Experiment, Project } from '../data/api';
 import { controlKey } from './experiments';
 
@@ -136,16 +137,38 @@ export async function openWithExtension(
   });
 }
 
+/** Changes made with "Edit visually" in the previewed tab, for one variant. */
+export interface VisualEdit {
+  experimentKey: string;
+  variantKey: string;
+  changes: VisualChange[];
+}
+
+const visualListeners = new Set<(edit: VisualEdit) => void>();
+
+/** Get the visual editor's changes as they arrive. Returns an unsubscribe. */
+export function onVisualEdit(fn: (edit: VisualEdit) => void): () => void {
+  visualListeners.add(fn);
+  return () => visualListeners.delete(fn);
+}
+
+function emitVisual(experimentKey: string, variantKey: unknown, changes: unknown): void {
+  if (typeof variantKey !== 'string' || !Array.isArray(changes)) return;
+  for (const fn of visualListeners) fn({ experimentKey, variantKey, changes });
+}
+
 // Panel actions in the previewed tab come back as events.
 if (typeof window !== 'undefined') {
   addEventListener('message', (e: MessageEvent) => {
     const d = e.data as {
       source?: string;
-      event?: { type: string; experimentKey: string; variantKey?: string };
+      event?: { type: string; experimentKey: string; variantKey?: string; changes?: unknown };
     };
     if (e.source !== window || d?.source !== 'splitcraft-extension' || !d.event) return;
     if (session?.experimentKey !== d.event.experimentKey) return;
-    if (d.event.type === 'stopped') setSession(null);
+    if (d.event.type === 'visual')
+      emitVisual(d.event.experimentKey, d.event.variantKey, d.event.changes);
+    else if (d.event.type === 'stopped') setSession(null);
     else if (d.event.type === 'switched' && d.event.variantKey)
       setSession({ ...session, variantKey: d.event.variantKey });
   });
@@ -174,8 +197,17 @@ export function openForBookmark(url: string, state: PreviewState): boolean {
 
 if (typeof window !== 'undefined') {
   addEventListener('message', (e: MessageEvent) => {
-    const d = e.data as { source?: string; type?: string; variantKey?: string } | null;
+    const d = e.data as {
+      source?: string;
+      type?: string;
+      variantKey?: string;
+      changes?: unknown;
+    } | null;
     if (!bookmarkTab || e.source !== bookmarkTab.win || d?.source !== 'splitcraft-preview') return;
+    if (d.type === 'visual') {
+      emitVisual(bookmarkTab.state.experimentKey, d.variantKey, d.changes);
+      return;
+    }
     if (d.type === 'hello') {
       // Reply only to the page that answered, at its own origin.
       bookmarkTab.origin = e.origin;
