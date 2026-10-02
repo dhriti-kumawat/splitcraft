@@ -98,4 +98,46 @@ describe('goals', () => {
     expect(within(aside).queryByText(/Coming later/)).not.toBeInTheDocument();
     expect(within(aside).queryByText(/Formula/)).not.toBeInTheDocument();
   });
+
+  it('adds a ready-made metric as a goal in one click', async () => {
+    const user = userEvent.setup();
+    const { goalsNow } = await open('trust');
+    const aside = screen.getByRole('complementary', { name: 'Add a goal' });
+    await user.click(
+      within(aside).getByRole('button', { name: 'Add Add to cart as secondary goal' }),
+    );
+    await vi.waitFor(() =>
+      expect(goalsNow().trust?.map((g) => [g.metric.name, g.role])).toEqual([
+        ['Add to cart', 'secondary'],
+      ]),
+    );
+    expect(goalsNow().trust![0]!.metric.eventKey).toBe('add_to_cart');
+    expect(await screen.findByRole('button', { name: 'Remove Add to cart' })).toBeInTheDocument();
+    expect(
+      within(aside).queryByRole('button', { name: /^Add Add to cart/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('reuses an existing metric with the same event key', async () => {
+    const user = userEvent.setup();
+    const { goalsNow } = await open('trust');
+    await user.click(screen.getByRole('button', { name: 'Add Purchase as secondary goal' }));
+    await vi.waitFor(() => expect(goalsNow().trust?.[0]?.metric.id).toBe('m-purchase'));
+  });
+
+  it('offers to create a metric for secondary goals and guardrails', async () => {
+    await open('trust');
+    expect(
+      screen.getByRole('link', { name: 'Add secondary goal: create a new metric' }),
+    ).toHaveAttribute(
+      'href',
+      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=secondary',
+    );
+    expect(
+      screen.getByRole('link', { name: 'Add guardrail: create a new metric' }),
+    ).toHaveAttribute(
+      'href',
+      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=guardrail',
+    );
+  });
 });

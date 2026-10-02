@@ -285,11 +285,17 @@ export function useAttachGoal(projectId: string) {
     }: {
       experimentId: string;
       metricId: string;
-      role: 'primary' | 'secondary';
+      role: 'primary' | ExperimentGoal['role'];
     }) => {
       if (role === 'primary')
         await api.updateExperiment(experimentId, { primaryMetricId: metricId });
-      else await api.setExperimentGoal(experimentId, metricId, 'secondary', null);
+      else
+        await api.setExperimentGoal(
+          experimentId,
+          metricId,
+          role,
+          role === 'guardrail' ? { maxPct: 2 } : null,
+        );
     },
     onSuccess: (_, { experimentId }) => {
       for (const key of [
@@ -301,6 +307,31 @@ export function useAttachGoal(projectId: string) {
       ])
         void client.invalidateQueries({ queryKey: key });
     },
+  });
+}
+
+/** A ready-made metric as a goal: reuses the project's metric with that event key, or creates it. */
+export function useAddReadyGoal(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const attach = useAttachGoal(projectId);
+  return useMutation({
+    mutationFn: async ({
+      experimentId,
+      metric,
+      role,
+    }: {
+      experimentId: string;
+      metric: Omit<Metric, 'id' | 'projectId'>;
+      role: 'primary' | ExperimentGoal['role'];
+    }) => {
+      const existing = (await api.listMetrics(projectId)).find(
+        (m) => m.eventKey === metric.eventKey,
+      );
+      const saved = existing ?? (await api.createMetric({ projectId, ...metric }));
+      await attach.mutateAsync({ experimentId, metricId: saved.id, role });
+    },
+    onSuccess: () => void client.invalidateQueries({ queryKey: keys.metrics(projectId) }),
   });
 }
 

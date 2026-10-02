@@ -31,6 +31,8 @@ export interface ConfigSource {
     preview?: boolean;
     trafficPct: number;
     targeting: StoredTargeting;
+    /** Exclusion group: [name, this test's place among its live tests, their count]. */
+    group?: [string, number, number] | null;
     metricIds: string[];
     variants: Array<{
       key: string;
@@ -54,6 +56,8 @@ export interface SdkProjectConfig {
     key: string;
     name: string;
     trafficPct: number;
+    /** Exclusion group: [name, place, count]; see sdk bucketing. */
+    group?: [string, number, number];
     variants: Array<{
       key: string;
       name: string;

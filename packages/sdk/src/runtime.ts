@@ -54,6 +54,8 @@ export interface ExperimentConfig {
   name: string;
   /** Share of matching visitors who enter, 0–100. */
   trafficPct: number;
+  /** Mutual exclusion group, see `Allocation.group`. */
+  group?: [string, number, number];
   variants: VariantConfig[];
   targeting: Targeting;
 }
@@ -180,6 +182,7 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
             experimentKey: exp.key,
             trafficPct: exp.trafficPct,
             variants: exp.variants,
+            group: exp.group,
           });
     const variant = exp.variants.find((v) => v.key === variantKey);
     if (!variant) {

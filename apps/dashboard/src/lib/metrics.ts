@@ -193,3 +193,58 @@ export const VITALS: Array<{
   { vital: 'inp', label: 'INP', text: 'Slowest interaction on the page, ms', key: 'vitals.inp' },
   { vital: 'cls', label: 'CLS', text: 'Cumulative Layout Shift', key: 'vitals.cls' },
 ];
+
+const up = { direction: 'increase', windowDays: 7 };
+
+/** Common metrics that need no setup form: one click adds them as a goal. */
+export const READY_METRICS: Array<{ text: string; metric: Omit<Metric, 'id' | 'projectId'> }> = [
+  {
+    text: 'Purchase rate, from the purchase event in the dataLayer',
+    metric: {
+      name: 'Purchase',
+      eventKey: 'purchase',
+      source: 'transaction',
+      sourceConfig: {
+        event: 'purchase',
+        valuePath: 'ecommerce.value',
+        idPath: 'ecommerce.transaction_id',
+        currencyPath: 'ecommerce.currency',
+      },
+      measure: 'unique',
+      measureConfig: up,
+    },
+  },
+  {
+    text: "Your site calls splitcraft.trackEvent('add_to_cart')",
+    metric: {
+      name: 'Add to cart',
+      eventKey: 'add_to_cart',
+      source: 'custom_js',
+      sourceConfig: {},
+      measure: 'unique',
+      measureConfig: up,
+    },
+  },
+  {
+    text: "Your site calls splitcraft.trackEvent('sign_up')",
+    metric: {
+      name: 'Sign-up',
+      eventKey: 'sign_up',
+      source: 'custom_js',
+      sourceConfig: {},
+      measure: 'unique',
+      measureConfig: up,
+    },
+  },
+  ...BROWSING.filter((b) => b.kind !== 'time').map((b) => ({
+    text: b.text,
+    metric: {
+      name: b.label,
+      eventKey: b.key,
+      source: 'browsing' as const,
+      sourceConfig: { kind: b.kind },
+      measure: b.measure,
+      measureConfig: up,
+    },
+  })),
+];
