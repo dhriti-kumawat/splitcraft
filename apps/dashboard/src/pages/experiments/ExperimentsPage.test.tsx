@@ -187,3 +187,55 @@ describe('new experiment', () => {
     expect(opener).toHaveFocus();
   });
 });
+
+describe('experiment ideas', () => {
+  const panel = () => screen.getByRole('region', { name: 'Experiment ideas' });
+
+  it('scans the site and creates a draft from an idea in one click', async () => {
+    const user = userEvent.setup();
+    const { router, patches, variantPatches } = await open();
+    await user.click(within(panel()).getByRole('button', { name: 'Scan site' }));
+    expect(await within(panel()).findByText('Headline on home page')).toBeInTheDocument();
+    expect(
+      within(panel()).getByText(/Scanned 2 pages · endpoints: \/api\/search/),
+    ).toHaveTextContent('Suggested by built-in rules');
+
+    await user.click(
+      within(panel()).getByRole('button', {
+        name: 'Create draft: Reviews near prices on /pricing',
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/exp-1/variants'),
+    );
+    expect(patches.at(-1)).toEqual({
+      id: 'exp-1',
+      patch: {
+        hypothesis: 'Showing reviews next to prices will reduce doubt and raise conversions.',
+        previewUrl: 'https://mytrips.dev/pricing',
+      },
+    });
+    expect(variantPatches.at(-1)!.patch).toMatchObject({
+      js: expect.stringContaining('splitcraft'),
+    });
+  });
+
+  it('says when the scan finds nothing', async () => {
+    const user = userEvent.setup();
+    await open(fakeData({ siteScan: { source: 'rules', pages: [], suggestions: [] } }));
+    await user.click(within(panel()).getByRole('button', { name: 'Scan site' }));
+    expect(await within(panel()).findByText(/No ideas found/)).toBeInTheDocument();
+  });
+
+  it('shows why a scan failed', async () => {
+    const user = userEvent.setup();
+    await open(
+      fakeData({ siteScan: new Error("Couldn't load https://mytrips.dev. Is the site public?") }),
+    );
+    await user.click(within(panel()).getByRole('button', { name: 'Scan site' }));
+    expect(await within(panel()).findByRole('alert')).toHaveTextContent(
+      "Couldn't load https://mytrips.dev. Is the site public?",
+    );
+    expect(within(panel()).getByRole('button', { name: 'Try again' })).toBeEnabled();
+  });
+});

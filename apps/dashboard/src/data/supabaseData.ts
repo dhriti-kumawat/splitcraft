@@ -8,6 +8,7 @@ import type {
   SavedKind,
   SavedRules,
   DataApi,
+  SiteScan,
   Invite,
   Experiment,
   ExperimentPatch,
@@ -566,6 +567,16 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         return toExperiment(row);
       }
       throw new Error('Could not find a free experiment key. Try a different name.');
+    },
+
+    async suggestExperiments(projectId) {
+      const { data, error } = await supabase.functions.invoke('suggest', { body: { projectId } });
+      if (error) {
+        const context = (error as { context?: Response }).context;
+        const body = (await context?.json?.().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error ?? "Couldn't scan the site. Please try again.");
+      }
+      return data as SiteScan;
     },
 
     async getExperiment(experimentId) {
