@@ -1,6 +1,6 @@
 import type { ExperimentType } from '../../data/api';
 
-/** Labels and descriptions for the three test types, shared by the picker and badges. */
+/** Labels and descriptions for the test types, shared by the picker and badges. */
 export const EXPERIMENT_TYPES: Record<
   ExperimentType,
   { label: string; short: string; description: string; example: string }
@@ -24,5 +24,12 @@ export const EXPERIMENT_TYPES: Record<
     description:
       'Change several sections at once. Every combination of their versions becomes a variant, so you see which mix wins.',
     example: '2 headlines × 3 hero images = 6 combinations',
+  },
+  personalization: {
+    label: 'Personalization',
+    short: 'Personalized',
+    description:
+      'Show a change to everyone who matches the targeting, with no comparison. Use it to roll out a winner or tailor a page to a segment.',
+    example: 'A local-currency banner for visitors from India',
   },
 };

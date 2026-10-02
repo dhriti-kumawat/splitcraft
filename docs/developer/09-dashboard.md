@@ -60,6 +60,10 @@ workspace keeps at least one owner (a database trigger enforces it).
   rollout share and optionally a segment. Code checks `splitcraft.isEnabled('key')`. Flags reach
   the SDK as experiments with one `on` variant (`flag: true`), so raising the share only adds
   visitors.
+- **Alerts** (Project › Settings): a Slack incoming webhook or any HTTPS webhook gets a message
+  when a test has a clear winner on its primary goal (unique conversions or click-through, once
+  every variant has the planned sample), reaches its planned sample, or is paused by a guardrail.
+  Webhooks receive `{ event, text, experiment: { id, key, name, status }, sentAt }`.
 - **Preview page**: `/preview.html?path=…` renders any route with the fixtures (development only).
 
 ## Adding a screen

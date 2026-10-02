@@ -19,6 +19,7 @@ import type {
   Workspace,
   SiteScan,
   FeatureFlag,
+  ProjectAlert,
 } from '../data/api';
 
 export const WORKSPACE: Workspace = {
@@ -498,6 +499,8 @@ export function fakeData(
     ...f,
     projectId: 'trip-demo',
   }));
+  const alerts: Array<ProjectAlert & { projectId: string }> = [];
+  const testedAlerts: string[] = [];
   const created: NewProject[] = [];
   let installNext = false;
 
@@ -746,6 +749,25 @@ export function fakeData(
         1,
       );
     },
+    listAlerts: async (projectId) =>
+      alerts
+        .filter((a) => a.projectId === projectId)
+        .map((a) => ({ id: a.id, kind: a.kind, url: a.url, events: [...a.events] })),
+    async createAlert(projectId, alert) {
+      if (!/^https:\/\/[^\s/]+\.\S+$/.test(alert.url)) throw new Error('violates check constraint');
+      const row = { ...alert, id: `alert-${alerts.length + 1}`, projectId };
+      alerts.push(row);
+      return { id: row.id, kind: row.kind, url: row.url, events: [...row.events] };
+    },
+    async deleteAlert(id) {
+      alerts.splice(
+        alerts.findIndex((a) => a.id === id),
+        1,
+      );
+    },
+    async testAlert(id) {
+      testedAlerts.push(id);
+    },
     listSegments: async (projectId) =>
       segments.filter((x) => x.projectId === projectId).map((x) => ({ ...x })),
     async createSegment(projectId, name, rules) {
@@ -871,7 +893,13 @@ export function fakeData(
             ? [{ ...variants(id)[0]!, name: 'Original', weight: 100 }]
             : variants(id).map((v) => ({
                 ...v,
-                name: v.key === 'control' ? 'Original' : 'Variation 1',
+                name:
+                  v.key === 'control'
+                    ? 'Original'
+                    : type === 'personalization'
+                      ? 'Personalized'
+                      : 'Variation 1',
+                ...(type === 'personalization' && { weight: v.key === 'control' ? 0 : 100 }),
               })),
         status: 'draft',
         projectId,
@@ -914,6 +942,8 @@ export function fakeData(
     },
     goalsNow: () => goals,
     flagsNow: () => flags,
+    alertsNow: () => alerts,
+    testedAlerts,
     /** Make the next status poll report the first ping. */
     receiveFirstPing() {
       installNext = true;
