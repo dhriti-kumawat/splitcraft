@@ -132,6 +132,7 @@ const experiment = (
   endedAt: null,
   archivedAt: null,
   previewUrl: null,
+  exclusionGroup: null,
   previewToken: `tok-${e.id}`,
   autoPaused: null,
   createdAt: daysAgo(30),

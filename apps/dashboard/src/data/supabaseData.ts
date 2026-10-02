@@ -76,6 +76,7 @@ interface ExperimentRow {
   ended_at: string | null;
   archived_at: string | null;
   preview_url: string | null;
+  exclusion_group?: string | null;
   preview_token: string;
   auto_paused: Experiment['autoPaused'];
   created_at: string;
@@ -106,6 +107,7 @@ export function toExperiment(row: ExperimentRow): Experiment {
     endedAt: row.ended_at,
     archivedAt: row.archived_at,
     previewUrl: row.preview_url ?? null,
+    exclusionGroup: row.exclusion_group ?? null,
     previewToken: row.preview_token,
     autoPaused: row.auto_paused ?? null,
     createdAt: row.created_at,
@@ -143,6 +145,7 @@ const PATCH_COLUMNS: Record<keyof ExperimentPatch, string> = {
   endedAt: 'ended_at',
   archivedAt: 'archived_at',
   previewUrl: 'preview_url',
+  exclusionGroup: 'exclusion_group',
   factors: 'factors',
 };
 

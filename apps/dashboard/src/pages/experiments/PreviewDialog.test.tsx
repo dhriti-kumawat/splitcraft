@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe('Preview on site without the extension', () => {
-  it('explains the three ways, installing the extension first', async () => {
+  it('leads with one way to open it and folds the rest away', async () => {
     const user = userEvent.setup();
     await open();
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
@@ -29,7 +29,13 @@ describe('Preview on site without the extension', () => {
     expect(within(dialog).getByText('Splitcraft preview').getAttribute('href')).toMatch(
       /^javascript:/,
     );
-    expect(within(dialog).getByRole('link', { name: 'Open with the snippet' })).toBeInTheDocument();
+    // The demo site has the snippet, so that is the first way offered.
+    expect(within(dialog).getByRole('link', { name: 'Open preview' })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^https:\/\/mytrips\.dev\/\?splitcraft_force=trust%3Ab/),
+    );
+    expect(within(dialog).getByText('How to install')).toBeInTheDocument();
+    expect(within(dialog).getByText('Other ways to open it')).toBeInTheDocument();
   });
 
   it('opens the page for the bookmark in a tab it can talk to', async () => {
@@ -38,6 +44,7 @@ describe('Preview on site without the extension', () => {
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(win as unknown as Window);
     await open();
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
+    await user.click(screen.getByText('Other ways to open it'));
     await user.click(screen.getByRole('button', { name: 'Open the page' }));
     expect(openSpy.mock.calls[0]![0]).toMatch(
       /^https:\/\/mytrips\.dev\/\?splitcraft_force=trust%3Ab/,
@@ -75,7 +82,7 @@ describe('Preview on site with the extension', () => {
 
     await user.click(more);
     const dialog = screen.getByRole('dialog', { name: 'Preview on site' });
-    expect(await within(dialog).findByText('Installed (version 1.0.0).')).toBeInTheDocument();
+    expect(await within(dialog).findByText(/Installed \(version 1\.0\.0\)/)).toBeInTheDocument();
     expect(within(dialog).getByText(/Allow user scripts/)).toBeInTheDocument();
     window.removeEventListener('message', onMessage);
   });

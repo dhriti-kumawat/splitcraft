@@ -76,6 +76,15 @@ is optional; Results shows visitors reached and each goal's conversion rate inst
 
 A step shows a tick when it's done.
 
+## Exclusion groups
+
+Tests that change the same page or element can conflict. Give them the same **Exclusion group**
+(Basics › Traffic) and a visitor only ever sees one of them. The SDK hashes each visitor into one
+of the group's live tests, so live tests in a group share visitors evenly, and each still applies
+its own traffic share and targeting. Adding or removing a live test in a group moves some visitors
+between the group's tests, so set groups before launch. QA links (`?splitcraft_force=`) ignore
+groups.
+
 ## Test page and preview
 
 - **Test page** (Basics): the page the experiment runs on, as a path (`/trips/norway`) or a full URL
