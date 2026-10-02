@@ -5,6 +5,7 @@ import type { ConditionGroup } from '../lib/targeting';
 import { TEMPLATES } from '../lib/templates';
 import type {
   Experiment,
+  FlagPatch,
   ExperimentSuggestion,
   ExperimentGoal,
   ExperimentPatch,
@@ -415,6 +416,28 @@ export function useEditVariants(experiment: Experiment) {
     onSuccess: refresh,
   });
   return { add, remove };
+}
+
+export function useFlagsQuery(projectId: string) {
+  const api = useData();
+  return useQuery({ queryKey: ['flags', projectId], queryFn: () => api.listFlags(projectId) });
+}
+
+export function useFlagMutations(projectId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  const refresh = () => void client.invalidateQueries({ queryKey: ['flags', projectId] });
+  return {
+    create: useMutation({
+      mutationFn: (flag: { key: string; name: string }) => api.createFlag(projectId, flag),
+      onSuccess: refresh,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, patch }: { id: string; patch: FlagPatch }) => api.updateFlag(id, patch),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => api.deleteFlag(id), onSuccess: refresh }),
+  };
 }
 
 export function useSegmentsQuery(projectId: string, enabled = true) {

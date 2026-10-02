@@ -194,6 +194,13 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            path: 'flags',
+            lazy: async () => ({
+              Component: (await import('./pages/flags/FlagsPage')).FlagsPage,
+            }),
+            handle: crumb('Feature flags'),
+          },
+          {
             path: 'install',
             element: <InstallPage />,
             handle: crumb('Install'),

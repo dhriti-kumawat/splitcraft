@@ -88,23 +88,38 @@ export function toSdkConfig(
   return {
     projectKey,
     eventsUrl,
-    experiments: source.experiments.map((e) => ({
-      key: e.key,
-      name: e.name,
-      // A preview shows everywhere on the open page, to everyone who has the link.
-      trafficPct: e.preview ? 100 : Number(e.trafficPct),
-      ...(!e.preview && e.group && { group: e.group }),
-      variants: e.variants.map((v) => ({
-        key: v.key,
-        name: v.name,
-        weight: Number(v.weight),
-        ...(v.js && { js: v.js }),
-        ...(v.css && { css: v.css }),
-        // Split URL tests: the SDK sends this variant's visitors here.
-        ...(v.url && { url: v.url }),
-      })),
-      targeting: e.preview ? {} : toSdkTargeting(e.targeting ?? {}, source.segments),
-    })),
+    experiments: source.experiments
+      .map((e) => ({
+        key: e.key,
+        name: e.name,
+        // A preview shows everywhere on the open page, to everyone who has the link.
+        trafficPct: e.preview ? 100 : Number(e.trafficPct),
+        ...(!e.preview && e.group && { group: e.group }),
+        variants: e.variants.map((v) => ({
+          key: v.key,
+          name: v.name,
+          weight: Number(v.weight),
+          ...(v.js && { js: v.js }),
+          ...(v.css && { css: v.css }),
+          // Split URL tests: the SDK sends this variant's visitors here.
+          ...(v.url && { url: v.url }),
+        })),
+        targeting: e.preview ? {} : toSdkTargeting(e.targeting ?? {}, source.segments),
+      }))
+      .concat(
+        // Feature flags run as experiments with one `on` variant: rolloutPct is the traffic
+        // share, and the segments (any of them) are WHO. splitcraft.isEnabled(key) reads them.
+        (source.flags ?? []).map((f) => ({
+          key: f.key,
+          name: f.name,
+          trafficPct: Number(f.rolloutPct),
+          variants: [{ key: 'on', name: 'On', weight: 1 }],
+          targeting: f.segmentIds.length
+            ? toSdkTargeting({ who: { mode: 'any', segmentIds: f.segmentIds } }, source.segments)
+            : {},
+          flag: true as const,
+        })),
+      ),
     goals: {
       clicks,
       pageviews,

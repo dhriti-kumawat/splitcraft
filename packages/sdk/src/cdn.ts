@@ -3,6 +3,7 @@
 // keeps the file inside its budget. The script starts itself from its data-project.
 export {
   injectStyles,
+  isEnabled,
   onceInView,
   onRouteChange,
   start,

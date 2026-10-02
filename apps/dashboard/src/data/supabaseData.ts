@@ -8,6 +8,7 @@ import type {
   SavedKind,
   SavedRules,
   DataApi,
+  FeatureFlag,
   SiteScan,
   Invite,
   Experiment,
@@ -121,6 +122,24 @@ export function toExperiment(row: ExperimentRow): Experiment {
 }
 
 /** "Trust badges under Book button" → "trust-badges-under-book-button". */
+const FLAG_COLUMNS = 'id, key, name, enabled, rollout_pct, segment_ids';
+interface FlagRow {
+  id: string;
+  key: string;
+  name: string;
+  enabled: boolean;
+  rollout_pct: number | string;
+  segment_ids: string[];
+}
+const toFlag = (r: FlagRow): FeatureFlag => ({
+  id: r.id,
+  key: r.key,
+  name: r.name,
+  enabled: r.enabled,
+  rolloutPct: Number(r.rollout_pct),
+  segmentIds: r.segment_ids ?? [],
+});
+
 export function experimentKey(name: string): string {
   const key = name
     .toLowerCase()
@@ -768,6 +787,47 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
 
     async deleteMetric(metricId) {
       check(await supabase.from('metrics').delete().eq('id', metricId));
+    },
+
+    async listFlags(projectId) {
+      const rows = check(
+        await supabase
+          .from('feature_flags')
+          .select(FLAG_COLUMNS)
+          .eq('project_id', projectId)
+          .order('created_at'),
+      ) as FlagRow[];
+      return rows.map(toFlag);
+    },
+
+    async createFlag(projectId, flag) {
+      const { data, error } = await supabase
+        .from('feature_flags')
+        .insert({ project_id: projectId, ...flag })
+        .select(FLAG_COLUMNS)
+        .single();
+      if (error?.code === '23505') throw new Error(`The key "${flag.key}" is already used.`);
+      if (error) throw new Error(error.message);
+      return toFlag(data as FlagRow);
+    },
+
+    async updateFlag(flagId, patch) {
+      check(
+        await supabase
+          .from('feature_flags')
+          .update({
+            ...(patch.name !== undefined && { name: patch.name }),
+            ...(patch.enabled !== undefined && { enabled: patch.enabled }),
+            ...(patch.rolloutPct !== undefined && { rollout_pct: patch.rolloutPct }),
+            ...(patch.segmentIds !== undefined && { segment_ids: patch.segmentIds }),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', flagId),
+      );
+    },
+
+    async deleteFlag(flagId) {
+      check(await supabase.from('feature_flags').delete().eq('id', flagId));
     },
 
     async listSegments(projectId) {
