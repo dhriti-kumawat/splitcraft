@@ -132,7 +132,7 @@ export interface NewProject {
 export type ExperimentStatus = 'draft' | 'live' | 'paused' | 'ended';
 
 /** A/B: code changes on one page. Split URL: each variant is its own page. MVT: every combination of section versions. */
-export type ExperimentType = 'ab' | 'split_url' | 'mvt';
+export type ExperimentType = 'ab' | 'split_url' | 'mvt' | 'personalization';
 
 /** One version of an MVT section. The first version of each section is the original (no code). */
 export interface MvtLevel {

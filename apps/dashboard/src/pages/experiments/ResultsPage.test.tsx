@@ -160,3 +160,20 @@ describe('MVT results', () => {
     expect(within(headline).getByRole('row', { name: /Short/ })).toHaveTextContent('330');
   });
 });
+
+describe('personalization reach', () => {
+  it('shows visitors reached and goal rates without a comparison', async () => {
+    await open(
+      'sticky',
+      fakeData({
+        experiments: EXPERIMENTS.map((e) =>
+          e.id === 'sticky' ? { ...e, type: 'personalization' as const } : e,
+        ),
+      }),
+    );
+    expect(await screen.findByText('Visitors reached')).toBeInTheDocument();
+    expect(screen.getByText('Book click')).toBeInTheDocument();
+    expect(screen.getAllByText(/converted$/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/chance to beat/)).not.toBeInTheDocument();
+  });
+});

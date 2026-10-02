@@ -26,6 +26,7 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
 | A/B test          | JS and CSS that change the page                      | One idea, such as a sticky Book button      |
 | Split URL test    | Separate page URLs; the SDK redirects to them        | Redesigned pages, different page templates  |
 | Multivariate test | Every combination of section variations (generated)  | Several changes at once, to find the best mix |
+| Personalization   | One change, shown to everyone who matches (original gets 0%) | Rolling out a winner, tailoring a page to a segment |
 
 ### Split URL tests
 
@@ -56,6 +57,12 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
   live.
 - Results list every combination, best first, and add a table per section: each variation pooled
   over all combinations that show it, compared with that section's original (the main effect).
+
+### Personalization
+
+A personalization has no comparison: its original gets weight 0 and **Personalized** gets 100, so
+everyone who matches the targeting sees the change. The SDK treats it like any other test. A goal
+is optional; Results shows visitors reached and each goal's conversion rate instead of uplift.
 
 ## The five steps
 

@@ -827,7 +827,13 @@ export function fakeData(
             ? [{ ...variants(id)[0]!, name: 'Original', weight: 100 }]
             : variants(id).map((v) => ({
                 ...v,
-                name: v.key === 'control' ? 'Original' : 'Variation 1',
+                name:
+                  v.key === 'control'
+                    ? 'Original'
+                    : type === 'personalization'
+                      ? 'Personalized'
+                      : 'Variation 1',
+                ...(type === 'personalization' && { weight: v.key === 'control' ? 0 : 100 }),
               })),
         status: 'draft',
         projectId,

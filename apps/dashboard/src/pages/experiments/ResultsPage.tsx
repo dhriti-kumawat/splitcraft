@@ -38,6 +38,21 @@ export function ResultsPage() {
   if (results.isPending || metrics.isPending || goals.isPending)
     return <p aria-busy="true">Loading results…</p>;
   if (results.isError) return <p role="alert">Couldn't load results: {results.error.message}</p>;
+  if (experiment.type === 'personalization')
+    return (
+      <Reach
+        experiment={experiment}
+        visitors={(daily.data ?? []).reduce(
+          (s, d) => s + (d.variantKey === 'control' ? 0 : d.visitors),
+          0,
+        )}
+        goals={[
+          ...(metrics.data ?? []).filter((m) => m.id === experiment.primaryMetricId),
+          ...(goals.data ?? []).filter((g) => g.role !== 'guardrail').map((g) => g.metric),
+        ]}
+        arms={results.data}
+      />
+    );
 
   const primaryMetric = metrics.data?.find((m) => m.id === experiment.primaryMetricId);
   if (!primaryMetric) {
@@ -459,5 +474,49 @@ function FactorEffects({
         );
       })}
     </section>
+  );
+}
+
+/** Personalization: no comparison, just who it reached and how they converted. */
+function Reach({
+  experiment,
+  visitors,
+  goals,
+  arms,
+}: {
+  experiment: Experiment;
+  visitors: number;
+  goals: Metric[];
+  arms: Array<{ metricId: string; variantKey: string; visitors: number; converters: number }>;
+}) {
+  if (experiment.status === 'draft' && visitors === 0)
+    return <p className={styles.empty}>Reach appears here after launch.</p>;
+  return (
+    <dl className={styles.kpis}>
+      <div className={styles.kpi}>
+        <dt>Visitors reached</dt>
+        <dd className={styles.kpiValue}>{number.format(visitors)}</dd>
+        <dd className={styles.kpiNote} style={{ margin: 0 }}>
+          {targetingSummary(experiment.targeting)}
+        </dd>
+      </div>
+      {goals.map((m) => {
+        const arm = arms.find((a) => a.metricId === m.id && a.variantKey !== 'control');
+        const rate = arm && arm.visitors ? arm.converters / arm.visitors : null;
+        return (
+          <div key={m.id} className={styles.kpi}>
+            <dt>{m.name}</dt>
+            <dd className={styles.kpiValue}>
+              {rate === null ? '—' : `${(rate * 100).toFixed(1)}%`}
+            </dd>
+            <dd className={styles.kpiNote} style={{ margin: 0 }}>
+              {arm
+                ? `${number.format(arm.converters)} of ${number.format(arm.visitors)} converted`
+                : 'No data yet'}
+            </dd>
+          </div>
+        );
+      })}
+    </dl>
   );
 }

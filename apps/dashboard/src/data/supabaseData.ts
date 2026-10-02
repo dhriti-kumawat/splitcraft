@@ -558,10 +558,15 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
           await supabase.from('variants').insert(
             type === 'mvt'
               ? [{ experiment_id: id, key: 'control', name: 'Original', weight: 100 }]
-              : [
-                  { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
-                  { experiment_id: id, key: 'b', name: 'Variation 1', weight: 50 },
-                ],
+              : type === 'personalization'
+                ? [
+                    { experiment_id: id, key: 'control', name: 'Original', weight: 0 },
+                    { experiment_id: id, key: 'b', name: 'Personalized', weight: 100 },
+                  ]
+                : [
+                    { experiment_id: id, key: 'control', name: 'Original', weight: 50 },
+                    { experiment_id: id, key: 'b', name: 'Variation 1', weight: 50 },
+                  ],
           ),
         );
         const row = check(
