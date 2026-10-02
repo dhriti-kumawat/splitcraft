@@ -339,3 +339,26 @@ describe('SDK switches', () => {
     );
   });
 });
+
+describe('project numbers', () => {
+  it('shows zero for an installed project with no activity yet', async () => {
+    const data = fakeData();
+    data.api.projectOverview = async () => [];
+    await openProjects(data);
+    const card = (await screen.findByRole('link', { name: 'Trip Demo' })).closest('article')!;
+    await vi.waitFor(() =>
+      expect(within(card).getByText('Visitors, 30d').nextSibling).toHaveTextContent('0'),
+    );
+  });
+
+  it('shows dashes and a note when the numbers cannot load', async () => {
+    const data = fakeData();
+    data.api.projectOverview = async () => {
+      throw new Error('down');
+    };
+    await openProjects(data);
+    const card = (await screen.findByRole('link', { name: 'Trip Demo' })).closest('article')!;
+    expect(await within(card).findByRole('alert')).toHaveTextContent("Couldn't load");
+    expect(within(card).getByText('Visitors, 30d').nextSibling).toHaveTextContent('—');
+  });
+});

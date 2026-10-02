@@ -32,7 +32,19 @@ export function ProjectsPage() {
   const { workspace, projects, user } = useWorkspace();
   const overview = useOverviewQuery(workspace.id);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const statsFor = (id: string) => overview.data?.find((s) => s.projectId === id);
+  // Real numbers from project_overview; a project without activity counts as zero, and
+  // a failed load shows dashes instead of waiting forever.
+  const statsFor = (id: string): ProjectStats | null | undefined =>
+    overview.isError
+      ? null
+      : overview.data
+        ? (overview.data.find((s) => s.projectId === id) ?? {
+            projectId: id,
+            liveTests: 0,
+            visitors30d: 0,
+            dailyVisitors: [],
+          })
+        : undefined;
   const byProject = useExperimentsByProject(
     projects.filter((p) => p.installedAt).map((p) => p.id),
     { stats: true },
@@ -236,7 +248,8 @@ function ProjectCard({
   tone,
 }: {
   project: Project;
-  stats?: ProjectStats;
+  /** Undefined while loading, null when loading failed. */
+  stats?: ProjectStats | null;
   bestUplift?: number | null;
   tone: number;
 }) {
@@ -272,11 +285,11 @@ function ProjectCard({
           <dl className={styles.stats}>
             <div className={styles.stat}>
               <dt>{stats?.liveTests === 1 ? 'Live test' : 'Live tests'}</dt>
-              <dd>{stats ? stats.liveTests : '…'}</dd>
+              <dd>{stats ? stats.liveTests : stats === null ? '—' : '…'}</dd>
             </div>
             <div className={styles.stat}>
               <dt>Visitors, 30d</dt>
-              <dd>{stats ? compactNumber(stats.visitors30d) : '…'}</dd>
+              <dd>{stats ? compactNumber(stats.visitors30d) : stats === null ? '—' : '…'}</dd>
             </div>
             {bestUplift ? (
               <div className={styles.stat}>
@@ -290,7 +303,14 @@ function ProjectCard({
               </div>
             )}
           </dl>
-          {stats && <Sparkline values={stats.dailyVisitors} {...LINE[tone]!} />}
+          {stats && stats.dailyVisitors.length > 0 && (
+            <Sparkline values={stats.dailyVisitors} {...LINE[tone]!} />
+          )}
+          {stats === null && (
+            <p className={styles.muted} role="alert">
+              Couldn't load this project's numbers.
+            </p>
+          )}
           <div className={styles.chips}>
             {domains.map((d) => (
               <span key={d} className={styles.chip}>

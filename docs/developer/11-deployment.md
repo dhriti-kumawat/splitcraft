@@ -44,6 +44,7 @@ npx supabase db push
 npx supabase functions deploy config --use-api
 npx supabase functions deploy events --use-api
 npx supabase functions deploy contact --use-api
+npx supabase functions deploy suggest --use-api
 ```
 
 - **Authentication › URL Configuration**: Site URL = the dashboard URL; redirect URLs =
@@ -56,6 +57,8 @@ npx supabase functions deploy contact --use-api
     URI = the same callback) and paste its id and secret.
   - Magic links use Supabase's default email template; nothing to set.
 - The guardrail job uses `pg_cron`, which the migration enables and schedules.
+- Optional: `npx supabase secrets set ANTHROPIC_API_KEY=…` lets the `suggest` function use Claude
+  for experiment ideas. Without it, built-in rules make the suggestions.
 
 ## npm package
 

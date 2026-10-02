@@ -63,6 +63,16 @@ and forms sent within 2 seconds of loading are treated as spam and silently drop
 (an HMAC of their IP, which is not stored) can send 5 messages an hour, and the form as a whole 200.
 Read messages in the Supabase dashboard's table editor under `contact_messages`.
 
+**`POST /functions/v1/suggest`**: experiment ideas for the Experiments page (`{ projectId }`, signed
+in). It reads the project with the caller's token, so Row Level Security decides access, then fetches
+the main domain's home page, `sitemap.xml` and up to five more pages (pricing, sign-up and checkout
+pages first). Each page gives its heading, calls to action, forms, prices, reviews and endpoints
+(form actions and `/api`-style links). Only public host names are scanned: IP addresses, `localhost`
+and single-label hosts are refused, and redirects are checked the same way. When the
+`ANTHROPIC_API_KEY` secret is set, Claude (`claude-opus-5-5`) picks up to six tests from the variant
+templates; its answer is checked against the scanned pages and template ids. Without the secret, or
+if the call fails, built-in rules do the same. The response says which one ran (`source`).
+
 ## Migrations
 
 Files in `supabase/migrations/` run in name order. Add a new file for every change (never edit an
@@ -73,4 +83,5 @@ applied one), and a test in `supabase/tests/`. Apply with `npx supabase db push`
 npx supabase functions deploy config --use-api
 npx supabase functions deploy events --use-api
 npx supabase functions deploy contact --use-api
+npx supabase functions deploy suggest --use-api
 ```
