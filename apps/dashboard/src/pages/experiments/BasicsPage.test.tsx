@@ -251,9 +251,7 @@ describe('test page', () => {
       }),
     );
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
-    expect(
-      screen.getByRole('link', { name: 'Open preview' }).getAttribute('href'),
-    ).toMatch(
+    expect(screen.getByRole('link', { name: 'Open preview' }).getAttribute('href')).toMatch(
       /^https:\/\/mytrips\.dev\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/,
     );
   });
