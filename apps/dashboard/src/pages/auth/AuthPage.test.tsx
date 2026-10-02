@@ -248,9 +248,12 @@ describe('social and SSO', () => {
   it('shows a clear message when a provider is not enabled', async () => {
     const user = userEvent.setup();
     const { calls } = await openAt('/login');
-    await user.click(screen.getByRole('button', { name: 'GitHub' }));
+    await user.click(screen.getByRole('button', { name: 'Continue with GitHub' }));
     expect(await screen.findByRole('alert')).toHaveTextContent("GitHub sign-in isn't set up yet.");
     expect(calls).toContain('oauth:github');
+    expect(
+      screen.getByRole('button', { name: 'Continue with GitHub' }),
+    ).toHaveAccessibleDescription(/10× faster onboarding/);
   });
 
   it('explains that SSO is not available yet', async () => {
