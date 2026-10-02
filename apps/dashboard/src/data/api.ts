@@ -184,6 +184,8 @@ export interface Experiment {
   archivedAt: string | null;
   /** The page it runs on, opened by "Preview on site". Null: the home page. */
   previewUrl: string | null;
+  /** Mutual exclusion group: live tests in the same group never show to the same visitor. */
+  exclusionGroup: string | null;
   /** Secret that lets a preview link load this experiment even before launch. */
   previewToken: string;
   /** Set when a crossed guardrail paused it automatically (it isn't paused again after). */
@@ -227,6 +229,7 @@ export type ExperimentPatch = Partial<
     | 'endedAt'
     | 'archivedAt'
     | 'previewUrl'
+    | 'exclusionGroup'
     | 'factors'
   >
 >;
