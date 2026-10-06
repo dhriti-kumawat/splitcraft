@@ -7,7 +7,7 @@
 
 body {
   margin: 0;
-  background: var(--surface);
+  background: var(--ground);
   color: var(--ink);
   font: 400 16px/1.75 var(--font-ui);
   -webkit-font-smoothing: antialiased;
@@ -100,7 +100,7 @@ a {
 
 .layout {
   display: grid;
-  grid-template-columns: 248px minmax(0, 760px) 220px;
+  grid-template-columns: 248px minmax(0, 840px) 220px;
   justify-content: center;
   gap: 64px;
   max-width: 1440px;
@@ -109,8 +109,7 @@ a {
 }
 
 .side {
-  padding-right: 24px;
-  border-right: 1px solid var(--line-soft, #eef0eb);
+  padding-right: 8px;
 }
 
 .side summary {
@@ -141,7 +140,14 @@ a {
 
 .side a:hover {
   color: var(--ink);
-  background: var(--ground);
+  background: var(--surface);
+}
+
+article {
+  padding: 48px 56px 56px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .side a[aria-current='page'] {
@@ -330,7 +336,7 @@ article th {
 
 @media (max-width: 1240px) {
   .layout {
-    grid-template-columns: 220px minmax(0, 760px);
+    grid-template-columns: 220px minmax(0, 840px);
     gap: 48px;
     padding: 40px 32px 80px;
   }
@@ -372,6 +378,10 @@ article th {
   .side nav {
     position: static;
     padding: 0 6px 8px;
+  }
+
+  article {
+    padding: 28px 20px 36px;
   }
 
   article h1 {
