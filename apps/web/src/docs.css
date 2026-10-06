@@ -302,9 +302,36 @@ article th {
   color: var(--accent);
 }
 
+.flow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  font-size: 15px;
+}
+
+.flow a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.flow a:hover {
+  color: var(--accent);
+}
+
+.flow .next {
+  margin-left: auto;
+  color: var(--accent);
+  font-weight: 500;
+}
+
 .edit {
-  margin: 20px 0 0;
+  margin: 16px 0 0;
   font-size: 13px;
+}
+
+.here {
+  display: none;
 }
 
 @media (max-width: 1240px) {
@@ -333,11 +360,15 @@ article th {
     padding: 20px 20px 64px;
   }
 
+  /* The menu stays reachable under the header while you scroll. */
   .side {
-    position: static;
-    max-height: none;
-    overflow: visible;
+    position: sticky;
+    top: 72px;
+    z-index: 4;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
     margin-bottom: 28px;
+    box-shadow: 0 6px 16px rgba(21, 23, 26, 0.06);
     padding-right: 0;
     border-radius: 10px;
     border: 1px solid var(--line);
@@ -345,10 +376,26 @@ article th {
   }
 
   .side summary {
-    display: block;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
     padding: 12px 14px;
     font-weight: 600;
     cursor: pointer;
+  }
+
+  .here {
+    display: inline;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .here::before {
+    content: '· ';
+  }
+
+  .flow {
+    flex-direction: column;
   }
 
   .side nav {
