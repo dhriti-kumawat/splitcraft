@@ -65,6 +65,24 @@
   color: #b5bab2;
 }
 
+.crumb a,
+.crumb > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Parents give way first, so the current page keeps the most room. */
+.parent {
+  flex: 0 3 auto;
+  max-width: 180px;
+}
+
+.crumb:last-child {
+  flex: 0 1 auto;
+  min-width: 60px;
+}
+
 .crumb a {
   color: inherit;
   text-decoration: none;
@@ -132,8 +150,31 @@
 }
 
 @media (max-width: 1023px) {
+  /* The breadcrumb keeps at least 280 px; when the page actions don't fit beside it,
+     they move to a second row instead of squeezing it. */
   .topbar {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    row-gap: 0;
     padding: 0 24px;
+  }
+
+  .lead {
+    flex: 1 1 280px;
+    height: 64px;
+  }
+
+  .tools {
+    flex: 0 1 auto;
+    margin-left: auto;
+    padding: 12px 0;
+  }
+
+  .actions :is(button, a) {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
   }
 
   .menuButton {
@@ -149,6 +190,15 @@
   .searchText,
   .kbd {
     display: none;
+  }
+
+  /* Tablets: only the nearest parent stays, after an ellipsis. */
+  .parent:not(:nth-last-child(2)) {
+    display: none;
+  }
+
+  .parent:nth-last-child(2)::before {
+    content: '… /';
   }
 }
 
