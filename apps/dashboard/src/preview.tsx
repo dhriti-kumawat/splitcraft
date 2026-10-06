@@ -56,6 +56,20 @@ splitcraft.waitForElement('.book-now-btn', (btn) => {
 });
 const router = createMemoryRouter(routes, { initialEntries: [path] });
 
+// Keep the address bar in step, so the browser's Back and Forward (and reload) work here
+// as they do in the app.
+router.subscribe((state) => {
+  if (state.historyAction === 'POP') return;
+  const next = state.location.pathname + state.location.search;
+  const url = `?path=${encodeURIComponent(next)}`;
+  if (state.historyAction === 'PUSH') history.pushState(null, '', url);
+  else history.replaceState(null, '', url);
+});
+addEventListener('popstate', () => {
+  const next = new URLSearchParams(location.search).get('path') ?? '/projects';
+  void router.navigate(next, { replace: true });
+});
+
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={new QueryClient()}>
     <AuthProvider api={fakeAuth({ signedIn }).api}>
