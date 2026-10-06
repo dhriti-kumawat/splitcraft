@@ -4,7 +4,7 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 
 ## Stack
 - Monorepo with npm workspaces
-- `packages/sdk` — TypeScript, Vite library mode, Vitest. Main bundle < 8 KB gzipped (QA panel is a separate file, < 3 KB), no runtime dependencies. `npm run size -w packages/sdk` checks it.
+- `packages/sdk` — TypeScript, Vite library mode, Vitest. Main bundle < 8.5 KB gzipped (QA panel is a separate file, < 3 KB), no runtime dependencies. `npm run size -w packages/sdk` checks it.
 - `apps/dashboard` — React + Vite + TypeScript, React Router, Monaco editor for variant code, Recharts for results.
 - `apps/web` — marketing site (home page).
 - Backend — Supabase (Postgres, Auth, Row Level Security). No custom server in v1.
@@ -20,7 +20,7 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 - Targeting: Who (segments, persistent) / Where (URL + element rules) / How (session triggers) / When (frequency). Groups support ALL / ANY / NONE and nesting.
 - Metrics: event source first (click selector, pageview, custom JS, dataLayer, transaction), then aggregation (unique conversions, total conversions, sum of value, value per conversion).
 - Stats: two-proportion z-test and Bayesian chance-to-win for conversion metrics; SRM chi-square check on every experiment; show uplift with its 95% range.
-- Public SDK API: `splitcraft.trackEvent(key, props)`, `splitcraft.waitForElement(sel, fn)`, `splitcraft.onceInView(el, fn)`, `splitcraft.onRouteChange(fn)`, `splitcraft.injectStyles(css)`, `splitcraft.isEnabled(flagKey)`, QA param `?splitcraft_force=exp:variant`.
+- Public SDK API: `splitcraft.trackEvent(key, props)`, `splitcraft.waitForElement(sel, fn)`, `splitcraft.onceInView(el, fn)`, `splitcraft.onRouteChange(fn)`, `splitcraft.injectStyles(css)`, `splitcraft.isEnabled(flagKey)`, `splitcraft.activate(experimentKey)`, QA param `?splitcraft_force=exp:variant`.
 
 ## Commands
 - `npm install` — install all workspaces

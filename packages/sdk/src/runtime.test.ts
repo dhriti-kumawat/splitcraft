@@ -516,3 +516,74 @@ describe('feature flags', () => {
     expect(await sentEvents()).toEqual([]);
   });
 });
+
+describe('activation', () => {
+  it('waits for an element and does not hold the page back', async () => {
+    const reveal = vi.fn();
+    runtime = start(
+      config([
+        exp({ targeting: { activation: { mode: 'element', selector: '.late', timeoutMs: 2000 } } }),
+      ]),
+      { reveal },
+    );
+    await settle();
+    expect(reveal).toHaveBeenCalled();
+    expect(ran()).toBe(0);
+    document.body.append(Object.assign(document.createElement('div'), { className: 'late' }));
+    await vi.waitFor(() => expect(ran()).toBe(1));
+    expect(runtime.variant('trust')).toBe('b');
+  });
+
+  it('waits for a JS condition to become true', async () => {
+    (window as unknown as { __ready?: boolean }).__ready = false;
+    runtime = start(
+      config([
+        exp({
+          targeting: { activation: { mode: 'js', code: 'return window.__ready', timeoutMs: 2000 } },
+        }),
+      ]),
+    );
+    await settle();
+    expect(ran()).toBe(0);
+    (window as unknown as { __ready?: boolean }).__ready = true;
+    await vi.waitFor(() => expect(ran()).toBe(1));
+    delete (window as unknown as { __ready?: boolean }).__ready;
+  });
+
+  it('gives up when the condition never comes true', async () => {
+    vi.useFakeTimers();
+    runtime = start(
+      config([
+        exp({ targeting: { activation: { mode: 'js', code: 'return false', timeoutMs: 300 } } }),
+      ]),
+    );
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(ran()).toBe(0);
+    vi.useRealTimers();
+  });
+
+  it('activates manually, also when activate came first, and resets on a new page', async () => {
+    runtime = start(config([exp({ targeting: { activation: { mode: 'manual' } } })]));
+    await settle();
+    expect(ran()).toBe(0);
+    runtime.activate('trust');
+    await vi.waitFor(() => expect(ran()).toBe(1));
+  });
+
+  it('skips pages outside WHERE without waiting', async () => {
+    runtime = start(
+      config([
+        exp({
+          targeting: {
+            where: { include: [{ op: 'contains', value: '/deals' }] },
+            activation: { mode: 'manual' },
+          },
+        }),
+      ]),
+    );
+    await settle();
+    runtime.activate('trust');
+    await settle();
+    expect(ran()).toBe(0);
+  });
+});

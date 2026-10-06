@@ -1,10 +1,36 @@
 import { waitForSelector } from '../dom';
-import { dataLayerValue, evaluateGroups } from './conditions';
+import { dataLayerValue, evaluateGroups, runCustomJs } from './conditions';
 import { matchUrl } from './match';
-import type { ConditionGroup, Frequency, Targeting, TargetingContext, WhereRules } from './types';
+import type {
+  Activation,
+  ConditionGroup,
+  Frequency,
+  Targeting,
+  TargetingContext,
+  WhereRules,
+} from './types';
 
 export * from './types';
 export { evaluateCondition, evaluateGroup, evaluateGroups } from './conditions';
+
+/**
+ * Resolves true once `a` is met on this page: the element exists, the JS condition is
+ * true (checked every 100 ms), or `manual()` resolves. False after the time limit.
+ */
+export function waitForActivation(a: Activation, manual: () => Promise<boolean>): Promise<boolean> {
+  if (a.mode === 'manual') return manual();
+  const limit = Math.min(a.timeoutMs ?? 10000, 60000);
+  if (a.mode === 'element') return waitForSelector(a.selector, limit).then(Boolean);
+  return new Promise((resolve) => {
+    const end = Date.now() + limit;
+    const check = (): void => {
+      if (runCustomJs(a.code)) resolve(true);
+      else if (Date.now() >= end) resolve(false);
+      else setTimeout(check, 100);
+    };
+    check();
+  });
+}
 export { matchUrl } from './match';
 
 const DEFAULT_ELEMENT_TIMEOUT_MS = 3000;

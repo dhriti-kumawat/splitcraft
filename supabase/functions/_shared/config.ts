@@ -1,6 +1,7 @@
 import {
   STRING_OPS,
   URL_OPS,
+  type Activation,
   type ConditionGroup,
   type ConfigSource,
   type SdkProjectConfig,
@@ -153,7 +154,24 @@ export function toSdkTargeting(
   if (typeof t.waitForDataLayerMs === 'number' && t.waitForDataLayerMs > 0) {
     out.waitForDataLayerMs = Math.min(Math.round(t.waitForDataLayerMs), 5000);
   }
+  const a = activation(t.activation);
+  if (a) out.activation = a;
   return out;
+}
+
+/** A well-formed activation, with its time limit kept to 0.1–60 s; otherwise none. */
+function activation(a: StoredTargeting['activation']): Activation | undefined {
+  if (!a) return undefined;
+  const limit = (ms: unknown) =>
+    typeof ms === 'number' && Number.isFinite(ms)
+      ? { timeoutMs: Math.min(Math.max(Math.round(ms), 100), 60000) }
+      : {};
+  if (a.mode === 'manual') return { mode: 'manual' };
+  if (a.mode === 'element' && typeof a.selector === 'string' && a.selector.trim())
+    return { mode: 'element', selector: a.selector.trim(), ...limit(a.timeoutMs) };
+  if (a.mode === 'js' && typeof a.code === 'string' && a.code.trim())
+    return { mode: 'js', code: a.code, ...limit(a.timeoutMs) };
+  return undefined;
 }
 
 /** Switches that are off, for the SDK; undefined when all are on (the default). */

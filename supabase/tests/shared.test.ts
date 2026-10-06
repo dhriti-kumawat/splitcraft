@@ -313,3 +313,25 @@ describe('toSdkTargeting: evaluation settings', () => {
     expect(toSdkTargeting({ stay: false, waitForDataLayerMs: 0 }, {})).toEqual({});
   });
 });
+
+describe('activation in the SDK config', () => {
+  it('passes well-formed activation through and limits the wait', () => {
+    expect(toSdkTargeting({ activation: { mode: 'manual' } }, {})).toEqual({
+      activation: { mode: 'manual' },
+    });
+    expect(
+      toSdkTargeting(
+        { activation: { mode: 'element', selector: ' .cart ', timeoutMs: 999999 } },
+        {},
+      ),
+    ).toEqual({ activation: { mode: 'element', selector: '.cart', timeoutMs: 60000 } });
+    expect(
+      toSdkTargeting({ activation: { mode: 'js', code: 'return window.ready', timeoutMs: 5 } }, {}),
+    ).toEqual({ activation: { mode: 'js', code: 'return window.ready', timeoutMs: 100 } });
+  });
+
+  it('drops incomplete activation, so the experiment runs at once', () => {
+    expect(toSdkTargeting({ activation: { mode: 'element', selector: '  ' } }, {})).toEqual({});
+    expect(toSdkTargeting({ activation: { mode: 'js', code: '' } }, {})).toEqual({});
+  });
+});

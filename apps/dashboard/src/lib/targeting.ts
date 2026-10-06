@@ -1,6 +1,7 @@
 // Targeting as the dashboard stores it (experiments.targeting). Conditions and rules use
 // the SDK's own types so the two can't drift apart.
 import type {
+  Activation,
   Condition,
   ConditionGroup,
   DeviceType,
@@ -35,6 +36,8 @@ export interface StoredTargeting {
   stay?: boolean;
   /** Wait up to this long (ms) for the dataLayer keys the rules use. */
   waitForDataLayerMs?: number;
+  /** When the experiment activates on a matching page; none = at once. */
+  activation?: Activation;
 }
 
 function conditions(groups: ConditionGroup[] = []): Condition[] {

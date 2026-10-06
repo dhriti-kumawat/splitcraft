@@ -246,3 +246,49 @@ describe('evaluation settings', () => {
     expect(saved(patches)).toMatchObject({ stay: true, waitForDataLayerMs: 1500 });
   });
 });
+
+describe('activation', () => {
+  it('saves activation when an element appears, with a time limit', async () => {
+    const user = userEvent.setup();
+    const { patches } = await open();
+    expect(screen.getByRole('radio', { name: /Immediately/ })).toBeChecked();
+    await user.click(screen.getByRole('radio', { name: /When an element appears/ }));
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a CSS selector');
+    await user.type(screen.getByLabelText('CSS selector'), '.cart-drawer');
+    const secs = screen.getByLabelText('Stop waiting after');
+    await user.clear(secs);
+    await user.type(secs, '20');
+    expect(screen.getByText(/once \.cart-drawer appears\.$/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    await vi.waitFor(() => expect(patches).toHaveLength(1));
+    expect(saved(patches)).toMatchObject({
+      activation: { mode: 'element', selector: '.cart-drawer', timeoutMs: 20000 },
+    });
+  });
+
+  it('shows the code to call for manual activation and saves it', async () => {
+    const user = userEvent.setup();
+    const { patches } = await open();
+    await user.click(screen.getByRole('radio', { name: /Manually/ }));
+    expect(screen.getByText("splitcraft.activate('trust')")).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    await vi.waitFor(() => expect(patches).toHaveLength(1));
+    expect(saved(patches)).toMatchObject({ activation: { mode: 'manual' } });
+  });
+
+  it('needs a JS condition and a sensible wait', async () => {
+    const user = userEvent.setup();
+    const { patches } = await open();
+    await user.click(screen.getByRole('radio', { name: /When a JS condition is true/ }));
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Write the condition');
+    await user.type(screen.getByLabelText(/Condition/), 'return window.ready;');
+    const secs = screen.getByLabelText('Stop waiting after');
+    await user.clear(secs);
+    await user.type(secs, '90');
+    await user.click(screen.getByRole('button', { name: 'Save targeting' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Wait between 0.1 and 60 seconds.');
+    expect(patches).toHaveLength(0);
+  });
+});
