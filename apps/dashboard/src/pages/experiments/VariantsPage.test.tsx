@@ -269,3 +269,40 @@ describe('visual editor', () => {
     stopPreview();
   });
 });
+
+describe('edit visually', () => {
+  afterEach(async () => (await import('../../lib/previewBridge')).stopPreview());
+
+  it('is offered on variations, not the original', async () => {
+    const user = userEvent.setup();
+    await open();
+    expect(screen.getByRole('button', { name: 'Edit visually' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /^Control/ }));
+    expect(screen.queryByRole('button', { name: 'Edit visually' })).not.toBeInTheDocument();
+  });
+
+  it('without the extension, opens the page for the bookmark with the visual editor on', async () => {
+    const user = userEvent.setup();
+    const post = vi.spyOn(window, 'postMessage');
+    vi.spyOn(window, 'open').mockReturnValue(window);
+    await open();
+    await user.click(screen.getByRole('button', { name: 'Edit visually' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit visually' });
+    expect(within(dialog).queryByRole('link', { name: 'Open preview' })).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Open the page' }));
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: window,
+        origin: 'https://mytrips.dev',
+        data: { source: 'splitcraft-preview', type: 'hello' },
+      }),
+    );
+    const sent = post.mock.calls.map(
+      ([d]) => d as { type?: string; state?: { visual?: boolean; variantKey?: string } },
+    );
+    expect(sent.filter((d) => d.type === 'state').at(-1)?.state).toMatchObject({
+      visual: true,
+      variantKey: 'b',
+    });
+  });
+});

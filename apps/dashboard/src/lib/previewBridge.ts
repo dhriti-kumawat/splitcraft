@@ -16,6 +16,8 @@ export interface PreviewState {
   variants: Array<{ key: string; name: string; js?: string; css?: string; url?: string | null }>;
   variantKey: string;
   source: 'live' | 'saved';
+  /** Start the visual editor on this variant when the preview opens. */
+  visual?: boolean;
 }
 
 export interface ExtensionInfo {
@@ -249,7 +251,9 @@ export function updatePreview(state: PreviewState, select = false): void {
   if (session.mode === 'extension')
     void request({ type: 'update', state: next, select }).catch(() => {});
   else if (bookmarkTab) {
-    bookmarkTab.state = next;
+    // Until the page has said hello, keep a pending "start the visual editor".
+    const visual = next.visual || (!bookmarkTab.origin && bookmarkTab.state.visual);
+    bookmarkTab.state = visual ? { ...next, visual } : next;
     sendToBookmark();
   }
 }

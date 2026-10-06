@@ -61,6 +61,22 @@ export function createPreview(): PreviewApi {
     }
   };
 
+  // "Edit visually": point-and-click changes go back to the dashboard as an action.
+  const visual = () => {
+    if (!state || state.source !== 'live' || state.variantKey === state.variants[0]?.key) return;
+    const variantKey = state.variantKey;
+    stopVisual?.();
+    stopVisual = startVisual({
+      onDone: (changes) => {
+        stopVisual = null;
+        if (!changes.length) return;
+        opts.onAction?.({ type: 'visual', variantKey, changes });
+        note = `${changes.length} visual ${changes.length === 1 ? 'change' : 'changes'} sent to the dashboard. Review and save them there.`;
+        render();
+      },
+    });
+  };
+
   const api: PreviewApi = {
     helpers,
     start(next, o = {}) {
@@ -84,25 +100,18 @@ export function createPreview(): PreviewApi {
           api.stop();
           o.onAction?.({ type: 'stop' });
         },
-        onVisual: () => {
-          const variantKey = state!.variantKey;
-          stopVisual?.();
-          stopVisual = startVisual({
-            onDone: (changes) => {
-              stopVisual = null;
-              if (!changes.length) return;
-              o.onAction?.({ type: 'visual', variantKey, changes });
-              note = `${changes.length} visual ${changes.length === 1 ? 'change' : 'changes'} sent to the dashboard. Review and save them there.`;
-              render();
-            },
-          });
-        },
+        onVisual: () => visual(),
       });
       runJs();
       render();
       if (document.readyState === 'loading')
         document.addEventListener('DOMContentLoaded', () => reveal(), { once: true });
       else reveal();
+      // Opened with "Edit visually" from the dashboard: start the editor once the page is in.
+      if (next.visual) {
+        if (document.body) visual();
+        else document.addEventListener('DOMContentLoaded', visual, { once: true });
+      }
     },
     update(next) {
       const before = current();
@@ -110,6 +119,7 @@ export function createPreview(): PreviewApi {
       state = next;
       applyCss();
       render();
+      if (next.visual && !stopVisual) visual();
       return switched || (before?.js ?? '') !== (current()?.js ?? '') ? 'rerun' : 'live';
     },
     rerun() {
