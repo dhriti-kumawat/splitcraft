@@ -538,7 +538,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
                       {STRENGTH[score] && `${STRENGTH[score]}`}
                     </span>
                   </div>
-                  <ul className={styles.rules}>
+                  <ul className={styles.rules} aria-label="Password requirements">
                     {passwordRules(password).map((r) => (
                       <li key={r.label} className={`${styles.rule} ${r.ok ? styles.ok : ''}`}>
                         <span className={styles.mark} aria-hidden="true">
@@ -630,30 +630,93 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link to="/login" className={styles.brand}>
-          <Logo size={28} />
-          Splitcraft
-        </Link>
-        {SITE_URL && (
-          <a href={SITE_URL} className={styles.back}>
-            ← Back to site
-          </a>
-        )}
-      </header>
-      <main className={styles.main}>
-        <div className={styles.card}>{body}</div>
-      </main>
-      <footer className={styles.footer}>
-        <span>© 2026 Splitcraft</span>
-        {SITE_URL && (
-          <>
-            {link('/privacy', 'Privacy')}
-            {link('/terms', 'Terms')}
-          </>
-        )}
-      </footer>
+      <div className={styles.formSide}>
+        <header className={styles.header}>
+          <Link to="/login" className={styles.brand}>
+            <Logo size={28} />
+            Splitcraft
+          </Link>
+          {SITE_URL && (
+            <a href={SITE_URL} className={styles.back}>
+              ← Back to site
+            </a>
+          )}
+        </header>
+        <main className={styles.main}>
+          <div className={styles.card}>{body}</div>
+        </main>
+        <footer className={styles.footer}>
+          <span>© 2026 Splitcraft</span>
+          {SITE_URL && (
+            <>
+              {link('/privacy', 'Privacy')}
+              {link('/terms', 'Terms')}
+            </>
+          )}
+        </footer>
+      </div>
+      <Showcase signup={mode === 'signup'} />
     </div>
+  );
+}
+
+/** The dark panel beside the form on wide screens: what Splitcraft does, at a glance. */
+function Showcase({ signup }: { signup: boolean }) {
+  const arms = [
+    { name: 'Original', rate: '4.98%', width: 62, color: 'var(--variant-a)' },
+    { name: 'Sticky Book bar', rate: '5.47%', width: 68, color: 'var(--variant-b)' },
+  ];
+  return (
+    <aside className={styles.showcase} aria-label="About Splitcraft">
+      <div className={styles.showcaseInner}>
+        <p className={styles.kicker}>{signup ? 'Free to start' : 'Welcome back'}</p>
+        <h2 className={styles.showTitle}>
+          {signup ? 'Run your first A/B test today.' : 'See what moved while you were away.'}
+        </h2>
+        <div className={styles.result}>
+          <div className={styles.resultHead}>
+            <span className={styles.resultName}>Sticky Book Now bar</span>
+            <span className={styles.livePill}>Live</span>
+          </div>
+          {arms.map((a) => (
+            <div key={a.name} className={styles.arm}>
+              <span className={styles.armName}>
+                <span className={styles.swatch} style={{ background: a.color }} />
+                {a.name}
+              </span>
+              <span className={styles.bar}>
+                <span style={{ width: `${a.width}%`, background: a.color }} />
+              </span>
+              <span className={styles.armRate}>{a.rate}</span>
+            </div>
+          ))}
+          <dl className={styles.stats}>
+            <div>
+              <dt>Uplift</dt>
+              <dd className={styles.up}>+9.7%</dd>
+            </div>
+            <div>
+              <dt>Chance to win</dt>
+              <dd>96%</dd>
+            </div>
+            <div>
+              <dt>Sample ratio</dt>
+              <dd>Healthy</dd>
+            </div>
+          </dl>
+        </div>
+        <ul className={styles.points}>
+          <li>Variants in real JS and CSS, or point and click</li>
+          <li>Targeting, goals and guardrails in one place</li>
+          <li>
+            {signup
+              ? '100,000 events a month free, no card'
+              : 'Results you can trust, with a 95% range'}
+          </li>
+        </ul>
+        <p className={styles.showNote}>Example numbers from a demo test.</p>
+      </div>
+    </aside>
   );
 }
 

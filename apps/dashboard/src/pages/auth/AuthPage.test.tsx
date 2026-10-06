@@ -134,7 +134,7 @@ describe('sign up', () => {
     expect(screen.getByText('Weak')).toBeInTheDocument();
     await user.type(field('Password'), '1T');
     expect(screen.getByText('Good')).toBeInTheDocument();
-    const rules = screen.getByRole('list');
+    const rules = screen.getByRole('list', { name: 'Password requirements' });
     expect(within(rules).getByText('8+ characters').closest('li')).toHaveTextContent('(done)');
     expect(within(rules).getByText('A symbol (optional)').closest('li')).toHaveTextContent(
       '(to do)',
