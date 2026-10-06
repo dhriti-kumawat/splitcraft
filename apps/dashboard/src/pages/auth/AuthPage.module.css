@@ -19,6 +19,20 @@
   }
 }
 
+/* Phones and tablets (no side panel): a soft green band with the grid at the top,
+   fading into white behind the form. */
+@media (max-width: 1023px) {
+  .formSide {
+    background:
+      linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, var(--surface) 440px) no-repeat,
+      radial-gradient(circle at 92% 0%, rgba(15, 107, 87, 0.26), transparent 380px) no-repeat,
+      radial-gradient(circle at 0% 30%, rgba(242, 179, 122, 0.3), transparent 280px) no-repeat,
+      linear-gradient(#dfe7dd 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, #dfe7dd 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--accent-soft);
+  }
+}
+
 .header {
   height: 76px;
   flex-shrink: 0;
@@ -535,15 +549,11 @@
   }
 }
 
-/* Phone: 02-auth-mobile.html — no card, white page, header rule. */
+/* Phone: single column, tight spacing. */
 @media (max-width: 520px) {
-  .page {
-    background: var(--surface);
-  }
   .header {
     height: 64px;
     padding: 0 16px;
-    border-bottom: 1px solid var(--line-soft);
   }
   .brand {
     font-size: 18px;
