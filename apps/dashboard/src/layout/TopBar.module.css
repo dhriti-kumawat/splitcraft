@@ -61,8 +61,10 @@
 }
 
 .crumb + .crumb::before {
-  content: '/';
-  color: #b5bab2;
+  content: '›';
+  font-size: 16px;
+  line-height: 1;
+  color: #a9aea6;
 }
 
 .crumb a,
@@ -72,15 +74,14 @@
   text-overflow: ellipsis;
 }
 
-/* Parents give way first, so the current page keeps the most room. */
+/* Parents keep their text (shortened past 160 px); only the current page shrinks. */
 .parent {
-  flex: 0 3 auto;
-  max-width: 180px;
+  flex: 0 0 auto;
+  max-width: 160px;
 }
 
 .crumb:last-child {
   flex: 0 1 auto;
-  min-width: 60px;
 }
 
 .crumb a {
@@ -191,14 +192,31 @@
   .kbd {
     display: none;
   }
+}
 
-  /* Tablets: only the nearest parent stays, after an ellipsis. */
+/* Below 1440 px the search box becomes an icon (⌘K still opens it), so the breadcrumb
+   keeps its room next to the page actions. */
+@media (max-width: 1439px) {
+  .search {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .searchText,
+  .kbd {
+    display: none;
+  }
+}
+
+/* Below 1280 px: only the nearest parent stays, after an ellipsis. */
+@media (max-width: 1279px) {
   .parent:not(:nth-last-child(2)) {
     display: none;
   }
 
-  .parent:nth-last-child(2)::before {
-    content: '… /';
+  .parent:nth-last-child(2):not(:first-child)::before {
+    content: '… ›';
   }
 }
 
