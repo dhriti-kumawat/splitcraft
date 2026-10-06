@@ -109,7 +109,13 @@ a {
 }
 
 .side {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+  max-height: calc(100vh - 112px);
+  overflow-y: auto;
   padding-right: 8px;
+  overscroll-behavior: contain;
 }
 
 .side summary {
@@ -123,9 +129,9 @@ a {
   list-style: none;
 }
 
-.side nav {
-  position: sticky;
-  top: 96px;
+.toc {
+  max-height: calc(100vh - 112px);
+  overflow-y: auto;
 }
 
 .side a {
@@ -361,6 +367,9 @@ article th {
   }
 
   .side {
+    position: static;
+    max-height: none;
+    overflow: visible;
     margin-bottom: 28px;
     padding-right: 0;
     border-radius: 10px;
