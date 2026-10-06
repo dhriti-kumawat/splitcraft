@@ -119,16 +119,18 @@
   justify-content: center;
   gap: 10px;
   height: 46px;
-  border: 0;
+  border: 1px solid var(--line-strong);
   border-radius: var(--r-md, 8px);
-  background: var(--ink);
-  color: #ffffff;
+  background: var(--surface);
+  color: var(--ink);
   font: 600 15px var(--font-ui);
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(21, 23, 26, 0.06);
 }
 
 .github:hover:not(:disabled) {
-  background: #262b2e;
+  border-color: var(--ink);
+  background: var(--ground);
 }
 
 .github:focus-visible {
@@ -404,7 +406,7 @@
   margin-top: 4px;
   border: none;
   border-radius: 10px;
-  background: var(--ink);
+  background: var(--accent);
   color: #ffffff;
   font: 600 15px var(--font-ui);
   cursor: pointer;
@@ -416,7 +418,7 @@
 }
 
 .cta:hover {
-  background: var(--accent);
+  background: #0b5646;
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(15, 107, 87, 0.25);
@@ -424,7 +426,8 @@
 
 .cta:disabled {
   cursor: progress;
-  background: #2e3337;
+  background: var(--accent);
+  opacity: 0.75;
   transform: none;
   box-shadow: none;
 }
