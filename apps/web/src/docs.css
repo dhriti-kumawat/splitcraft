@@ -302,41 +302,8 @@ article th {
   color: var(--accent);
 }
 
-.pager {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.pager a {
-  display: flex;
-  flex-direction: column;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.pager a:hover {
-  border-color: var(--accent);
-}
-
-.pager span {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.pager .next {
-  margin-left: auto;
-  text-align: right;
-}
-
 .edit {
+  margin: 20px 0 0;
   font-size: 13px;
 }
 

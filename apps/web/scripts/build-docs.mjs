@@ -53,9 +53,7 @@ function render(page) {
   return { html, headings };
 }
 
-function layout(pages, page, { html, headings }, index) {
-  const prev = pages[index - 1];
-  const next = pages[index + 1];
+function layout(pages, page, { html, headings }) {
   const nav = pages
     .map(
       (p) =>
@@ -100,10 +98,6 @@ function layout(pages, page, { html, headings }, index) {
   </details>
   <main id="content" class="content" tabindex="-1">
     <article>${html}</article>
-    <nav class="pager" aria-label="Previous and next page">
-      ${prev ? `<a class="prev" href="${href(prev.slug)}"><span>Previous</span>${escape(prev.title)}</a>` : '<span></span>'}
-      ${next ? `<a class="next" href="${href(next.slug)}"><span>Next</span>${escape(next.title)}</a>` : ''}
-    </nav>
     <p class="edit"><a href="${github}/blob/main/docs/developer/${page.file}">Edit this page on GitHub</a></p>
   </main>
   ${toc}
@@ -141,10 +135,10 @@ export function buildDocs(outDir) {
       };
     });
   mkdirSync(outDir, { recursive: true });
-  pages.forEach((page, i) => {
+  pages.forEach((page) => {
     const dir = new URL(page.slug ? `${page.slug}/` : '', outDir);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(new URL('index.html', dir), layout(pages, page, render(page), i));
+    writeFileSync(new URL('index.html', dir), layout(pages, page, render(page)));
   });
   copyFileSync(new URL('design/tokens.css', root), new URL('tokens.css', outDir));
   copyFileSync(new URL('../src/docs.css', import.meta.url), new URL('docs.css', outDir));
