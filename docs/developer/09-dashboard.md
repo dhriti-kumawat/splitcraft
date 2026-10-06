@@ -64,6 +64,9 @@ workspace keeps at least one owner (a database trigger enforces it).
   when a test has a clear winner on its primary goal (unique conversions or click-through, once
   every variant has the planned sample), reaches its planned sample, or is paused by a guardrail.
   Webhooks receive `{ event, text, experiment: { id, key, name, status }, sentAt }`.
+- **Log in and sign up**: the form sits on white; on wide screens a light panel beside it shows
+  what Splitcraft does (example numbers from a demo test), and phones get a soft green band at
+  the top. Continue with GitHub comes first, as the fastest way in; the main button is green.
 - **Preview page**: `/preview.html?path=…` renders any route with the fixtures (development only).
 
 ## Adding a screen
