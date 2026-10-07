@@ -55,7 +55,10 @@ workspace keeps at least one owner (a database trigger enforces it).
 
 - **⌘K / Ctrl+K**: search pages, projects, experiments in every project, and the current project's
   audiences and metrics.
-- **Responsive**: below 1024 px the sidebar becomes a drawer; below 720 px page actions wrap.
+- **Responsive**: below 1440 px the search box becomes an icon (⌘K still works); below 1280 px the
+  breadcrumb keeps only the nearest parent ("… › Experiments › name"); below 1024 px the sidebar
+  becomes a drawer and page actions move to a second row when they don't fit; below 720 px only
+  the current page's name shows.
 - **Feature flags** (Project › Feature flags): create a flag (it starts off), turn it on, set the
   rollout share and optionally a segment. Code checks `splitcraft.isEnabled('key')`. Flags reach
   the SDK as experiments with one `on` variant (`flag: true`), so raising the share only adds
@@ -66,6 +69,9 @@ workspace keeps at least one owner (a database trigger enforces it).
   Webhooks receive `{ event, text, experiment: { id, key, name, status }, sentAt }`.
 - **Back**: experiment, metric and saved-audience pages have a ‹ button beside the breadcrumb that
   returns to their section (Experiments, Metrics, Audiences).
+- **Log in and sign up**: the form sits on white; on wide screens a light panel beside it shows
+  what Splitcraft does (example numbers from a demo test), and phones get a soft green band at
+  the top. Continue with GitHub comes first, as the fastest way in; the main button is green.
 - **Preview page**: `/preview.html?path=…` renders any route with the fixtures (development only).
   The address bar follows in-app navigation, so Back, Forward and reload work; fixture edits live
   in memory and reset on reload.

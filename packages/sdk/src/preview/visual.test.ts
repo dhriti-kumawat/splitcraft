@@ -103,3 +103,23 @@ describe('visual editor', () => {
     api.stop();
   });
 });
+
+describe('opened with "Edit visually"', () => {
+  it('starts the visual editor straight away on the variation', () => {
+    const api = createPreview();
+    api.start({
+      experimentKey: 'hero',
+      experimentName: 'Hero',
+      variants: [
+        { key: 'control', name: 'Control' },
+        { key: 'b', name: 'B' },
+      ],
+      variantKey: 'b',
+      source: 'live',
+      visual: true,
+    });
+    expect(document.getElementById('splitcraft-visual')).not.toBeNull();
+    api.stop();
+    expect(document.getElementById('splitcraft-visual')).toBeNull();
+  });
+});

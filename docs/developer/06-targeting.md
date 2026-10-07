@@ -45,6 +45,21 @@ config responses are cached privately. If the lookup fails, the country is unkno
 
 Every page load, once, once per session, or every N days.
 
+## Activation
+
+When the test starts on a page that matches WHERE (like Optimizely's page activation):
+
+| Mode | Starts when | Notes |
+| --- | --- | --- |
+| Immediately | The page loads or the route changes | The default |
+| When an element appears | A CSS selector matches (watched with a MutationObserver) | For late content: cart drawers, modals, lazy sections |
+| When a JS condition is true | Your code returns true; checked every 100 ms | e.g. `return window.cartLoaded === true;` |
+| Manually | The site calls `splitcraft.activate('experiment-key')` | e.g. after an add-to-cart AJAX call; once per page |
+
+Element and JS waits stop after a limit you set (0.1–60 s, default 10 s); if it passes, the
+visitor isn't in the test on that page. Waiting tests never keep the page hidden, and a route
+change cancels them. After activation, WHO, HOW and WHEN are checked as usual.
+
 ## Evaluation settings
 
 - **Once matched, stay in audience**: after a visitor has seen the experiment, WHO and HOW aren't

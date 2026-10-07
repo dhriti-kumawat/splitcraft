@@ -83,13 +83,13 @@ flowchart LR
 
 ## Numbers
 
-|                                     |                                                                          |
-| ----------------------------------- | ------------------------------------------------------------------------ |
-| SDK, main bundle                    | **7.9 KB** gzipped (budget 8 KB, checked in CI), no runtime dependencies |
-| QA panel                            | 2.0 KB gzipped, a separate file loaded only in QA mode                   |
-| Metrics file (browsing, Web Vitals) | 1.2 KB gzipped, loaded only when a live experiment uses it               |
-| Marketing site, Lighthouse (mobile) | Performance 100 · Accessibility 100 · Best practices 100 · SEO 100       |
-| Tests                               | ~670 across SDK, dashboard, site, database and simulator                 |
+|                                     |                                                                            |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| SDK, main bundle                    | **8.1 KB** gzipped (budget 8.5 KB, checked in CI), no runtime dependencies |
+| QA panel                            | 2.0 KB gzipped, a separate file loaded only in QA mode                     |
+| Metrics file (browsing, Web Vitals) | 1.2 KB gzipped, loaded only when a live experiment uses it                 |
+| Marketing site, Lighthouse (mobile) | Performance 100 · Accessibility 100 · Best practices 100 · SEO 100         |
+| Tests                               | ~670 across SDK, dashboard, site, database and simulator                   |
 
 The statistics are tested against the worked example in `docs/PRODUCT_SPEC.md` §6: Control
 12,480 / 622 and B 12,380 / 677 give an uplift of +9.7% (95% range −1.4% to +20.8%), a 96% chance to

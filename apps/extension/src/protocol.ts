@@ -8,6 +8,7 @@ export interface PreviewState {
   variants: Array<{ key: string; name: string; js?: string; css?: string; url?: string | null }>;
   variantKey: string;
   source: 'live' | 'saved';
+  visual?: boolean;
 }
 
 /** From the dashboard page, through dashboard-bridge.ts. */

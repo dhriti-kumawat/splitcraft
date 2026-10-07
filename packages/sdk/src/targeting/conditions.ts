@@ -113,7 +113,7 @@ function isArguments(value: object): boolean {
   return Object.prototype.toString.call(value) === '[object Arguments]';
 }
 
-function runCustomJs(code: string): boolean {
+export function runCustomJs(code: string): boolean {
   try {
     return Boolean(new Function(code)());
   } catch {
