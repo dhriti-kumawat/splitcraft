@@ -119,13 +119,28 @@ groups.
 
 ## Visual editor
 
-Click **Edit visually** above a variation's code (or, in **Preview on site** with a variation
-shown, **Edit visually** in the panel on the page). The page opens with the editor already on. Hover outlines an element and a click selects it; then **Edit text** (elements with
-only text), **Hide**, **Text** colour or **Fill** colour. Changes show on the page at once.
-**Done** sends them to the dashboard, which adds the matching code to that variation (JS for text,
-CSS for hide and colours) and says so above the variation list. Review the code and save; nothing
-is saved before that. Selectors are generated (`#id`, or a short tag/class/`:nth-of-type` path),
-so check them on pages whose markup changes.
+Click **Edit visually** above a variation's code (or **Edit visually** in the preview panel on the
+page). Your test page opens with the editor docked on the right, like Optimizely's:
+
+| Area | What you can do |
+| --- | --- |
+| Select | Hover outlines elements; a click selects one. Step to the **Parent**, **Child**, **Previous** or **Next** element, click a parent in the breadcrumb, or type a selector. **Interactive** lets you use the page (open a menu, a tab) before selecting. Links and forms don't navigate while selecting. |
+| Content | Rewrite the text (elements with only text) or edit the HTML. |
+| Style | Text colour, background, font size and weight, line height, alignment, padding, margin, border, corner radius, width, height, opacity, display. |
+| Image / Link | Image URL and alt text; link URL and whether it opens in a new tab. Other elements get a title. |
+| Layout | **Move up** / **Move down** among siblings, or **Pick where**: choose before, after, or inside at the start or end, then click the destination. |
+| Insert | Add HTML before, after or inside the element. |
+| Visibility | **Hide** (CSS) or **Remove** (from the page). |
+
+Every change shows at once. **Undo** / **Redo** (also ⌘Z / ⇧⌘Z) step through them, **Changes** lists
+them, **Cancel** puts the page back, and **Done** sends them to the dashboard, which adds the matching
+code to that variation: JS through `splitcraft.waitForElement`, and CSS for hidden elements. Review
+the code and save; nothing is saved before that.
+
+The dashboard builds the code from the changes as data: style properties and attributes come from
+an allow-list, every value is written with `JSON.stringify`, and `javascript:` links are refused,
+so a page can't slip code into a variant. Selectors are generated (`#id`, or a short
+tag/class/position path); check them on pages whose markup changes.
 
 ## Variant code
 
