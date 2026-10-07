@@ -24,21 +24,29 @@ export function PreviewDialog({
   experiment,
   project,
   onClose,
+  visualVariant,
 }: {
   experiment: Experiment;
   project: Project;
   onClose(): void;
+  /** Opened from "Edit visually": start the visual editor on this variant. */
+  visualVariant?: string;
 }) {
   const ext = useExtension();
   const [error, setError] = useState('');
   const [opened, setOpened] = useState(false);
   const page = testPage(experiment, project);
   // The snippet is on the site: the quickest way, no install. It shows saved code.
-  const hasSnippet = Boolean(project.installedAt);
+  // Visual editing needs the live link to this tab, which the snippet link can't give.
+  const hasSnippet = Boolean(project.installedAt) && !visualVariant;
+  const state = () => ({
+    ...previewState(experiment, undefined, visualVariant),
+    ...(visualVariant && { visual: true }),
+  });
 
   const openExtension = () => {
     setError('');
-    openWithExtension(page, projectHosts(project), previewState(experiment)).then(
+    openWithExtension(page, projectHosts(project), state()).then(
       () => {
         markQaDone(experiment.id);
         onClose();
@@ -48,7 +56,7 @@ export function PreviewDialog({
   };
   const openBookmarkTab = () => {
     setError('');
-    if (openForBookmark(previewUrl(experiment, project), previewState(experiment))) {
+    if (openForBookmark(previewUrl(experiment, project), state())) {
       markQaDone(experiment.id);
       setOpened(true);
     } else setError('Your browser blocked the new tab. Allow pop-ups for this site and try again.');
@@ -56,8 +64,12 @@ export function PreviewDialog({
 
   return (
     <Dialog
-      title="Preview on site"
-      description={`See ${experiment.name} on ${page.replace(/^https?:\/\//, '')} before visitors do. Only you see it.`}
+      title={visualVariant ? 'Edit visually' : 'Preview on site'}
+      description={
+        visualVariant
+          ? `Opens ${page.replace(/^https?:\/\//, '')} with the visual editor on. Click any element to change it; the code comes back here.`
+          : `See ${experiment.name} on ${page.replace(/^https?:\/\//, '')} before visitors do. Only you see it.`
+      }
       onClose={onClose}
       wide
     >

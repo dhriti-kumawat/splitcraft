@@ -95,14 +95,14 @@ function layout(pages, page, { html, headings }, index) {
 </header>
 <div class="layout">
   <details class="side" open>
-    <summary>Docs menu</summary>
+    <summary>Docs menu <span class="here">${escape(page.title)}</span></summary>
     <nav aria-label="Docs"><ul>${nav}</ul></nav>
   </details>
   <main id="content" class="content" tabindex="-1">
     <article>${html}</article>
-    <nav class="pager" aria-label="Previous and next page">
-      ${prev ? `<a class="prev" href="${href(prev.slug)}"><span>Previous</span>${escape(prev.title)}</a>` : '<span></span>'}
-      ${next ? `<a class="next" href="${href(next.slug)}"><span>Next</span>${escape(next.title)}</a>` : ''}
+    <nav class="flow" aria-label="Previous and next page">
+      ${prev ? `<a href="${href(prev.slug)}">← ${escape(prev.title)}</a>` : '<span></span>'}
+      ${next ? `<a class="next" href="${href(next.slug)}">Next: <b>${escape(next.title)}</b> →</a>` : ''}
     </nav>
     <p class="edit"><a href="${github}/blob/main/docs/developer/${page.file}">Edit this page on GitHub</a></p>
   </main>

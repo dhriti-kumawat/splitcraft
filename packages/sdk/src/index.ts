@@ -30,9 +30,17 @@ export function start(config: ProjectConfig, opts?: StartOptions): Runtime {
   return attach(startRuntime(config, { metricsUrl: `${CDN}splitcraft-metrics.iife.js`, ...opts }));
 }
 
+/** Activates an experiment whose activation is "manual", on the current page. */
+export function activate(experimentKey: string): void {
+  if (runtime) runtime.activate(experimentKey);
+  else pendingActivations.push(experimentKey);
+}
+const pendingActivations: string[] = [];
+
 function attach(rt: Runtime): Runtime {
   runtime = rt;
   for (const args of pending.splice(0)) rt.trackEvent(...args);
+  for (const key of pendingActivations.splice(0)) rt.activate(key);
   rt.subscribe(notify);
   notify();
   return rt;

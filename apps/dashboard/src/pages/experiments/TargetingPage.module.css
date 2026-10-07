@@ -338,3 +338,21 @@
   border-top: 1px solid var(--line-soft);
   font-size: 13px;
 }
+
+.activationModes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activationCode {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.activationCode textarea {
+  height: auto;
+  padding: 8px 10px;
+  font: 13px/1.5 var(--font-mono);
+}

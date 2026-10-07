@@ -36,6 +36,29 @@
   background: var(--surface-2);
 }
 
+.back {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.back:hover {
+  background: var(--surface-2);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .breadcrumb {
   min-width: 0;
 }
@@ -61,8 +84,27 @@
 }
 
 .crumb + .crumb::before {
-  content: '/';
-  color: #b5bab2;
+  content: '›';
+  font-size: 16px;
+  line-height: 1;
+  color: #a9aea6;
+}
+
+.crumb a,
+.crumb > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Parents keep their text (shortened past 160 px); only the current page shrinks. */
+.parent {
+  flex: 0 0 auto;
+  max-width: 160px;
+}
+
+.crumb:last-child {
+  flex: 0 1 auto;
 }
 
 .crumb a {
@@ -132,8 +174,31 @@
 }
 
 @media (max-width: 1023px) {
+  /* The breadcrumb keeps at least 280 px; when the page actions don't fit beside it,
+     they move to a second row instead of squeezing it. */
   .topbar {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    row-gap: 0;
     padding: 0 24px;
+  }
+
+  .lead {
+    flex: 1 1 280px;
+    height: 64px;
+  }
+
+  .tools {
+    flex: 0 1 auto;
+    margin-left: auto;
+    padding: 12px 0;
+  }
+
+  .actions :is(button, a) {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
   }
 
   .menuButton {
@@ -149,6 +214,32 @@
   .searchText,
   .kbd {
     display: none;
+  }
+}
+
+/* Below 1440 px the search box becomes an icon (⌘K still opens it), so the breadcrumb
+   keeps its room next to the page actions. */
+@media (max-width: 1439px) {
+  .search {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .searchText,
+  .kbd {
+    display: none;
+  }
+}
+
+/* Below 1280 px: only the nearest parent stays, after an ellipsis. */
+@media (max-width: 1279px) {
+  .parent:not(:nth-last-child(2)) {
+    display: none;
+  }
+
+  .parent:nth-last-child(2):not(:first-child)::before {
+    content: '… ›';
   }
 }
 
