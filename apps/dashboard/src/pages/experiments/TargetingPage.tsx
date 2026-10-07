@@ -56,6 +56,7 @@ export function TargetingPage() {
   const [when, setWhen] = useState<Frequency>(t.when ?? { mode: 'every_load' });
   const [stay, setStay] = useState(t.stay === true);
   const [waitMs, setWaitMs] = useState(String(t.waitForDataLayerMs ?? 0));
+  const [activation, setActivation] = useState<ActivationDraft>(() => fromActivation(t.activation));
   const [submitted, setSubmitted] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
 
@@ -66,6 +67,7 @@ export function TargetingPage() {
     ...(when.mode !== 'every_load' ? { when } : {}),
     ...(stay ? { stay: true } : {}),
     ...(Number(waitMs) > 0 ? { waitForDataLayerMs: Math.round(Number(waitMs)) } : {}),
+    ...(toActivation(activation) ? { activation: toActivation(activation) } : {}),
   };
   const waitId = useId();
   const waitProblem = !(Number(waitMs) >= 0 && Number(waitMs) <= 5000);
@@ -75,7 +77,8 @@ export function TargetingPage() {
     pageRuleProblems(where) +
     groupsProblemCount(how) +
     (when.mode === 'every_n_days' && !(when.days >= 1) ? 1 : 0) +
-    (waitProblem ? 1 : 0);
+    (waitProblem ? 1 : 0) +
+    (activationProblem(activation) ? 1 : 0);
   const ended = experiment.status === 'ended';
 
   const save = () => {
@@ -276,6 +279,13 @@ export function TargetingPage() {
           </div>
           <FrequencyPicker value={when} onChange={setWhen} />
         </section>
+
+        <ActivationPicker
+          value={activation}
+          onChange={setActivation}
+          experimentKey={experiment.key}
+          showErrors={submitted}
+        />
 
         <section className={styles.section} aria-labelledby="eval-h">
           <div className={styles.titleRow}>
@@ -563,6 +573,15 @@ function whoSentence(t: StoredTargeting, segmentName: (id: string) => string): s
           ? `every ${t.when.days} days`
           : 'on every page load';
   parts.push(freq);
+  const a = t.activation;
+  if (a)
+    parts.push(
+      a.mode === 'element'
+        ? `once ${a.selector} appears`
+        : a.mode === 'js'
+          ? 'once its JS condition is true'
+          : 'when your code activates it',
+    );
   return `${parts.join(', ')}.`;
 }
 
@@ -622,6 +641,161 @@ function UrlTester({
         </>
       ) : (
         <span className={styles.error}>Enter a full URL, like {domain}/trips/norway.</span>
+      )}
+    </section>
+  );
+}
+
+interface ActivationDraft {
+  mode: 'immediate' | 'element' | 'js' | 'manual';
+  selector: string;
+  code: string;
+  seconds: string;
+}
+
+function fromActivation(a: StoredTargeting['activation']): ActivationDraft {
+  return {
+    mode: a?.mode ?? 'immediate',
+    selector: a?.mode === 'element' ? a.selector : '',
+    code: a?.mode === 'js' ? a.code : '',
+    seconds: String(a && a.mode !== 'manual' && a.timeoutMs ? a.timeoutMs / 1000 : 10),
+  };
+}
+
+function toActivation(d: ActivationDraft): StoredTargeting['activation'] {
+  const timeoutMs = Math.round(Number(d.seconds) * 1000);
+  if (d.mode === 'manual') return { mode: 'manual' };
+  if (d.mode === 'element') return { mode: 'element', selector: d.selector.trim(), timeoutMs };
+  if (d.mode === 'js') return { mode: 'js', code: d.code, timeoutMs };
+  return undefined;
+}
+
+/** What's wrong with the activation, or ''. */
+function activationProblem(d: ActivationDraft): string {
+  if (d.mode === 'immediate' || d.mode === 'manual') return '';
+  const s = Number(d.seconds);
+  if (!(s >= 0.1 && s <= 60)) return 'Wait between 0.1 and 60 seconds.';
+  if (d.mode === 'js')
+    return d.code.trim() ? '' : 'Write the condition, e.g. return window.cartLoaded;';
+  if (!d.selector.trim()) return 'Enter a CSS selector, e.g. .cart-drawer.';
+  try {
+    document.createDocumentFragment().querySelector(d.selector);
+    return '';
+  } catch {
+    return 'That isn’t a valid CSS selector.';
+  }
+}
+
+const ACTIVATION_MODES: Array<{ id: ActivationDraft['mode']; label: string; text: string }> = [
+  { id: 'immediate', label: 'Immediately', text: 'When the page loads or the route changes.' },
+  {
+    id: 'element',
+    label: 'When an element appears',
+    text: 'For content that loads late, like a cart drawer or a modal.',
+  },
+  {
+    id: 'js',
+    label: 'When a JS condition is true',
+    text: 'Checked every 100 ms until it returns true.',
+  },
+  { id: 'manual', label: 'Manually', text: 'Your code activates it, e.g. after an AJAX call.' },
+];
+
+/** Activation: when the experiment starts on a matching page (like Optimizely's). */
+function ActivationPicker({
+  value,
+  onChange,
+  experimentKey,
+  showErrors,
+}: {
+  value: ActivationDraft;
+  onChange(d: ActivationDraft): void;
+  experimentKey: string;
+  showErrors: boolean;
+}) {
+  const id = useId();
+  const problem = activationProblem(value);
+  const set = (patch: Partial<ActivationDraft>) => onChange({ ...value, ...patch });
+  return (
+    <section className={styles.section} aria-labelledby={`${id}-h`}>
+      <div className={styles.titleRow}>
+        <h2 className={styles.title} id={`${id}-h`}>
+          Activation
+        </h2>
+        <span className={styles.sub}>When the test starts on a matching page</span>
+      </div>
+      <div role="radiogroup" aria-labelledby={`${id}-h`} className={styles.activationModes}>
+        {ACTIVATION_MODES.map((m) => (
+          <label key={m.id} className={styles.row}>
+            <input
+              type="radio"
+              name={`${id}-mode`}
+              checked={value.mode === m.id}
+              onChange={() => set({ mode: m.id })}
+            />
+            <span>
+              <b>{m.label}.</b> <span className={styles.sub}>{m.text}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      {value.mode === 'element' && (
+        <div className={styles.row}>
+          <label htmlFor={`${id}-sel`}>CSS selector</label>
+          <input
+            id={`${id}-sel`}
+            className={`${styles.input} mono`}
+            value={value.selector}
+            placeholder=".cart-drawer"
+            onChange={(e) => set({ selector: e.target.value })}
+            aria-invalid={showErrors && Boolean(problem)}
+          />
+        </div>
+      )}
+      {value.mode === 'js' && (
+        <div className={styles.activationCode}>
+          <label htmlFor={`${id}-js`}>Condition (return true to activate)</label>
+          <textarea
+            id={`${id}-js`}
+            className={`${styles.input} mono`}
+            rows={3}
+            value={value.code}
+            placeholder="return window.cartLoaded === true;"
+            onChange={(e) => set({ code: e.target.value })}
+            aria-invalid={showErrors && Boolean(problem)}
+          />
+        </div>
+      )}
+      {(value.mode === 'element' || value.mode === 'js') && (
+        <div className={styles.row}>
+          <label htmlFor={`${id}-sec`}>Stop waiting after</label>
+          <input
+            id={`${id}-sec`}
+            type="number"
+            min={0.1}
+            max={60}
+            step={0.5}
+            className={`${styles.input} ${styles.number}`}
+            value={value.seconds}
+            onChange={(e) => set({ seconds: e.target.value })}
+          />
+          <span>seconds</span>
+        </div>
+      )}
+      {value.mode === 'manual' && (
+        <p className={styles.sub}>
+          Add this where the test should start:{' '}
+          <code className="mono">{`splitcraft.activate('${experimentKey}')`}</code>. It works for
+          the current page; a route change needs a new call.
+        </p>
+      )}
+      {showErrors && problem && (
+        <span className={styles.error} role="alert">
+          {problem}
+        </span>
+      )}
+      {value.mode !== 'immediate' && (
+        <span className={styles.sub}>The page shows at once while the test waits.</span>
       )}
     </section>
   );

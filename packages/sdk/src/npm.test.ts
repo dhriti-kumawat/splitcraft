@@ -97,3 +97,27 @@ describe('isEnabled', () => {
     rt.stop();
   });
 });
+
+describe('activate', () => {
+  it('replays calls made before the config loads', async () => {
+    // A fresh module, so no runtime from an earlier test exists yet.
+    vi.resetModules();
+    const { activate, start: startSdk, variant: variantOf } = await import('./index');
+    activate('early');
+    const rt = startSdk({
+      projectKey: 'prj_act',
+      eventsUrl: 'https://e.test/events',
+      experiments: [
+        {
+          key: 'early',
+          name: 'Early',
+          trafficPct: 100,
+          variants: [{ key: 'b', name: 'B', weight: 1 }],
+          targeting: { activation: { mode: 'manual' } },
+        },
+      ],
+    });
+    await vi.waitFor(() => expect(variantOf('early')).toBe('b'));
+    rt.stop();
+  });
+});

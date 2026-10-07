@@ -14,7 +14,18 @@ export interface Targeting {
   stay?: boolean;
   /** Wait up to this long for the dataLayer keys WHO / HOW use before deciding. */
   waitForDataLayerMs?: number;
+  /** When the experiment activates on a matching page. Default: at once. */
+  activation?: Activation;
 }
+
+/**
+ * Activation (like Optimizely's page activation): wait for an element, a JS condition
+ * or a call to splitcraft.activate(key) before the rest of the targeting is checked.
+ */
+export type Activation =
+  | { mode: 'element'; selector: string; timeoutMs?: number }
+  | { mode: 'js'; code: string; timeoutMs?: number }
+  | { mode: 'manual' };
 
 // ---------------------------------------------------------------- groups
 

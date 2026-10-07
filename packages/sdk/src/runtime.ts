@@ -24,7 +24,13 @@ import type { QaExperiment, QaSource, QaState } from './qa/types';
 import { injectStyles, onceInView, waitForElement } from './helpers';
 import { onRouteChange } from './router';
 import { nav, splitTarget } from './split';
-import { evaluateTargeting, waitForDataLayer, type Targeting } from './targeting';
+import {
+  evaluateTargeting,
+  matchWhereUrl,
+  waitForActivation,
+  waitForDataLayer,
+  type Targeting,
+} from './targeting';
 import {
   createQueue,
   createTracker,
@@ -99,6 +105,8 @@ export interface StartOptions {
 
 export interface Runtime {
   trackEvent(key: string, props?: { value?: number; [k: string]: unknown }): void;
+  /** Activates an experiment set to manual activation, on this page. */
+  activate(experimentKey: string): void;
   /** The variant key this visitor sees on this page, or null (not in the test). */
   variant(experimentKey: string): string | null;
   /** True once the first page's experiments have been decided. */
@@ -149,6 +157,15 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
   // Set when a split URL variant sends this visitor elsewhere; the page stays hidden.
   let redirect: string | null = null;
 
+  // Manual activation: splitcraft.activate(key) on this page. Reset on every page.
+  let page = 0;
+  let activated = new Set<string>();
+  let waiting = new Map<string, (ok: boolean) => void>();
+  const manual = (key: string) =>
+    activated.has(key)
+      ? Promise.resolve(true)
+      : new Promise<boolean>((resolve) => waiting.set(key, resolve));
+
   const runExperiment = async (exp: ExperimentConfig, st: VisitorState): Promise<void> => {
     // The preview extension or bookmark shows this experiment on this page instead.
     if (
@@ -157,6 +174,16 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
     )
       return;
     const t = exp.targeting;
+    if (t.activation) {
+      // Only wait on pages the experiment runs on; the page may change while waiting.
+      const at = page;
+      if (
+        !matchWhereUrl(location.href, t.where) ||
+        !(await waitForActivation(t.activation, () => manual(exp.key))) ||
+        at !== page
+      )
+        return;
+    }
     if (t.waitForDataLayerMs) {
       await waitForDataLayer(t, t.waitForDataLayerMs, () => {
         const w = window as unknown as { dataLayer?: unknown[] };
@@ -217,7 +244,16 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
       tracker.ping(sessionPing(state, navigator.userAgent, screen.width, config.country));
     }
     qa.newPage(clickGoals.map((g) => g.key));
-    await Promise.all(config.experiments.map((exp) => runExperiment(exp, state)));
+    page++;
+    for (const resolve of waiting.values()) resolve(false);
+    activated = new Set();
+    waiting = new Map();
+    // Experiments that wait for activation don't hold the page (or anti-flicker) back.
+    for (const exp of config.experiments)
+      if (exp.targeting.activation) void runExperiment(exp, state).then(() => saveState(state));
+    await Promise.all(
+      config.experiments.filter((e) => !e.targeting.activation).map((e) => runExperiment(e, state)),
+    );
     saveState(state);
     if (redirect) {
       queue.flush();
@@ -271,6 +307,11 @@ export function start(config: ProjectConfig, opts: StartOptions = {}): Runtime {
 
   return {
     trackEvent: tracker.trackEvent,
+    activate(key) {
+      activated.add(key);
+      waiting.get(key)?.(true);
+      waiting.delete(key);
+    },
     variant: (key) => qa.experiments.get(key)?.variantKey ?? null,
     ready: () => isReady,
     subscribe(fn) {

@@ -20,7 +20,14 @@ export interface StoredTargeting {
   when?: Json;
   stay?: boolean;
   waitForDataLayerMs?: number;
+  activation?: Activation;
 }
+
+/** When an experiment activates on a page; see the SDK's targeting types. */
+export type Activation =
+  | { mode: 'element'; selector: string; timeoutMs?: number }
+  | { mode: 'js'; code: string; timeoutMs?: number }
+  | { mode: 'manual' };
 
 /** What `sdk_config_source()` returns. */
 export interface ConfigSource {
@@ -77,6 +84,7 @@ export interface SdkProjectConfig {
       when?: Json;
       stay?: boolean;
       waitForDataLayerMs?: number;
+      activation?: Activation;
     };
   }>;
   goals: {
