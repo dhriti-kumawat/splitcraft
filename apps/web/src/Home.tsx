@@ -11,16 +11,18 @@ import styles from './Home.module.css';
 import { CONTACT_URL, DASHBOARD_URL, GITHUB_URL } from './links';
 
 const NAV = [
-  { href: '#why', label: 'Why CRO' },
   { href: '#product', label: 'Product' },
+  { href: '/tour/', label: 'Tour' },
   { href: '#developers', label: 'Developers' },
-  { href: '#stats', label: 'Statistics' },
-  { href: '#how', label: 'How it works' },
-  { href: '#pricing', label: 'Pricing' },
+  { href: '/integrations/', label: 'Integrations' },
+  { href: '/pricing/', label: 'Pricing' },
   { href: '/docs/', label: 'Docs' },
 ];
 
-function Logo({ size = 26 }: { size?: number }) {
+/** Section links (#…) point at the home page when used on another page. */
+const at = (href: string, home: boolean) => (home || !href.startsWith('#') ? href : `/${href}`);
+
+export function Logo({ size = 26 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 26 26" aria-hidden="true" focusable="false">
       <rect x="1" y="1" width="24" height="24" rx="6" fill="#0F6B57" />
@@ -57,20 +59,20 @@ export function Home() {
   );
 }
 
-function Header() {
+export function Header({ home = true }: { home?: boolean }) {
   const [open, setOpen] = useState(false);
   const menuId = useId();
   return (
     <header className={styles.header}>
       <div className={`${styles.wrap} ${styles.headerInner}`}>
         <div className={styles.navLeft}>
-          <a href="#main" className={styles.brand} aria-label="Splitcraft home">
+          <a href={home ? '#main' : '/'} className={styles.brand} aria-label="Splitcraft home">
             <Logo size={28} />
             Splitcraft
           </a>
           <nav aria-label="Main" className={styles.nav}>
             {NAV.map((n) => (
-              <a key={n.href} className={styles.navLink} href={n.href}>
+              <a key={n.href} className={styles.navLink} href={at(n.href, home)}>
                 {n.label}
               </a>
             ))}
@@ -117,7 +119,7 @@ function Header() {
         hidden={!open}
       >
         {NAV.map((n) => (
-          <a key={n.href} href={n.href} onClick={() => setOpen(false)}>
+          <a key={n.href} href={at(n.href, home)} onClick={() => setOpen(false)}>
             {n.label}
           </a>
         ))}
@@ -134,10 +136,10 @@ function Hero() {
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={`${styles.wrap} ${styles.heroInner}`}>
         <div className={styles.heroText}>
-          <span className={styles.badge}>
-            <span className={`${styles.chip} ${styles.new}`}>New</span>
-            Reach estimates and automatic guardrail pauses
-          </span>
+          <a className={styles.badge} href="/changelog/">
+            <span className={`${styles.chip} ${styles.new}`}>New</span>A full visual editor, plus
+            feature flags and activation
+          </a>
           <h1 className={styles.h1} id="hero-title">
             Know what works before you ship it.
           </h1>
@@ -156,7 +158,7 @@ function Hero() {
           <span className={styles.fine}>Free up to 100,000 events a month. No card needed.</span>
           <ul className={styles.trust} aria-label="At a glance">
             <li>
-              <b>&lt; 8 KB</b> snippet
+              <b>&lt; 8.5 KB</b> snippet
             </li>
             <li>
               <b>400 ms</b> max anti-flicker
@@ -776,7 +778,7 @@ function Faq() {
   const faqs: Array<[string, string]> = [
     [
       'Will it slow my site down?',
-      'The snippet is under 8 KB compressed and loads async. Anti-flicker hides the page for at most 400 ms while variants apply, and you can turn it off per project.',
+      'The snippet is under 8.5 KB compressed and loads async. Anti-flicker hides the page for at most 400 ms while variants apply, and you can turn it off per project.',
     ],
     [
       'Does it work with React, Next.js and single-page apps?',
@@ -1007,7 +1009,7 @@ function Developers() {
                 ✓
               </span>
               <span>
-                <b>Under 8 KB gzipped</b>, loaded async, no dependencies
+                <b>Under 8.5 KB gzipped</b>, loaded async, no dependencies
               </span>
             </li>
             <li>
@@ -1277,15 +1279,17 @@ function Cta() {
   );
 }
 
-function Footer() {
+export function Footer({ home = true }: { home?: boolean }) {
   const cols = [
     {
       title: 'Product',
       links: [
-        ['Experiments', '#product'],
-        ['Targeting', '#product'],
-        ['Metrics', '#product'],
-        ['Statistics', '#stats'],
+        ['Product tour', '/tour/'],
+        ['Use cases', '/use-cases/'],
+        ['Integrations', '/integrations/'],
+        ['Compare', '/compare/'],
+        ['Pricing', '/pricing/'],
+        ['Changelog', '/changelog/'],
       ],
     },
     {
@@ -1328,7 +1332,7 @@ function Footer() {
                 <ul>
                   {c.links.map(([label, href]) => (
                     <li key={label}>
-                      <a className={styles.footerLink} href={href}>
+                      <a className={styles.footerLink} href={at(href ?? '', home)}>
                         {label}
                       </a>
                     </li>
