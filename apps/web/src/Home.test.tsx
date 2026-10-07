@@ -58,7 +58,7 @@ describe('home page', () => {
     for (const link of within(nav).getAllByRole('link')) {
       const href = link.getAttribute('href')!;
       if (href.startsWith('#')) expect(container.querySelector(href), href).not.toBeNull();
-      else expect([GITHUB_URL, '/docs/']).toContain(href);
+      else expect([GITHUB_URL, '/docs/', '/tour/', '/integrations/', '/pricing/']).toContain(href);
     }
   });
 
@@ -210,7 +210,40 @@ describe('mobile menu', () => {
       'true',
     );
     const menu = screen.getByRole('navigation', { name: 'Menu' });
-    await user.click(within(menu).getByRole('link', { name: 'Statistics' }));
+    await user.click(within(menu).getByRole('link', { name: 'Developers' }));
     expect(screen.queryByRole('navigation', { name: 'Menu' })).not.toBeInTheDocument();
+  });
+});
+
+describe('other pages', () => {
+  it('render each page with the site header, one h1 and links back to the home sections', async () => {
+    const { App } = await import('./App');
+    const { PAGES } = await import('./routes');
+    for (const path of Object.keys(PAGES)) {
+      const { unmount } = render(<App path={path} />);
+      expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+      const nav = screen.getByRole('navigation', { name: 'Main' });
+      expect(within(nav).getByRole('link', { name: 'Product' })).toHaveAttribute(
+        'href',
+        '/#product',
+      );
+      expect(screen.getByRole('link', { name: 'Splitcraft home' })).toHaveAttribute('href', '/');
+      unmount();
+    }
+  });
+
+  it('serves pages with or without the trailing slash, and the home page otherwise', async () => {
+    const { App } = await import('./App');
+    render(<App path="/pricing" />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Free, with every feature.',
+    );
+  });
+
+  it('marks gaps honestly on the compare page', async () => {
+    const { App } = await import('./App');
+    render(<App path="/compare/" />);
+    const row = screen.getByRole('rowheader', { name: 'Native mobile SDKs' }).closest('tr')!;
+    expect(row).toHaveTextContent('No');
   });
 });
