@@ -42,3 +42,11 @@ Before a pull request: `npm run lint && npm run format:check && npm run typechec
 | Login fails with a provider error               | Callback URL and client secret in the provider and in Supabase |
 | `supabase db push` asks for `--include-all`      | A migration was applied out of order; push from an up-to-date `main` |
 | SDK size check fails in CI                      | Trim code, move it to an on-demand file, or agree a new budget in DECISIONS |
+
+## Marketing pages
+
+The site's pages beside the home page live in `apps/web/src/Pages.tsx`, and `src/routes.ts` (`PAGES` maps each path to
+its component, title and description; `scripts/prerender.mjs` writes `dist/<path>/index.html`).
+When a release ships, add it to `RELEASES` there so `/changelog/` stays current, and retake the
+tour screenshots in `apps/web/public/shots/` when the dashboard changes. Keep the compare page
+factual and dated.

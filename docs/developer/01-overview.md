@@ -47,7 +47,7 @@ Customer site                         Supabase                          Dashboar
 | ------------------- | ------------------------------------------------------------------- |
 | `packages/sdk`      | The SDK: TypeScript, Vite library mode, Vitest                      |
 | `apps/dashboard`    | The dashboard: React, React Router, TanStack Query, Monaco, Recharts |
-| `apps/web`          | Marketing site (pre-rendered React), SDK hosting and these docs     |
+| `apps/web`          | Marketing site (pre-rendered React: home, tour, pricing, compare, use cases, integrations, changelog), SDK hosting and these docs |
 | `supabase`          | Migrations, Edge Functions and database tests (PGlite, no Docker)   |
 | `tools/simulator`   | Fills an experiment with simulated traffic for demos                |
 | `design`            | Design screens and tokens the UI follows                            |
