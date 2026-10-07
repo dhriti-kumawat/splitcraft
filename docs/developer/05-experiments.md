@@ -48,8 +48,8 @@ Pick the type in **New experiment**. It can't change later; duplicate the experi
   section**. Each section has its own Original and variations (up to 5), there are at most 3
   sections, and section names show once there are two. This is how VWO and Optimizely
   (sections) and AB Tasty (subtests) group a multivariate test; VWO makes one per element you edit.
-- **Save and build combinations** creates one variant per combination (the full factorial, at most
-  16) with equal weights. All originals is the Original (key `control`). With one section the
+- **Save and build combinations** creates one variant per combination (the full factorial, up to
+  sixteen) with equal weights. All originals is the Original (key `control`). With one section the
   variants are simply named after its variations. Keys are `v` plus one digit per section, so
   `v10` is the first variation of section 1 with the original of section 2. Each variation's code
   runs in its own block, so variations can reuse variable names.
