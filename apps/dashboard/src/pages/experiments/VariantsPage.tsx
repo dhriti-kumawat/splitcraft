@@ -10,10 +10,15 @@ import {
 import { controlKey } from '../../lib/experiments';
 import {
   onVisualEdit,
+  openWithExtension,
   previewState,
+  projectHosts,
   updatePreview,
+  useExtension,
   usePreviewSession,
 } from '../../lib/previewBridge';
+import { testPage } from '../../lib/launch';
+import { PreviewDialog } from './PreviewDialog';
 import { appendCode, visualCode } from '../../lib/visual';
 import { syntaxError } from '../../lib/launch';
 import { useExperiment } from './experimentContext';
@@ -191,8 +196,8 @@ function CodeVariants() {
           />
         )}
         <p className={styles.visualTip}>
-          No code needed for simple changes: open <b>Preview on site</b>, pick a variation and click{' '}
-          <b>Edit visually</b> on the page. Point at text to rewrite it, recolour it or hide it.
+          No code needed for simple changes: click <b>Edit visually</b> above the code to open your
+          page with the visual editor. Point at text to rewrite it, recolour it or hide it.
         </p>
       </section>
 
@@ -278,6 +283,30 @@ function Editor({
   const save = useSaveVariantCode(experiment);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { project } = useExperiment();
+  const ext = useExtension();
+  const session = usePreviewSession();
+  const [visualDialog, setVisualDialog] = useState(false);
+  const [visualError, setVisualError] = useState('');
+
+  // "Edit visually": open this variant on the site with the visual editor already on.
+  const editVisually = () => {
+    setVisualError('');
+    const state = {
+      ...previewState(
+        experiment,
+        experiment.variants.map((v) => (v.id === variant.id ? { ...v, ...code } : v)),
+        variant.key,
+      ),
+      visual: true,
+    };
+    if (session?.experimentKey === experiment.key) updatePreview(state, true);
+    else if (ext)
+      openWithExtension(testPage(experiment, project), projectHosts(project), state).catch(
+        (e: unknown) => setVisualError(e instanceof Error ? e.message : String(e)),
+      );
+    else setVisualDialog(true);
+  };
   const tabId = useId();
   const readOnly = experiment.status === 'ended';
   const dirty = code.js !== variant.js || code.css !== variant.css;
@@ -339,6 +368,11 @@ function Editor({
           ))}
         </div>
         <div className={styles.barActions}>
+          {!readOnly && !isControl && (
+            <button type="button" className={styles.darkButton} onClick={editVisually}>
+              Edit visually
+            </button>
+          )}
           {!readOnly && (
             <button
               type="button"
@@ -359,6 +393,19 @@ function Editor({
           </button>
         </div>
       </div>
+      {visualError && (
+        <p role="alert" className={styles.visualError}>
+          {visualError}
+        </p>
+      )}
+      {visualDialog && (
+        <PreviewDialog
+          experiment={experiment}
+          project={project}
+          visualVariant={variant.key}
+          onClose={() => setVisualDialog(false)}
+        />
+      )}
       <div
         className={styles.code}
         role="tabpanel"

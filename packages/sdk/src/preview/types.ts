@@ -19,6 +19,8 @@ export interface PreviewState {
    * dashboard) or `saved` (read from the config with the preview token).
    */
   source: 'live' | 'saved';
+  /** Start the visual editor on this variant as soon as the preview opens. */
+  visual?: boolean;
 }
 
 export interface StartOptions {

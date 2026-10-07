@@ -55,7 +55,10 @@ workspace keeps at least one owner (a database trigger enforces it).
 
 - **⌘K / Ctrl+K**: search pages, projects, experiments in every project, and the current project's
   audiences and metrics.
-- **Responsive**: below 1024 px the sidebar becomes a drawer; below 720 px page actions wrap.
+- **Responsive**: below 1440 px the search box becomes an icon (⌘K still works); below 1280 px the
+  breadcrumb keeps only the nearest parent ("… › Experiments › name"); below 1024 px the sidebar
+  becomes a drawer and page actions move to a second row when they don't fit; below 720 px only
+  the current page's name shows.
 - **Feature flags** (Project › Feature flags): create a flag (it starts off), turn it on, set the
   rollout share and optionally a segment. Code checks `splitcraft.isEnabled('key')`. Flags reach
   the SDK as experiments with one `on` variant (`flag: true`), so raising the share only adds

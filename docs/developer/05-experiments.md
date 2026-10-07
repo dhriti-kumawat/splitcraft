@@ -119,8 +119,8 @@ groups.
 
 ## Visual editor
 
-In **Preview on site** (live mode, with a variation shown), the panel on the page has **Edit
-visually**. Hover outlines an element and a click selects it; then **Edit text** (elements with
+Click **Edit visually** above a variation's code (or, in **Preview on site** with a variation
+shown, **Edit visually** in the panel on the page). The page opens with the editor already on. Hover outlines an element and a click selects it; then **Edit text** (elements with
 only text), **Hide**, **Text** colour or **Fill** colour. Changes show on the page at once.
 **Done** sends them to the dashboard, which adds the matching code to that variation (JS for text,
 CSS for hide and colours) and says so above the variation list. Review the code and save; nothing
