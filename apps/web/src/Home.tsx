@@ -136,10 +136,10 @@ function Hero() {
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={`${styles.wrap} ${styles.heroInner}`}>
         <div className={styles.heroText}>
-          <span className={styles.badge}>
-            <span className={`${styles.chip} ${styles.new}`}>New</span>
-            Reach estimates and automatic guardrail pauses
-          </span>
+          <a className={styles.badge} href="/changelog/">
+            <span className={`${styles.chip} ${styles.new}`}>New</span>A full visual editor, plus
+            feature flags and activation
+          </a>
           <h1 className={styles.h1} id="hero-title">
             Know what works before you ship it.
           </h1>
@@ -158,7 +158,7 @@ function Hero() {
           <span className={styles.fine}>Free up to 100,000 events a month. No card needed.</span>
           <ul className={styles.trust} aria-label="At a glance">
             <li>
-              <b>&lt; 8 KB</b> snippet
+              <b>&lt; 8.5 KB</b> snippet
             </li>
             <li>
               <b>400 ms</b> max anti-flicker
@@ -778,7 +778,7 @@ function Faq() {
   const faqs: Array<[string, string]> = [
     [
       'Will it slow my site down?',
-      'The snippet is under 8 KB compressed and loads async. Anti-flicker hides the page for at most 400 ms while variants apply, and you can turn it off per project.',
+      'The snippet is under 8.5 KB compressed and loads async. Anti-flicker hides the page for at most 400 ms while variants apply, and you can turn it off per project.',
     ],
     [
       'Does it work with React, Next.js and single-page apps?',
@@ -1009,7 +1009,7 @@ function Developers() {
                 ✓
               </span>
               <span>
-                <b>Under 8 KB gzipped</b>, loaded async, no dependencies
+                <b>Under 8.5 KB gzipped</b>, loaded async, no dependencies
               </span>
             </li>
             <li>

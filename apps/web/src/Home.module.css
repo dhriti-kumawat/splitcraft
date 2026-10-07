@@ -2559,3 +2559,12 @@ textarea.contactInput {
     padding: 20px;
   }
 }
+
+a.badge {
+  text-decoration: none;
+}
+
+a.badge:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
