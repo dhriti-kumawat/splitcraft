@@ -1,4 +1,4 @@
-import { Link, useMatches } from 'react-router';
+import { Link, useMatches, useNavigate } from 'react-router';
 import { MenuIcon, SearchIcon } from '../components/icons';
 import { useCurrentProject, useWorkspace } from '../data/workspace';
 import type { Crumb, RouteHandle } from './crumbs';
@@ -22,10 +22,19 @@ export function TopBar({
   const { workspace } = useWorkspace();
   const project = useCurrentProject();
   const crumbs: Crumb[] = [{ label: workspace.name, to: '/projects' }];
+  const levels: Array<{ path: string; label: Crumb['label'] }> = [];
   for (const match of useMatches()) {
     const handle = match.handle as RouteHandle | undefined;
-    if (handle?.crumbs) crumbs.push(...handle.crumbs({ workspace, project, params: match.params }));
+    if (!handle?.crumbs) continue;
+    const own = handle.crumbs({ workspace, project, params: match.params });
+    crumbs.push(...own);
+    if (own.length) levels.push({ path: match.pathname, label: own[own.length - 1]!.label });
   }
+  const navigate = useNavigate();
+  // Pages below a project section (an experiment, a metric, a saved audience) get a Back
+  // button to that section.
+  const parent = levels.length >= 3 ? levels[levels.length - 2] : undefined;
+  const backLabel = typeof parent?.label === 'string' ? `Go back to ${parent.label}` : 'Go back';
 
   return (
     <header className={styles.topbar}>
@@ -40,6 +49,25 @@ export function TopBar({
         >
           <MenuIcon />
         </button>
+        {parent && (
+          <button
+            type="button"
+            className={styles.back}
+            aria-label={backLabel}
+            title={backLabel}
+            onClick={() => navigate(parent.path)}
+          >
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="M12 4.5L6.5 10l5.5 5.5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
         <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
           <ol className={styles.crumbs}>
             {crumbs.map((crumb, i) => {

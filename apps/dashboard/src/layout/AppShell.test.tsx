@@ -251,3 +251,13 @@ describe('accessibility basics', () => {
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
   });
 });
+
+describe('back button', () => {
+  it('goes to the nearest parent on detail pages and is absent on section pages', async () => {
+    const user = userEvent.setup();
+    const router = await renderAt('/p/trip-demo/metrics/new');
+    await user.click(screen.getByRole('button', { name: 'Go back to Metrics' }));
+    expect(router.state.location.pathname).toBe('/p/trip-demo/metrics');
+    expect(screen.queryByRole('button', { name: /^Go back/ })).not.toBeInTheDocument();
+  });
+});
