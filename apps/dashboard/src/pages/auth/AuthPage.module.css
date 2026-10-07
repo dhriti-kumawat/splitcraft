@@ -2,13 +2,35 @@
 
 .page {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--surface);
+}
+
+.formSide {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--ground);
-  background-image:
-    linear-gradient(#e9ebe6 1px, transparent 1px),
-    linear-gradient(90deg, #e9ebe6 1px, transparent 1px);
-  background-size: 48px 48px;
+}
+
+@media (min-width: 1024px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* Phones and tablets (no side panel): a soft green band with the grid at the top,
+   fading into white behind the form. */
+@media (max-width: 1023px) {
+  .formSide {
+    background:
+      linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, var(--surface) 440px) no-repeat,
+      radial-gradient(circle at 92% 0%, rgba(15, 107, 87, 0.26), transparent 380px) no-repeat,
+      radial-gradient(circle at 0% 30%, rgba(242, 179, 122, 0.3), transparent 280px) no-repeat,
+      linear-gradient(#dfe7dd 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, #dfe7dd 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--accent-soft);
+  }
 }
 
 .header {
@@ -50,14 +72,8 @@
 }
 
 .card {
-  width: 440px;
-  padding: 36px 40px;
-  border-radius: 18px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow:
-    0 1px 2px rgba(21, 23, 26, 0.04),
-    0 24px 60px rgba(21, 23, 26, 0.08);
+  width: 100%;
+  max-width: 400px;
 }
 
 .stack {
@@ -103,16 +119,18 @@
   justify-content: center;
   gap: 10px;
   height: 46px;
-  border: 0;
+  border: 1px solid var(--line-strong);
   border-radius: var(--r-md, 8px);
-  background: var(--ink);
-  color: #ffffff;
+  background: var(--surface);
+  color: var(--ink);
   font: 600 15px var(--font-ui);
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(21, 23, 26, 0.06);
 }
 
 .github:hover:not(:disabled) {
-  background: #262b2e;
+  border-color: var(--ink);
+  background: var(--ground);
 }
 
 .github:focus-visible {
@@ -388,7 +406,7 @@
   margin-top: 4px;
   border: none;
   border-radius: 10px;
-  background: var(--ink);
+  background: var(--accent);
   color: #ffffff;
   font: 600 15px var(--font-ui);
   cursor: pointer;
@@ -400,7 +418,7 @@
 }
 
 .cta:hover {
-  background: var(--accent);
+  background: #0b5646;
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(15, 107, 87, 0.25);
@@ -408,7 +426,8 @@
 
 .cta:disabled {
   cursor: progress;
-  background: #2e3337;
+  background: var(--accent);
+  opacity: 0.75;
   transform: none;
   box-shadow: none;
 }
@@ -533,15 +552,11 @@
   }
 }
 
-/* Phone: 02-auth-mobile.html — no card, white page, header rule. */
+/* Phone: single column, tight spacing. */
 @media (max-width: 520px) {
-  .page {
-    background: var(--surface);
-  }
   .header {
     height: 64px;
     padding: 0 16px;
-    border-bottom: 1px solid var(--line-soft);
   }
   .brand {
     font-size: 18px;
@@ -561,4 +576,189 @@
     gap: 16px;
     font-size: 12.5px;
   }
+}
+
+/* Brand panel beside the form, desktop only. */
+.showcase {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .showcase {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    overflow: hidden;
+    color: var(--ink);
+    border-left: 1px solid var(--line);
+    background:
+      radial-gradient(circle at 85% 8%, rgba(15, 107, 87, 0.14), transparent 45%),
+      radial-gradient(circle at 10% 95%, rgba(242, 179, 122, 0.22), transparent 40%),
+      linear-gradient(#e3e8e1 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, #e3e8e1 1px, transparent 1px) 0 0 / 40px 40px,
+      var(--accent-soft);
+  }
+}
+
+.showcaseInner {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.kicker {
+  margin: 0;
+  font: 600 12px var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.showTitle {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 1px 2px rgba(21, 23, 26, 0.04),
+    0 24px 50px rgba(15, 107, 87, 0.12);
+}
+
+.resultHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resultName {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.livePill {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.arm {
+  display: grid;
+  grid-template-columns: 130px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.armName {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line-soft, #eef0eb);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.armRate {
+  font: 500 13px var(--font-mono);
+  text-align: right;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 2px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.stats dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stats dd {
+  margin: 4px 0 0;
+  font: 600 18px var(--font-mono);
+}
+
+.stats .up {
+  color: var(--accent);
+}
+
+.points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.points li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.points li::before {
+  content: '';
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-2px);
+}
+
+.showNote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
 }
