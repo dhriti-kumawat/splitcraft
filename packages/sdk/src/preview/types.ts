@@ -33,13 +33,22 @@ export interface StartOptions {
   onAction?(action: PreviewAction): void;
 }
 
-/** One point-and-click change from the visual editor; the dashboard turns it into code. */
-export interface VisualChange {
-  selector: string;
-  kind: 'text' | 'hide' | 'color' | 'background';
-  /** New text, or a #rrggbb colour. */
-  value?: string;
-}
+/** Where a moved or inserted element goes, relative to the target element. */
+export type VisualPosition = 'before' | 'after' | 'prepend' | 'append';
+
+/**
+ * One change from the visual editor. It is data only: the dashboard turns it into
+ * variant code, checking every field (see apps/dashboard/src/lib/visual.ts).
+ * `color` and `background` are the editor's first version, kept for old previews.
+ */
+export type VisualChange =
+  | { selector: string; kind: 'text' | 'html'; value: string }
+  | { selector: string; kind: 'hide' | 'remove' }
+  | { selector: string; kind: 'style'; prop: string; value: string }
+  | { selector: string; kind: 'attr'; name: string; value: string }
+  | { selector: string; kind: 'move'; target: string; position: VisualPosition }
+  | { selector: string; kind: 'insert'; value: string; position: VisualPosition }
+  | { selector: string; kind: 'color' | 'background'; value: string };
 
 export type PreviewAction =
   | { type: 'switch'; variantKey: string }

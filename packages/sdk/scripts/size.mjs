@@ -6,7 +6,7 @@ const budgets = [
   { file: 'dist/splitcraft.iife.js', maxBytes: 8500 },
   { file: 'dist/splitcraft-qa.iife.js', maxBytes: 3000 },
   { file: 'dist/splitcraft-metrics.iife.js', maxBytes: 2500 },
-  { file: 'dist/splitcraft-preview.iife.js', maxBytes: 6000 },
+  { file: 'dist/splitcraft-preview.iife.js', maxBytes: 10000 },
 ];
 
 let failed = false;

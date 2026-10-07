@@ -18,11 +18,15 @@ export type DashboardRequest =
   | { type: 'update'; state: PreviewState; select?: boolean }
   | { type: 'stop'; experimentKey: string };
 
-/** A visual editor change: data only; the dashboard builds the code from it. */
+/** A visual editor change: data only; the dashboard builds (and checks) the code from it. */
 export interface VisualChange {
   selector: string;
-  kind: 'text' | 'hide' | 'color' | 'background';
+  kind: string;
   value?: string;
+  prop?: string;
+  name?: string;
+  target?: string;
+  position?: string;
 }
 
 /**
@@ -34,27 +38,38 @@ export type PageRequest =
   | { type: 'stop' }
   | { type: 'visual'; variantKey: string; changes: VisualChange[] };
 
-/** Keeps only well-formed visual changes (at most 50), or null when there are none. */
+const KINDS = [
+  'text',
+  'html',
+  'hide',
+  'remove',
+  'style',
+  'attr',
+  'move',
+  'insert',
+  'color',
+  'background',
+];
+const FIELDS = ['value', 'prop', 'name', 'target', 'position'] as const;
+
+/** Keeps only well-formed visual changes (at most 200), or null when there are none. */
 export function visualChanges(raw: unknown): VisualChange[] | null {
   if (!Array.isArray(raw)) return null;
-  const kinds = ['text', 'hide', 'color', 'background'];
-  const ok = raw
-    .filter(
-      (c): c is VisualChange =>
-        typeof c === 'object' &&
-        c !== null &&
-        typeof c.selector === 'string' &&
-        c.selector.length > 0 &&
-        c.selector.length <= 300 &&
-        kinds.includes(c.kind) &&
-        (c.value === undefined || (typeof c.value === 'string' && c.value.length <= 2000)),
-    )
-    .slice(0, 50)
-    .map((c) => ({
-      selector: c.selector,
-      kind: c.kind,
-      ...(c.value !== undefined && { value: c.value }),
-    }));
+  const ok: VisualChange[] = [];
+  for (const c of raw.slice(0, 200)) {
+    if (typeof c !== 'object' || c === null) continue;
+    const r = c as Record<string, unknown>;
+    if (typeof r.selector !== 'string' || !r.selector || r.selector.length > 300) continue;
+    if (typeof r.kind !== 'string' || !KINDS.includes(r.kind)) continue;
+    const change: VisualChange = { selector: r.selector, kind: r.kind };
+    let valid = true;
+    for (const f of FIELDS) {
+      if (r[f] === undefined) continue;
+      if (typeof r[f] !== 'string' || (r[f] as string).length > 20000) valid = false;
+      else change[f] = r[f] as string;
+    }
+    if (valid) ok.push(change);
+  }
   return ok.length ? ok : null;
 }
 
