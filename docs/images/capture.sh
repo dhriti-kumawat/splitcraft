@@ -19,3 +19,10 @@ shot segment-builder "${D}/p/trip-demo/audiences/seg-returners"
 shot projects "${D}/projects"
 shot login "${D}/login"
 shot home "http://localhost:5174/"
+
+# Home page hero: the results screen at 2x, 1280 wide, resized to 1720 px.
+"$CHROME" --headless=new --hide-scrollbars --window-size=1280,800 --force-device-scale-factor=2 \
+  --virtual-time-budget=8000 --screenshot=hero.png "${D}/p/trip-demo/experiments/sticky/results" >/dev/null 2>&1
+sips -Z 1720 -s format jpeg -s formatOptions 85 hero.png --out ../../apps/web/public/shots/hero-results.jpg >/dev/null
+rm hero.png
+echo "apps/web/public/shots/hero-results.jpg"
