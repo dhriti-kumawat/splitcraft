@@ -6,7 +6,7 @@ import { fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open() {
-  renderApp('/p/trip-demo/experiments/trust/variants', { data: fakeData().api });
+  renderApp('/p/marketing-site/experiments/trust/variants', { data: fakeData().api });
   await screen.findByRole('navigation', { name: 'Experiment steps' });
 }
 
@@ -32,7 +32,7 @@ describe('Preview on site without the extension', () => {
     // The demo site has the snippet, so that is the first way offered.
     expect(within(dialog).getByRole('link', { name: 'Open preview' })).toHaveAttribute(
       'href',
-      expect.stringMatching(/^https:\/\/mytrips\.dev\/\?splitcraft_force=trust%3Ab/),
+      expect.stringMatching(/^https:\/\/larkspurtravel\.com\/\?splitcraft_force=trust%3Ab/),
     );
     expect(within(dialog).getByText('How to install')).toBeInTheDocument();
     expect(within(dialog).getByText('Other ways to open it')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('Preview on site without the extension', () => {
     await user.click(screen.getByText('Other ways to open it'));
     await user.click(screen.getByRole('button', { name: 'Open the page' }));
     expect(openSpy.mock.calls[0]![0]).toMatch(
-      /^https:\/\/mytrips\.dev\/\?splitcraft_force=trust%3Ab/,
+      /^https:\/\/larkspurtravel\.com\/\?splitcraft_force=trust%3Ab/,
     );
     expect(openSpy.mock.calls[0]![1]).toBe('_blank');
     expect(screen.getByText(/Page opened/)).toBeInTheDocument();

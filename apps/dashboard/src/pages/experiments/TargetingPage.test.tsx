@@ -4,7 +4,7 @@ import { fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(id = 'trust', data = fakeData()) {
-  renderApp(`/p/trip-demo/experiments/${id}/targeting`, { data: data.api });
+  renderApp(`/p/marketing-site/experiments/${id}/targeting`, { data: data.api });
   await screen.findByRole('heading', { name: 'Segment' });
   await screen.findByRole('button', { name: 'Add segment' });
   return data;
@@ -20,7 +20,7 @@ describe('targeting', () => {
     await open();
     await user.click(screen.getByRole('button', { name: 'Add segment' }));
     await user.click(screen.getByRole('menuitem', { name: 'Create new segment…' }));
-    expect(openSpy).toHaveBeenCalledWith('/p/trip-demo/audiences/new', '_blank', 'noopener');
+    expect(openSpy).toHaveBeenCalledWith('/p/marketing-site/audiences/new', '_blank', 'noopener');
     openSpy.mockRestore();
   });
 
@@ -142,7 +142,7 @@ describe('URL tester', () => {
     const tester = screen.getByRole('region', { name: 'Test a URL' });
     const input = within(tester).getByLabelText('URL to test');
     await user.clear(input);
-    await user.type(input, 'mytrips.dev/trips/norway');
+    await user.type(input, 'larkspurtravel.com/trips/norway');
     expect(within(tester).getByText('Where: matches /trips/*')).toBeInTheDocument();
     expect(
       within(tester).getByText('Triggers are checked in the visit on the site'),
@@ -150,7 +150,7 @@ describe('URL tester', () => {
     expect(within(tester).getByRole('status')).toHaveTextContent('This page is in the test');
 
     await user.clear(input);
-    await user.type(input, 'mytrips.dev/about');
+    await user.type(input, 'larkspurtravel.com/about');
     expect(within(tester).getByRole('status')).toHaveTextContent(
       'Visitors on this page never see the test.',
     );

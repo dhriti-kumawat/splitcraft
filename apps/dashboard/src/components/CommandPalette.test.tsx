@@ -37,7 +37,7 @@ describe('command palette', () => {
       ).toHaveAttribute('aria-selected', 'true'),
     );
     await user.keyboard('{Enter}');
-    expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/trust/basics');
+    expect(router.state.location.pathname).toBe('/p/marketing-site/experiments/trust/basics');
   });
 
   it('moves between results with the arrow keys', async () => {
@@ -52,11 +52,11 @@ describe('command palette', () => {
   });
 
   it("includes the current project's audiences and metrics", async () => {
-    const { user, router } = await openPalette('/p/trip-demo/experiments');
+    const { user, router } = await openPalette('/p/marketing-site/experiments');
     await user.type(screen.getByRole('combobox'), 'returners');
     await user.click(await screen.findByRole('option', { name: /High-intent returners/ }));
     await waitFor(() =>
-      expect(router.state.location.pathname).toBe('/p/trip-demo/audiences/seg-returners'),
+      expect(router.state.location.pathname).toBe('/p/marketing-site/audiences/seg-returners'),
     );
   });
 

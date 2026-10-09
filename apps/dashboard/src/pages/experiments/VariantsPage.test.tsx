@@ -4,7 +4,7 @@ import { EXPERIMENTS, fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(id = 'trust', data = fakeData()) {
-  renderApp(`/p/trip-demo/experiments/${id}/variants`, { data: data.api });
+  renderApp(`/p/marketing-site/experiments/${id}/variants`, { data: data.api });
   await screen.findByRole('region', { name: /Code for|Control/ });
   return data;
 }
@@ -240,7 +240,7 @@ describe('visual editor', () => {
     expect(screen.getByText(/No code needed for simple changes/)).toBeInTheDocument();
 
     const trust = EXPERIMENTS.find((e) => e.id === 'trust')!;
-    openForBookmark('https://mytrips.dev/', previewState(trust, trust.variants, 'b'));
+    openForBookmark('https://larkspurtravel.com/', previewState(trust, trust.variants, 'b'));
     window.dispatchEvent(
       new MessageEvent('message', {
         source: window,
@@ -293,7 +293,7 @@ describe('edit visually', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         source: window,
-        origin: 'https://mytrips.dev',
+        origin: 'https://larkspurtravel.com',
         data: { source: 'splitcraft-preview', type: 'hello' },
       }),
     );

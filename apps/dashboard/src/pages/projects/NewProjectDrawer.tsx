@@ -75,10 +75,10 @@ function DetailsStep({ onCreated }: { onCreated(project: Project): void }) {
   const errors = {
     name: name.trim() ? '' : 'Enter a project name.',
     domain: !mainDomain
-      ? "Enter your site's domain, like mytrips.dev."
+      ? "Enter your site's domain, like larkspurtravel.com."
       : isValidMainDomain(mainDomain)
         ? ''
-        : 'Enter a domain like mytrips.dev or localhost:3000, without a wildcard.',
+        : 'Enter a domain like larkspurtravel.com or localhost:3000, without a wildcard.',
   };
 
   const submit = (e: FormEvent) => {
@@ -135,7 +135,7 @@ function DetailsStep({ onCreated }: { onCreated(project: Project): void }) {
               id={ids.domain}
               className={styles.mono}
               value={domain}
-              placeholder="mytrips.dev"
+              placeholder="larkspurtravel.com"
               inputMode="url"
               autoComplete="off"
               spellCheck={false}

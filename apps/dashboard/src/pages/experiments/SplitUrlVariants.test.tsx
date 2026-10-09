@@ -9,7 +9,7 @@ const splitData = () =>
   });
 
 async function open(data = splitData()) {
-  renderApp('/p/trip-demo/experiments/trust/variants', { data: data.api });
+  renderApp('/p/marketing-site/experiments/trust/variants', { data: data.api });
   await screen.findByLabelText('Page URL');
   return data;
 }
@@ -28,7 +28,7 @@ describe('split URL variants', () => {
     await user.tab();
     expect(variantPatches).toContainEqual({
       id: 'trust-b',
-      patch: { url: 'https://mytrips.dev/trips/norway-b' },
+      patch: { url: 'https://larkspurtravel.com/trips/norway-b' },
     });
   });
 

@@ -4,7 +4,7 @@ import { fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 import { fromGroups, toGroups } from '../../lib/segments';
 
-async function open(path = '/p/trip-demo/audiences', data = fakeData()) {
+async function open(path = '/p/marketing-site/audiences', data = fakeData()) {
   const router = renderApp(path, { data: data.api });
   await screen.findByRole('heading', { level: 1, name: 'Audiences' });
   await screen.findByRole('link', { name: /High-intent returners/ });
@@ -25,7 +25,7 @@ describe('audiences', () => {
 
   it('shows a segment in plain words and saves edits', async () => {
     const user = userEvent.setup();
-    const { segmentsNow } = await open('/p/trip-demo/audiences/seg-returners');
+    const { segmentsNow } = await open('/p/marketing-site/audiences/seg-returners');
     expect(
       screen.getByText(
         'Returning visitors and viewed pages matching /trips/* at least 3 times in 7 days.',
@@ -51,7 +51,7 @@ describe('audiences', () => {
 
   it('creates a new segment and opens it', async () => {
     const user = userEvent.setup();
-    const { router, segmentsNow } = await open('/p/trip-demo/audiences/new');
+    const { router, segmentsNow } = await open('/p/marketing-site/audiences/new');
     await user.click(screen.getByRole('button', { name: 'Create segment' }));
     expect(screen.getByText('Name the segment.')).toBeInTheDocument();
     await user.type(screen.getByLabelText('Segment name'), 'Paid visitors');
@@ -64,7 +64,7 @@ describe('audiences', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Organic search' }));
     await user.click(screen.getByRole('button', { name: 'Create segment' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toBe('/p/trip-demo/audiences/seg-3'),
+      expect(router.state.location.pathname).toBe('/p/marketing-site/audiences/seg-3'),
     );
     expect(segmentsNow()[2]).toMatchObject({
       name: 'Paid visitors',
@@ -77,7 +77,7 @@ describe('audiences', () => {
 
   it('refuses to save incomplete conditions', async () => {
     const user = userEvent.setup();
-    await open('/p/trip-demo/audiences/new');
+    await open('/p/marketing-site/audiences/new');
     await user.type(screen.getByLabelText('Segment name'), 'Cookie people');
     await user.click(screen.getByRole('button', { name: '+ Condition' }));
     await user.selectOptions(
@@ -90,17 +90,19 @@ describe('audiences', () => {
 
   it('warns before deleting a segment in use', async () => {
     const user = userEvent.setup();
-    const { router, segmentsNow } = await open('/p/trip-demo/audiences/seg-returners');
+    const { router, segmentsNow } = await open('/p/marketing-site/audiences/seg-returners');
     await user.click(screen.getByRole('button', { name: 'Delete segment' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete “High-intent returners”?' });
     expect(dialog).toHaveTextContent('It is used by Hero headline: price-led.');
     await user.click(within(dialog).getByRole('button', { name: 'Delete segment' }));
-    await vi.waitFor(() => expect(router.state.location.pathname).toBe('/p/trip-demo/audiences'));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toBe('/p/marketing-site/audiences'),
+    );
     expect(segmentsNow().map((s) => s.id)).toEqual(['seg-mobile']);
   });
 
   it('shows not found for an unknown segment', async () => {
-    await open('/p/trip-demo/audiences/nope');
+    await open('/p/marketing-site/audiences/nope');
     expect(screen.getByText("This segment doesn't exist.")).toBeInTheDocument();
   });
 });
@@ -126,7 +128,7 @@ describe('saved triggers and page sets', () => {
     const { router } = await open();
     const tabs = screen.getByRole('navigation', { name: 'Audience types' });
     await user.click(within(tabs).getByRole('link', { name: 'Triggers' }));
-    expect(router.state.location.pathname).toBe('/p/trip-demo/audiences/triggers');
+    expect(router.state.location.pathname).toBe('/p/marketing-site/audiences/triggers');
     expect(await screen.findByRole('link', { name: 'Engaged mobile visit' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '+ New trigger' })).toBeInTheDocument();
     await user.click(within(tabs).getByRole('link', { name: 'Page sets' }));
@@ -138,7 +140,7 @@ describe('saved triggers and page sets', () => {
   it('edits a saved trigger', async () => {
     const user = userEvent.setup();
     const data = fakeData();
-    renderApp('/p/trip-demo/audiences/triggers/trg-engaged', { data: data.api });
+    renderApp('/p/marketing-site/audiences/triggers/trg-engaged', { data: data.api });
     const name = await screen.findByLabelText('Trigger name');
     await user.clear(name);
     await user.type(name, 'Engaged visit');
@@ -152,14 +154,16 @@ describe('saved triggers and page sets', () => {
   it('creates a page set', async () => {
     const user = userEvent.setup();
     const data = fakeData();
-    const router = renderApp('/p/trip-demo/audiences/page-sets/new', { data: data.api });
+    const router = renderApp('/p/marketing-site/audiences/page-sets/new', { data: data.api });
     await user.type(await screen.findByLabelText('Page set name'), 'Checkout');
     await user.click(screen.getByRole('button', { name: 'Create page set' }));
     expect(screen.getByText('1 rule needs a value.')).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Page rule 1 value' }), '/checkout');
     await user.click(screen.getByRole('button', { name: 'Create page set' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toBe('/p/trip-demo/audiences/page-sets/page_sets-2'),
+      expect(router.state.location.pathname).toBe(
+        '/p/marketing-site/audiences/page-sets/page_sets-2',
+      ),
     );
     expect(data.savedNow().page_sets[1]).toMatchObject({
       name: 'Checkout',
@@ -169,7 +173,7 @@ describe('saved triggers and page sets', () => {
 
   it('inserts a saved audience into a segment as a copy', async () => {
     const user = userEvent.setup();
-    const { segmentsNow } = await open('/p/trip-demo/audiences/seg-mobile');
+    const { segmentsNow } = await open('/p/marketing-site/audiences/seg-mobile');
     const before = segmentsNow().find((s) => s.id === 'seg-mobile')!.rules.items.length;
     await user.selectOptions(
       screen.getByRole('combobox', { name: 'Insert saved audience' }),

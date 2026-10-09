@@ -1,6 +1,6 @@
 import { MESSAGES, type AuthApi, type AuthUser } from '../auth/api';
 
-export const ALEX: AuthUser = { id: 'u_1', email: 'alex@mytrips.dev', name: 'Alex Morgan' };
+export const ALEX: AuthUser = { id: 'u_1', email: 'maya@larkspurtravel.com', name: 'Maya Chen' };
 export const PASSWORD = 'Tripdemo1';
 
 /** In-memory AuthApi: one known account, everything else behaves like Supabase would. */

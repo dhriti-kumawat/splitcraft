@@ -15,37 +15,37 @@ const card = (name: string) => screen.getByRole('article', { name });
 describe('projects grid', () => {
   it('shows each project with status, stats and domains', async () => {
     await openProjects();
-    const trip = card('Trip Demo');
+    const trip = card('Marketing site');
     expect(within(trip).getByText('Snippet live')).toBeInTheDocument();
-    expect(within(trip).getByText('mytrips.dev', { selector: '.mono' })).toBeInTheDocument();
+    expect(within(trip).getByText('larkspurtravel.com', { selector: '.mono' })).toBeInTheDocument();
     expect(await within(trip).findByText('56.4k')).toBeInTheDocument();
     expect(within(trip).getByText('Visitors, 30d')).toBeInTheDocument();
     expect(within(trip).getByText('2')).toBeInTheDocument();
     expect(within(trip).getByText('localhost:5173')).toBeInTheDocument();
-    expect(within(trip).getByRole('link', { name: 'Trip Demo' })).toHaveAttribute(
+    expect(within(trip).getByRole('link', { name: 'Marketing site' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/experiments',
+      '/p/marketing-site/experiments',
     );
   });
 
   it('uses the singular for one live test', async () => {
     await openProjects();
-    expect(await within(card('Checkout Lab')).findByText('Live test')).toBeInTheDocument();
+    expect(await within(card('Booking flow')).findByText('Live test')).toBeInTheDocument();
   });
 
   it('shows "No winner yet" until results exist', async () => {
     await openProjects();
-    expect(within(card('Trip Demo')).getByText('No winner yet')).toBeInTheDocument();
+    expect(within(card('Marketing site')).getByText('No winner yet')).toBeInTheDocument();
   });
 
   it('shows install steps for a project that has not pinged yet', async () => {
     await openProjects();
-    const portfolio = card('Portfolio');
+    const portfolio = card('Help center');
     expect(within(portfolio).getByText('Not installed')).toBeInTheDocument();
     expect(within(portfolio).getByText('Waiting for the first ping')).toBeInTheDocument();
     expect(within(portfolio).getByRole('link', { name: 'View install steps' })).toHaveAttribute(
       'href',
-      '/p/portfolio/install',
+      '/p/help-center/install',
     );
   });
 
@@ -82,14 +82,14 @@ describe('new project drawer', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Create project' }));
     expect(within(drawer).getByText('Enter a project name.')).toBeInTheDocument();
     expect(
-      within(drawer).getByText("Enter your site's domain, like mytrips.dev."),
+      within(drawer).getByText("Enter your site's domain, like larkspurtravel.com."),
     ).toBeInTheDocument();
     expect(within(drawer).getByLabelText('Project name')).toHaveAttribute('aria-invalid', 'true');
 
-    await user.type(within(drawer).getByLabelText('Main domain'), '*.mytrips.dev');
+    await user.type(within(drawer).getByLabelText('Main domain'), '*.larkspurtravel.com');
     expect(
       within(drawer).getByText(
-        'Enter a domain like mytrips.dev or localhost:3000, without a wildcard.',
+        'Enter a domain like larkspurtravel.com or localhost:3000, without a wildcard.',
       ),
     ).toBeInTheDocument();
   });
@@ -99,9 +99,9 @@ describe('new project drawer', () => {
     const input = within(drawer).getByLabelText('Also allow on');
     await user.type(
       input,
-      'https://Staging.alexmorgan.dev/{Enter}localhost:3000,*.vercel.app{Enter}',
+      'https://Staging.larkspurhelp.com/{Enter}localhost:3000,*.vercel.app{Enter}',
     );
-    expect(within(drawer).getByText('staging.alexmorgan.dev')).toBeInTheDocument();
+    expect(within(drawer).getByText('staging.larkspurhelp.com')).toBeInTheDocument();
     expect(within(drawer).getByText('localhost:3000')).toBeInTheDocument();
     expect(within(drawer).getByText('*.vercel.app')).toBeInTheDocument();
 
@@ -123,20 +123,20 @@ describe('new project drawer', () => {
 
   it('creates the project, then shows the install code and waits for the first ping', async () => {
     const { user, drawer, created, receiveFirstPing } = await openDrawer();
-    await user.type(within(drawer).getByLabelText('Project name'), 'Portfolio 2');
+    await user.type(within(drawer).getByLabelText('Project name'), 'Help center 2');
     await user.type(
       within(drawer).getByLabelText('Main domain'),
-      'https://www.alexmorgan.dev/about',
+      'https://www.larkspurhelp.com/about',
     );
     await user.type(within(drawer).getByLabelText('Also allow on'), 'localhost:3000{Enter}');
     await user.click(within(drawer).getByRole('button', { name: 'Create project' }));
 
-    const step2 = await screen.findByRole('complementary', { name: 'Portfolio 2' });
+    const step2 = await screen.findByRole('complementary', { name: 'Help center 2' });
     expect(created).toEqual([
       {
         workspaceId: WORKSPACE.id,
-        name: 'Portfolio 2',
-        mainDomain: 'www.alexmorgan.dev',
+        name: 'Help center 2',
+        mainDomain: 'www.larkspurhelp.com',
         allowedDomains: ['localhost:3000'],
       },
     ]);
@@ -155,7 +155,7 @@ describe('new project drawer', () => {
     ).toBeInTheDocument();
     // The new card in the grid updates too.
     expect(
-      await within(await screen.findByRole('article', { name: 'Portfolio 2' })).findByText(
+      await within(await screen.findByRole('article', { name: 'Help center 2' })).findByText(
         'Snippet live',
       ),
     ).toBeInTheDocument();
@@ -182,7 +182,7 @@ describe('install tabs', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 
-    renderApp('/p/portfolio/install');
+    renderApp('/p/help-center/install');
     await screen.findByRole('heading', { level: 1, name: 'Install' });
     const html = screen.getByRole('tab', { name: 'HTML' });
     expect(html).toHaveAttribute('aria-selected', 'true');
@@ -217,9 +217,9 @@ describe('workspaces', () => {
     };
     const data = fakeData({ workspaces: [WORKSPACE, other] });
     await openProjects(data);
-    expect(screen.getByRole('article', { name: 'Trip Demo' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: 'Marketing site' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Switch workspace: Northwind Travel' }));
+    await user.click(screen.getByRole('button', { name: 'Switch workspace: Larkspur Travel' }));
     await user.click(screen.getByRole('link', { name: 'Agency Clients' }));
     expect(
       await screen.findByRole('button', { name: 'Switch workspace: Agency Clients' }),
@@ -233,12 +233,12 @@ describe('workspaces', () => {
     const data = fakeData({ workspaces: [{ ...WORKSPACE, name: "Jo's Workspace" }] });
     renderApp('/projects', { data: data.api });
     await screen.findByRole('heading', { name: 'Give your workspace a name' });
-    await user.type(screen.getByLabelText('Workspace name'), 'Northwind Travel');
+    await user.type(screen.getByLabelText('Workspace name'), 'Larkspur Travel');
     await user.click(screen.getByRole('button', { name: 'Save name' }));
     await waitFor(() =>
       expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull(),
     );
-    expect(data.workspacesNow()[0]!.name).toBe('Northwind Travel');
+    expect(data.workspacesNow()[0]!.name).toBe('Larkspur Travel');
   });
 
   it("doesn't ask non-owners to name the workspace", async () => {
@@ -285,10 +285,10 @@ describe('workspaces', () => {
 describe('best uplift and recent activity', () => {
   it('shows the best clear uplift on a project card', async () => {
     await openProjects();
-    const trip = screen.getByRole('article', { name: 'Trip Demo' });
+    const trip = screen.getByRole('article', { name: 'Marketing site' });
     expect(await within(trip).findByText('+9.7%')).toBeInTheDocument();
     expect(within(trip).getByText('Best uplift')).toBeInTheDocument();
-    const lab = screen.getByRole('article', { name: 'Checkout Lab' });
+    const lab = screen.getByRole('article', { name: 'Booking flow' });
     expect(within(lab).getByText('No winner yet')).toBeInTheDocument();
   });
 
@@ -298,11 +298,11 @@ describe('best uplift and recent activity', () => {
     const launched = await within(panel).findByRole('link', {
       name: '“Sticky Book Now bar” launched',
     });
-    expect(launched).toHaveAttribute('href', '/p/trip-demo/experiments/sticky');
-    expect(within(panel).getByText('Trip Demo · 12 min ago')).toBeInTheDocument();
+    expect(launched).toHaveAttribute('href', '/p/marketing-site/experiments/sticky');
+    expect(within(panel).getByText('Marketing site · 12 min ago')).toBeInTheDocument();
     expect(
       within(panel).getByRole('link', { name: 'Audience “High-intent returners” edited' }),
-    ).toHaveAttribute('href', '/p/trip-demo/audiences/seg-returners');
+    ).toHaveAttribute('href', '/p/marketing-site/audiences/seg-returners');
   });
 
   it('explains an empty activity feed', async () => {
@@ -319,12 +319,12 @@ describe('SDK switches', () => {
   it('saves each switch and updates the snippet for anti-flicker', async () => {
     const user = userEvent.setup();
     const data = fakeData();
-    renderApp('/p/trip-demo/install', { data: data.api });
+    renderApp('/p/marketing-site/install', { data: data.api });
     const spa = await screen.findByRole('switch', { name: 'Single-page app mode' });
     expect(spa).toHaveAttribute('aria-checked', 'true');
     await user.click(spa);
     await vi.waitFor(() =>
-      expect(data.projectsNow().find((p) => p.id === 'trip-demo')!.settings.spa).toBe(false),
+      expect(data.projectsNow().find((p) => p.id === 'marketing-site')!.settings.spa).toBe(false),
     );
     expect(screen.getByRole('switch', { name: 'Single-page app mode' })).toHaveAttribute(
       'aria-checked',
@@ -345,7 +345,7 @@ describe('project numbers', () => {
     const data = fakeData();
     data.api.projectOverview = async () => [];
     await openProjects(data);
-    const card = (await screen.findByRole('link', { name: 'Trip Demo' })).closest('article')!;
+    const card = (await screen.findByRole('link', { name: 'Marketing site' })).closest('article')!;
     await vi.waitFor(() =>
       expect(within(card).getByText('Visitors, 30d').nextSibling).toHaveTextContent('0'),
     );
@@ -357,7 +357,7 @@ describe('project numbers', () => {
       throw new Error('down');
     };
     await openProjects(data);
-    const card = (await screen.findByRole('link', { name: 'Trip Demo' })).closest('article')!;
+    const card = (await screen.findByRole('link', { name: 'Marketing site' })).closest('article')!;
     expect(await within(card).findByRole('alert')).toHaveTextContent("Couldn't load");
     expect(within(card).getByText('Visitors, 30d').nextSibling).toHaveTextContent('—');
   });

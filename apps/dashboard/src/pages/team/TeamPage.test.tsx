@@ -7,7 +7,7 @@ import { renderApp } from '../../test/renderApp';
 async function openTeam(data = fakeData()) {
   const router = renderApp('/team', { data: data.api });
   await screen.findByRole('heading', { level: 1, name: 'Team' });
-  await screen.findByText('alex@mytrips.dev');
+  await screen.findByText('maya@larkspurtravel.com');
   return { router, ...data };
 }
 
@@ -16,23 +16,27 @@ const row = (email: string) => screen.getByText(email).closest('tr')!;
 describe('team', () => {
   it('lists members with roles and marks you', async () => {
     await openTeam();
-    expect(within(row('alex@mytrips.dev')).getByText('You')).toBeInTheDocument();
-    expect(within(row('max@mytrips.dev')).getByText('max')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Role for ada@mytrips.dev' })).toHaveValue('admin');
+    expect(within(row('maya@larkspurtravel.com')).getByText('You')).toBeInTheDocument();
+    expect(within(row('max@larkspurtravel.com')).getByText('max')).toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: 'Role for daniel@larkspurtravel.com' }),
+    ).toHaveValue('admin');
   });
 
   it('changes a role and removes a member', async () => {
     const user = userEvent.setup();
     const { peopleNow } = await openTeam();
     await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Role for max@mytrips.dev' }),
+      screen.getByRole('combobox', { name: 'Role for max@larkspurtravel.com' }),
       'Admin',
     );
     await vi.waitFor(() =>
-      expect(peopleNow().find((p) => p.email === 'max@mytrips.dev')!.role).toBe('admin'),
+      expect(peopleNow().find((p) => p.email === 'max@larkspurtravel.com')!.role).toBe('admin'),
     );
-    await user.click(screen.getByRole('button', { name: 'Remove ada@mytrips.dev' }));
-    await vi.waitFor(() => expect(screen.queryByText('ada@mytrips.dev')).not.toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Remove daniel@larkspurtravel.com' }));
+    await vi.waitFor(() =>
+      expect(screen.queryByText('daniel@larkspurtravel.com')).not.toBeInTheDocument(),
+    );
   });
 
   it('creates an invite link and lists it until revoked', async () => {
@@ -79,7 +83,7 @@ describe('team', () => {
     };
     await openTeam(data);
     await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Role for ada@mytrips.dev' }),
+      screen.getByRole('combobox', { name: 'Role for daniel@larkspurtravel.com' }),
       'Member',
     );
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -115,7 +119,7 @@ describe('workspace settings', () => {
     await user.type(input, 'Trips Inc');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await vi.waitFor(() => expect(data.workspacesNow()[0]!.name).toBe('Trips Inc'));
-    expect(workspacesNow()[0]!.name).toBe('Northwind Travel');
+    expect(workspacesNow()[0]!.name).toBe('Larkspur Travel');
   });
 
   it('deletes the workspace after typing its name', async () => {

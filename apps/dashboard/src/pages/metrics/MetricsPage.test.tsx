@@ -11,7 +11,7 @@ async function open(path: string, data = fakeData()) {
 
 describe('metrics list', () => {
   it('lists metrics with source, key, measure and use', async () => {
-    await open('/p/trip-demo/metrics');
+    await open('/p/marketing-site/metrics');
     const row = (await screen.findByRole('link', { name: 'Book click' })).closest('tr')!;
     expect(within(row).getByText('Click · selector')).toBeInTheDocument();
     expect(within(row).getByText('book_click')).toBeInTheDocument();
@@ -21,20 +21,20 @@ describe('metrics list', () => {
 
   it('offers the sources the SDK tracks and marks the others as coming later', async () => {
     const user = userEvent.setup();
-    await open('/p/trip-demo/metrics');
+    await open('/p/marketing-site/metrics');
     await user.click(screen.getByRole('button', { name: '+ New metric' }));
     const menu = screen.getByRole('list', { name: 'Event source' });
     expect(within(menu).getByRole('link', { name: 'Custom JS' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=custom-js',
+      '/p/marketing-site/metrics/new?source=custom-js',
     );
     expect(within(menu).getByRole('link', { name: 'dataLayer' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=datalayer',
+      '/p/marketing-site/metrics/new?source=datalayer',
     );
     expect(within(menu).getByRole('link', { name: 'Transaction' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=transaction',
+      '/p/marketing-site/metrics/new?source=transaction',
     );
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('list', { name: 'Event source' })).not.toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('metrics list', () => {
 describe('click tracker', () => {
   it('creates a click metric with an auto key and selector health', async () => {
     const user = userEvent.setup();
-    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=click');
+    const { router, metricsNow } = await open('/p/marketing-site/metrics/new?source=click');
     expect(screen.getByRole('radio', { name: 'Click · selector' })).toHaveAttribute(
       'aria-checked',
       'true',
@@ -65,7 +65,7 @@ describe('click tracker', () => {
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
 
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+      expect(router.state.location.pathname).toMatch(/\/p\/marketing-site\/metrics\/m-new-/),
     );
     expect(metricsNow().at(-1)).toMatchObject({
       name: 'Reserve click',
@@ -80,13 +80,13 @@ describe('click tracker', () => {
   it('uses a metric created from an experiment as its primary goal and goes back', async () => {
     const user = userEvent.setup();
     const { router, patches } = await open(
-      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=primary',
+      '/p/marketing-site/metrics/new?source=click&experiment=trust&role=primary',
     );
     await user.type(screen.getByLabelText('Name'), 'Reserve click');
     await user.type(screen.getByLabelText(/CSS selector/), '.reserve-btn');
     await user.click(await screen.findByRole('button', { name: 'Create and use as primary goal' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/trust/goals'),
+      expect(router.state.location.pathname).toBe('/p/marketing-site/experiments/trust/goals'),
     );
     expect(patches).toContainEqual({
       id: 'trust',
@@ -96,13 +96,13 @@ describe('click tracker', () => {
 
   it('saves click-through rate with what the SDK needs', async () => {
     const user = userEvent.setup();
-    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=click');
+    const { router, metricsNow } = await open('/p/marketing-site/metrics/new?source=click');
     await user.type(screen.getByLabelText('Name'), 'Banner CTR');
     await user.type(screen.getByLabelText(/CSS selector/), '.promo-banner');
     await user.click(screen.getByRole('radio', { name: /Click-through rate/ }));
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+      expect(router.state.location.pathname).toMatch(/\/p\/marketing-site\/metrics\/m-new-/),
     );
     expect(metricsNow().at(-1)).toMatchObject({
       measure: 'ctr',
@@ -112,14 +112,14 @@ describe('click tracker', () => {
 
   it('sets the winning direction to Decrease for time to first click', async () => {
     const user = userEvent.setup();
-    await open('/p/trip-demo/metrics/new?source=click');
+    await open('/p/marketing-site/metrics/new?source=click');
     await user.click(screen.getByRole('radio', { name: /Time to first click/ }));
     expect(screen.getByRole('radio', { name: /Decrease/ })).toHaveAttribute('aria-checked', 'true');
   });
 
   it('validates the form', async () => {
     const user = userEvent.setup();
-    await open('/p/trip-demo/metrics/new?source=click');
+    await open('/p/marketing-site/metrics/new?source=click');
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
     expect(screen.getByText('Name the metric.')).toBeInTheDocument();
     expect(screen.getByText('Use letters, numbers, _ . : or - (up to 100).')).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('click tracker', () => {
 
   it('reports a duplicate event key', async () => {
     const user = userEvent.setup();
-    await open('/p/trip-demo/metrics/new?source=click');
+    await open('/p/marketing-site/metrics/new?source=click');
     await user.type(screen.getByLabelText('Name'), 'Book click');
     await user.type(screen.getByLabelText(/CSS selector/), '.x');
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
@@ -142,7 +142,7 @@ describe('click tracker', () => {
 describe('custom JS tracker', () => {
   it('checks the code and saves it with its pages and value measure', async () => {
     const user = userEvent.setup();
-    const { metricsNow } = await open('/p/trip-demo/metrics/new?source=custom-js');
+    const { metricsNow } = await open('/p/marketing-site/metrics/new?source=custom-js');
     await user.type(screen.getByLabelText('Name'), 'Add-on selected');
     await user.click(screen.getByRole('button', { name: 'Insert snippet' }));
     expect(
@@ -181,7 +181,7 @@ describe('custom JS tracker', () => {
 describe('editing', () => {
   it('edits an existing metric and locks its source', async () => {
     const user = userEvent.setup();
-    const { metricsNow } = await open('/p/trip-demo/metrics/m-confirm');
+    const { metricsNow } = await open('/p/marketing-site/metrics/m-confirm');
     expect(screen.getByRole('radio', { name: 'Pageview · URL' })).toHaveAttribute(
       'aria-checked',
       'true',
@@ -200,17 +200,19 @@ describe('editing', () => {
 
   it('warns before deleting a primary goal', async () => {
     const user = userEvent.setup();
-    const { router, metricsNow } = await open('/p/trip-demo/metrics/m-book');
+    const { router, metricsNow } = await open('/p/marketing-site/metrics/m-book');
     await user.click(screen.getByRole('button', { name: 'Delete metric' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete “Book click”?' });
     expect(dialog).toHaveTextContent('It is the primary goal of');
     await user.click(within(dialog).getByRole('button', { name: 'Delete metric' }));
-    await vi.waitFor(() => expect(router.state.location.pathname).toBe('/p/trip-demo/metrics'));
+    await vi.waitFor(() =>
+      expect(router.state.location.pathname).toBe('/p/marketing-site/metrics'),
+    );
     expect(metricsNow().some((m) => m.id === 'm-book')).toBe(false);
   });
 
   it('shows not found for an unknown metric', async () => {
-    renderApp('/p/trip-demo/metrics/nope', { data: fakeData().api });
+    renderApp('/p/marketing-site/metrics/nope', { data: fakeData().api });
     expect(await screen.findByText("This metric doesn't exist.")).toBeInTheDocument();
   });
 });
@@ -218,7 +220,7 @@ describe('editing', () => {
 describe('dataLayer and transaction metrics', () => {
   it('saves a dataLayer event with filters and a value path', async () => {
     const user = userEvent.setup();
-    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=datalayer');
+    const { router, metricsNow } = await open('/p/marketing-site/metrics/new?source=datalayer');
     await user.type(screen.getByLabelText('Name'), 'Added to cart');
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
     expect(screen.getByText('Enter the dataLayer event name.')).toBeInTheDocument();
@@ -230,7 +232,7 @@ describe('dataLayer and transaction metrics', () => {
     await user.click(screen.getByRole('radio', { name: /Sum of value/ }));
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+      expect(router.state.location.pathname).toMatch(/\/p\/marketing-site\/metrics\/m-new-/),
     );
     expect(metricsNow().at(-1)).toMatchObject({
       source: 'datalayer',
@@ -246,13 +248,13 @@ describe('dataLayer and transaction metrics', () => {
 
   it('saves a transaction metric with the GA4 defaults', async () => {
     const user = userEvent.setup();
-    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=transaction');
+    const { router, metricsNow } = await open('/p/marketing-site/metrics/new?source=transaction');
     expect(screen.getByLabelText('Purchase event')).toHaveValue('purchase');
     expect(screen.getByLabelText('Transaction id path')).toHaveValue('ecommerce.transaction_id');
     await user.type(screen.getByLabelText('Name'), 'Revenue');
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+      expect(router.state.location.pathname).toMatch(/\/p\/marketing-site\/metrics\/m-new-/),
     );
     expect(metricsNow().at(-1)).toMatchObject({
       source: 'transaction',
@@ -269,14 +271,14 @@ describe('dataLayer and transaction metrics', () => {
 describe('browsing and Web Vitals metrics', () => {
   it('saves a Web Vitals metric with the SDK key, averaged, lower is better', async () => {
     const user = userEvent.setup();
-    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=web-vitals');
+    const { router, metricsNow } = await open('/p/marketing-site/metrics/new?source=web-vitals');
     await user.click(screen.getByRole('radio', { name: /INP/ }));
     expect(screen.getByLabelText(/Event key/)).toHaveValue('vitals.inp');
     expect(screen.getByLabelText(/Event key/)).toHaveAttribute('readonly');
     await user.type(screen.getByLabelText('Name'), 'INP');
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+      expect(router.state.location.pathname).toMatch(/\/p\/marketing-site\/metrics\/m-new-/),
     );
     expect(metricsNow().at(-1)).toMatchObject({
       source: 'web_vitals',
@@ -289,12 +291,12 @@ describe('browsing and Web Vitals metrics', () => {
 
   it('saves a browsing metric with its natural measure', async () => {
     const user = userEvent.setup();
-    const { router, metricsNow } = await open('/p/trip-demo/metrics/new?source=browsing');
+    const { router, metricsNow } = await open('/p/marketing-site/metrics/new?source=browsing');
     await user.click(screen.getByRole('radio', { name: /Time on site/ }));
     await user.type(screen.getByLabelText('Name'), 'Time on site');
     await user.click(screen.getByRole('button', { name: 'Create metric' }));
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toMatch(/\/p\/trip-demo\/metrics\/m-new-/),
+      expect(router.state.location.pathname).toMatch(/\/p\/marketing-site\/metrics\/m-new-/),
     );
     expect(metricsNow().at(-1)).toMatchObject({
       source: 'browsing',
