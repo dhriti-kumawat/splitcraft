@@ -194,7 +194,7 @@ function ProductShot() {
           className={styles.shotImg}
           src="/shots/hero-results.jpg"
           width={1720}
-          height={1075}
+          height={1236}
           alt=""
           fetchPriority="high"
           decoding="async"

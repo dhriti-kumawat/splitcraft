@@ -329,7 +329,7 @@
 .floatCode {
   position: absolute;
   left: -44px;
-  bottom: -36px;
+  bottom: -80px;
   padding: 16px 18px;
   border-radius: 12px;
   background: var(--ink);
