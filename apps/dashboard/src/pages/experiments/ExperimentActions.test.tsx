@@ -4,7 +4,7 @@ import { EXPERIMENTS, fakeData, WORKSPACE } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(expId: string, data = fakeData()) {
-  const router = renderApp(`/p/trip-demo/experiments/${expId}/basics`, { data: data.api });
+  const router = renderApp(`/p/marketing-site/experiments/${expId}/basics`, { data: data.api });
   await screen.findByRole('navigation', { name: 'Experiment steps' });
   return { router, ...data };
 }
@@ -34,7 +34,9 @@ describe('experiment actions menu', () => {
     const { router, experimentsNow } = await open('sticky');
     await user.click(within(await openMenu(user)).getByRole('menuitem', { name: 'Duplicate' }));
     await waitFor(() =>
-      expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/sticky-copy/basics'),
+      expect(router.state.location.pathname).toBe(
+        '/p/marketing-site/experiments/sticky-copy/basics',
+      ),
     );
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Sticky Book Now bar (copy)' }),
@@ -89,7 +91,9 @@ describe('experiment actions menu', () => {
 
     await user.click(within(await openMenu(user)).getByRole('menuitem', { name: 'Delete' }));
     await user.click(screen.getByRole('button', { name: 'Delete experiment' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/p/trip-demo/experiments'));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/p/marketing-site/experiments'),
+    );
     expect(experimentsNow().some((e) => e.id === 'urgency')).toBe(false);
   });
 

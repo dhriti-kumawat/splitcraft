@@ -2,8 +2,8 @@ import { isValidAllowedDomain, isValidMainDomain, normalizeDomain } from './doma
 
 describe('normalizeDomain', () => {
   it.each([
-    ['mytrips.dev', 'mytrips.dev'],
-    ['  https://www.MyTrips.dev/trips?x=1#top ', 'www.mytrips.dev'],
+    ['larkspurtravel.com', 'larkspurtravel.com'],
+    ['  https://www.LarkspurTravel.com/trips?x=1#top ', 'www.larkspurtravel.com'],
     ['http://localhost:5173/', 'localhost:5173'],
     ['shop.example.com.', 'shop.example.com'],
     ['*.Vercel.app', '*.vercel.app'],
@@ -13,14 +13,22 @@ describe('normalizeDomain', () => {
 });
 
 describe('isValidMainDomain', () => {
-  it.each(['mytrips.dev', 'staging.mytrips.dev', 'localhost', 'localhost:3000', 'a-b.co.uk'])(
-    'accepts %s',
-    (d) => expect(isValidMainDomain(d)).toBe(true),
-  );
-  it.each(['', 'mytrips', '*.mytrips.dev', '-bad.dev', 'my trips.dev', 'mytrips.dev:abc', 'a:1:2'])(
-    'rejects %s',
-    (d) => expect(isValidMainDomain(d)).toBe(false),
-  );
+  it.each([
+    'larkspurtravel.com',
+    'staging.larkspurtravel.com',
+    'localhost',
+    'localhost:3000',
+    'a-b.co.uk',
+  ])('accepts %s', (d) => expect(isValidMainDomain(d)).toBe(true));
+  it.each([
+    '',
+    'mytrips',
+    '*.larkspurtravel.com',
+    '-bad.dev',
+    'my trips.dev',
+    'larkspurtravel.com:abc',
+    'a:1:2',
+  ])('rejects %s', (d) => expect(isValidMainDomain(d)).toBe(false));
 });
 
 describe('isValidAllowedDomain', () => {

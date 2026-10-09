@@ -44,8 +44,8 @@ describe('routing', () => {
   });
 
   it('redirects a project root to its experiments', async () => {
-    const router = await renderAt('/p/trip-demo');
-    expect(router.state.location.pathname).toBe('/p/trip-demo/experiments');
+    const router = await renderAt('/p/marketing-site');
+    expect(router.state.location.pathname).toBe('/p/marketing-site/experiments');
   });
 
   it('shows a not-found page for unknown paths and unknown projects', async () => {
@@ -64,29 +64,29 @@ describe('routing', () => {
 describe('breadcrumb', () => {
   it('shows workspace / page, with the last item as the current page', async () => {
     await renderAt('/projects');
-    expect(breadcrumb()).toEqual(['Northwind Travel', 'Projects']);
+    expect(breadcrumb()).toEqual(['Larkspur Travel', 'Projects']);
     const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
     expect(within(nav).getByText('Projects')).toHaveAttribute('aria-current', 'page');
   });
 
   it('includes the project and section on project pages', async () => {
-    await renderAt('/p/trip-demo/metrics/new');
-    expect(breadcrumb()).toEqual(['Northwind Travel', 'Trip Demo', 'Metrics', 'New metric']);
+    await renderAt('/p/marketing-site/metrics/new');
+    expect(breadcrumb()).toEqual(['Larkspur Travel', 'Marketing site', 'Metrics', 'New metric']);
     const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
-    expect(within(nav).getByRole('link', { name: 'Trip Demo' })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: 'Marketing site' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/experiments',
+      '/p/marketing-site/experiments',
     );
   });
 });
 
 describe('name breadcrumbs', () => {
   it('shows the experiment name', async () => {
-    await renderAt('/p/trip-demo/experiments/trust/basics');
+    await renderAt('/p/marketing-site/experiments/trust/basics');
     await waitFor(() =>
       expect(breadcrumb()).toEqual([
-        'Northwind Travel',
-        'Trip Demo',
+        'Larkspur Travel',
+        'Marketing site',
         'Experiments',
         'Trust badges under Book button',
       ]),
@@ -94,18 +94,18 @@ describe('name breadcrumbs', () => {
   });
 
   it('shows the segment name', async () => {
-    await renderAt('/p/trip-demo/audiences/seg-mobile');
+    await renderAt('/p/marketing-site/audiences/seg-mobile');
     await waitFor(() => expect(breadcrumb().at(-1)).toBe('Mobile first-timers'));
     expect(breadcrumb()).toEqual([
-      'Northwind Travel',
-      'Trip Demo',
+      'Larkspur Travel',
+      'Marketing site',
       'Audiences',
       'Mobile first-timers',
     ]);
   });
 
   it('shows the metric name', async () => {
-    await renderAt('/p/trip-demo/metrics/m-book');
+    await renderAt('/p/marketing-site/metrics/m-book');
     await waitFor(() => expect(breadcrumb().at(-1)).toBe('Book click'));
   });
 });
@@ -122,7 +122,7 @@ describe('sidebar', () => {
   });
 
   it('shows the current project and marks the active section', async () => {
-    await renderAt('/p/trip-demo/audiences');
+    await renderAt('/p/marketing-site/audiences');
     const projectNav = screen.getByRole('navigation', { name: 'Current project' });
     const links = within(projectNav)
       .getAllByRole('link')
@@ -139,7 +139,9 @@ describe('sidebar', () => {
       'aria-current',
       'page',
     );
-    expect(screen.getByRole('button', { name: 'Switch project: Trip Demo' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Switch project: Marketing site' }),
+    ).toBeInTheDocument();
   });
 
   it('shows event usage as a meter', async () => {
@@ -163,7 +165,7 @@ describe('sidebar', () => {
 
   it('shows the signed-in user', async () => {
     await renderAt('/projects');
-    expect(screen.getByText('Alex Morgan')).toBeInTheDocument();
+    expect(screen.getByText('Maya Chen')).toBeInTheDocument();
     expect(screen.getByText('owner')).toBeInTheDocument();
   });
 });
@@ -171,23 +173,26 @@ describe('sidebar', () => {
 describe('project switcher', () => {
   it('opens, lists projects and navigates to the chosen one', async () => {
     const user = userEvent.setup();
-    const router = await renderAt('/p/trip-demo/experiments');
-    const button = screen.getByRole('button', { name: 'Switch project: Trip Demo' });
+    const router = await renderAt('/p/marketing-site/experiments');
+    const button = screen.getByRole('button', { name: 'Switch project: Marketing site' });
     expect(button).toHaveAttribute('aria-expanded', 'false');
 
     await user.click(button);
     expect(button).toHaveAttribute('aria-expanded', 'true');
     const panel = within(document.getElementById(button.getAttribute('aria-controls')!)!);
     expect(panel.getAllByRole('link').map((a) => a.textContent)).toEqual([
-      'Trip Demomytrips.dev',
-      'Checkout Labshoplab.dev',
-      'Portfolioalexmorgan.dev',
+      'Marketing sitelarkspurtravel.com',
+      'Booking flowbook.larkspurtravel.com',
+      'Help centerlarkspurhelp.com',
     ]);
-    expect(panel.getByRole('link', { name: /^Trip Demo/ })).toHaveAttribute('aria-current', 'true');
+    expect(panel.getByRole('link', { name: /^Marketing site/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
 
-    await user.click(panel.getByRole('link', { name: /^Checkout Lab/ }));
-    expect(router.state.location.pathname).toBe('/p/checkout-lab/experiments');
-    expect(screen.getByRole('button', { name: 'Switch project: Checkout Lab' })).toHaveAttribute(
+    await user.click(panel.getByRole('link', { name: /^Booking flow/ }));
+    expect(router.state.location.pathname).toBe('/p/booking-flow/experiments');
+    expect(screen.getByRole('button', { name: 'Switch project: Booking flow' })).toHaveAttribute(
       'aria-expanded',
       'false',
     );
@@ -195,8 +200,8 @@ describe('project switcher', () => {
 
   it('closes on Escape and returns focus to the button', async () => {
     const user = userEvent.setup();
-    await renderAt('/p/trip-demo/experiments');
-    const button = screen.getByRole('button', { name: 'Switch project: Trip Demo' });
+    await renderAt('/p/marketing-site/experiments');
+    const button = screen.getByRole('button', { name: 'Switch project: Marketing site' });
     await user.click(button);
     await user.keyboard('{Escape}');
     expect(button).toHaveAttribute('aria-expanded', 'false');
@@ -205,8 +210,8 @@ describe('project switcher', () => {
 
   it('closes on a click outside', async () => {
     const user = userEvent.setup();
-    await renderAt('/p/trip-demo/experiments');
-    const button = screen.getByRole('button', { name: 'Switch project: Trip Demo' });
+    await renderAt('/p/marketing-site/experiments');
+    const button = screen.getByRole('button', { name: 'Switch project: Marketing site' });
     await user.click(button);
     await user.click(screen.getByRole('main'));
     expect(button).toHaveAttribute('aria-expanded', 'false');
@@ -255,9 +260,9 @@ describe('accessibility basics', () => {
 describe('back button', () => {
   it('goes to the nearest parent on detail pages and is absent on section pages', async () => {
     const user = userEvent.setup();
-    const router = await renderAt('/p/trip-demo/metrics/new');
+    const router = await renderAt('/p/marketing-site/metrics/new');
     await user.click(screen.getByRole('button', { name: 'Go back to Metrics' }));
-    expect(router.state.location.pathname).toBe('/p/trip-demo/metrics');
+    expect(router.state.location.pathname).toBe('/p/marketing-site/metrics');
     expect(screen.queryByRole('button', { name: /^Go back/ })).not.toBeInTheDocument();
   });
 });

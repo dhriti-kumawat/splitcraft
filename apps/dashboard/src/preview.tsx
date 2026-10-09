@@ -1,5 +1,5 @@
 // Design review tool, development only (not part of the production build):
-//   npm run dev -w apps/dashboard, then open /preview.html?path=/p/trip-demo/experiments/sticky/results
+//   npm run dev -w apps/dashboard, then open /preview.html?path=/p/marketing-site/experiments/sticky/results
 // Renders any screen with the test fixtures (the design's example data), signed in, no Supabase.
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createRoot } from 'react-dom/client';

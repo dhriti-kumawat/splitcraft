@@ -52,7 +52,7 @@ describe('launchChecks', () => {
 describe('previewUrl', () => {
   it('forces the first variant on the main domain', () => {
     expect(previewUrl(draft, project)).toBe(
-      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
+      'https://larkspurtravel.com/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
         '#splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
     );
     expect(previewUrl(draft, { ...project, mainDomain: 'localhost:5173' }, 'control')).toBe(
@@ -60,23 +60,27 @@ describe('previewUrl', () => {
         '#splitcraft_force=trust%3Acontrol&splitcraft_preview=tok-trust',
     );
     // Hash routers keep their hash.
-    expect(previewUrl({ ...draft, previewUrl: 'https://mytrips.dev/#/trips' }, project)).toBe(
-      'https://mytrips.dev/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/trips',
+    expect(
+      previewUrl({ ...draft, previewUrl: 'https://larkspurtravel.com/#/trips' }, project),
+    ).toBe(
+      'https://larkspurtravel.com/?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/trips',
     );
   });
 });
 
 describe('test page', () => {
   const project = {
-    mainDomain: 'mytrips.dev',
-    allowedDomains: ['staging.mytrips.dev', '*.vercel.app', 'localhost:5173'],
+    mainDomain: 'larkspurtravel.com',
+    allowedDomains: ['staging.larkspurtravel.com', '*.vercel.app', 'localhost:5173'],
   };
 
   it('turns a path or a URL on the project into a full URL', () => {
     expect(testPageUrl('/trips/norway?ref=a', project)).toEqual({
-      url: 'https://mytrips.dev/trips/norway?ref=a',
+      url: 'https://larkspurtravel.com/trips/norway?ref=a',
     });
-    expect(testPageUrl('www.mytrips.dev/deals', project).url).toBe('https://www.mytrips.dev/deals');
+    expect(testPageUrl('www.larkspurtravel.com/deals', project).url).toBe(
+      'https://www.larkspurtravel.com/deals',
+    );
     expect(testPageUrl('https://pr-12.vercel.app/x', project).url).toBe(
       'https://pr-12.vercel.app/x',
     );
@@ -89,14 +93,14 @@ describe('test page', () => {
       "evil.example isn't one of this project's domains",
     );
     expect(testPageUrl('/trips?splitcraft_force=a:b', project).url).toBe(
-      'https://mytrips.dev/trips',
+      'https://larkspurtravel.com/trips',
     );
   });
 
   it('opens the test page with the force parameter, keeping its query', () => {
-    const withPage = { ...draft, previewUrl: 'https://mytrips.dev/trips/norway?ref=a' };
+    const withPage = { ...draft, previewUrl: 'https://larkspurtravel.com/trips/norway?ref=a' };
     expect(previewUrl(withPage, project as never)).toBe(
-      'https://mytrips.dev/trips/norway?ref=a&splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
+      'https://larkspurtravel.com/trips/norway?ref=a&splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust' +
         '#splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust',
     );
   });
@@ -109,7 +113,7 @@ describe('launch checks by test type', () => {
     const withUrl = {
       ...split,
       variants: split.variants.map((v) =>
-        v.key === 'b' ? { ...v, url: 'https://mytrips.dev/b' } : v,
+        v.key === 'b' ? { ...v, url: 'https://larkspurtravel.com/b' } : v,
       ),
     };
     expect(variantsReady(withUrl)).toBe(true);

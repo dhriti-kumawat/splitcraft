@@ -4,7 +4,7 @@ import { fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(data = fakeData()) {
-  renderApp('/p/trip-demo/flags', { data: data.api });
+  renderApp('/p/marketing-site/flags', { data: data.api });
   await screen.findByRole('heading', { level: 1, name: 'Feature flags' });
   return data;
 }

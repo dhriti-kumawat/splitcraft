@@ -13,7 +13,7 @@ const ready: Experiment = {
   ),
 };
 
-async function open(path = '/p/trip-demo/experiments/trust/basics', data = fakeData()) {
+async function open(path = '/p/marketing-site/experiments/trust/basics', data = fakeData()) {
   const router = renderApp(path, { data: data.api });
   await screen.findByRole('navigation', { name: 'Experiment steps' });
   return { router, ...data };
@@ -49,12 +49,12 @@ describe('experiment layout', () => {
   });
 
   it('redirects the experiment root to basics', async () => {
-    const { router } = await open('/p/trip-demo/experiments/trust');
-    expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/trust/basics');
+    const { router } = await open('/p/marketing-site/experiments/trust');
+    expect(router.state.location.pathname).toBe('/p/marketing-site/experiments/trust/basics');
   });
 
   it('shows not found for an unknown experiment', async () => {
-    renderApp('/p/trip-demo/experiments/nope/basics');
+    renderApp('/p/marketing-site/experiments/nope/basics');
     expect(
       await screen.findByRole('heading', { name: "This experiment doesn't exist" }),
     ).toBeInTheDocument();
@@ -82,14 +82,14 @@ describe('basics', () => {
   });
 
   it('summarises targeting and goals with links to edit them', async () => {
-    await open('/p/trip-demo/experiments/sticky/basics');
+    await open('/p/marketing-site/experiments/sticky/basics');
     const targeting = screen.getByRole('region', { name: 'Targeting' });
     expect(within(targeting).getByText('1 URL rule')).toBeInTheDocument();
     expect(within(targeting).getByText('1 trigger')).toBeInTheDocument();
     expect(within(targeting).getByText('Everyone')).toBeInTheDocument();
     expect(within(targeting).getByRole('link', { name: 'Edit targeting' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/experiments/sticky/targeting',
+      '/p/marketing-site/experiments/sticky/targeting',
     );
     const goals = screen.getByRole('region', { name: 'Goals' });
     expect(within(goals).getByText('Book click')).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('basics', () => {
   });
 
   it('locks the split once started', async () => {
-    await open('/p/trip-demo/experiments/sticky/basics');
+    await open('/p/marketing-site/experiments/sticky/basics');
     expect(screen.getByRole('textbox', { name: 'Control %' })).toBeDisabled();
     expect(
       screen.getByText(/The split is locked once an experiment has started/),
@@ -147,7 +147,7 @@ describe('basics', () => {
     await user.type(lift, '15');
     const status = screen.getByRole('region', { name: 'Sample size' });
     expect(within(status).getByText('14,193')).toBeInTheDocument();
-    // Trip Demo's last 7 days average 2,020 visitors, all included: 2 × 14,193 / 2,020 → 15.
+    // Marketing site's last 7 days average 2,020 visitors, all included: 2 × 14,193 / 2,020 → 15.
     expect(
       within(status).getByText(/About 15 days at 2,020 targeted visitors a day\./),
     ).toBeInTheDocument();
@@ -186,7 +186,10 @@ describe('launching', () => {
 
   it('launches a ready draft even without a QA preview', async () => {
     const user = userEvent.setup();
-    const { patches } = await open('/p/trip-demo/experiments/trust/basics', withExperiments(ready));
+    const { patches } = await open(
+      '/p/marketing-site/experiments/trust/basics',
+      withExperiments(ready),
+    );
     await user.click(screen.getByRole('button', { name: 'Launch experiment' }));
     await screen.findByRole('button', { name: 'Pause' });
     const launch = patches.find((p) => (p.patch as { status?: string }).status === 'live')!;
@@ -197,7 +200,7 @@ describe('launching', () => {
 
   it('marks QA as done when previewing on the site', async () => {
     const user = userEvent.setup();
-    await open('/p/trip-demo/experiments/trust/basics', withExperiments(ready));
+    await open('/p/marketing-site/experiments/trust/basics', withExperiments(ready));
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
     const dialog = screen.getByRole('dialog', { name: 'Preview on site' });
     const snippet = within(dialog).getByRole('link', { name: 'Open preview' });
@@ -215,7 +218,7 @@ describe('launching', () => {
 
   it('pauses, resumes and ends after confirmation', async () => {
     const user = userEvent.setup();
-    const { patches } = await open('/p/trip-demo/experiments/sticky/basics');
+    const { patches } = await open('/p/marketing-site/experiments/sticky/basics');
     await user.click(screen.getByRole('button', { name: 'Pause' }));
     await user.click(await screen.findByRole('button', { name: 'Resume' }));
     await user.click(await screen.findByRole('button', { name: 'End experiment' }));
@@ -247,19 +250,19 @@ describe('test page', () => {
     await user.tab();
     await vi.waitFor(() =>
       expect(patches.at(-1)).toMatchObject({
-        patch: { previewUrl: 'https://mytrips.dev/trips/norway' },
+        patch: { previewUrl: 'https://larkspurtravel.com/trips/norway' },
       }),
     );
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
     expect(screen.getByRole('link', { name: 'Open preview' }).getAttribute('href')).toMatch(
-      /^https:\/\/mytrips\.dev\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/,
+      /^https:\/\/larkspurtravel\.com\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/,
     );
   });
 
   it('refuses other sites and warns about pages outside WHERE', async () => {
     const user = userEvent.setup();
     await open(
-      '/p/trip-demo/experiments/trust/basics',
+      '/p/marketing-site/experiments/trust/basics',
       withExperiments({
         ...EXPERIMENTS.find((e) => e.id === 'trust')!,
         targeting: { where: { include: [{ op: 'matches', value: '/trips/*' }] } },

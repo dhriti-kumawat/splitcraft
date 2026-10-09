@@ -34,7 +34,7 @@ describe('login', () => {
   it('flags an email that is missing something', async () => {
     const user = userEvent.setup();
     await openAt('/login');
-    await user.type(field('Email'), 'alex@mytrips');
+    await user.type(field('Email'), 'maya@larkspur');
     await user.tab();
     expect(
       screen.getByText('This email is missing something. Check for typos.'),
@@ -52,17 +52,17 @@ describe('login', () => {
 
   it('logs in, shows the welcome screen and links to where the user was going', async () => {
     const user = userEvent.setup();
-    const { calls } = await openAt('/login?next=%2Fp%2Ftrip-demo%2Fmetrics');
+    const { calls } = await openAt('/login?next=%2Fp%2Fmarketing-site%2Fmetrics');
     await user.type(field('Email'), ALEX.email);
     await user.type(field('Password'), PASSWORD);
     await user.click(screen.getByLabelText('Keep me logged in for 30 days'));
     await user.click(submit('Log in'));
 
-    expect(await screen.findByRole('heading', { name: 'Welcome back, Alex' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back, Maya' })).toBeInTheDocument();
     expect(calls).toContain(`signIn:${ALEX.email}:false`);
     expect(screen.getByRole('link', { name: 'Open dashboard →' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics',
+      '/p/marketing-site/metrics',
     );
   });
 
@@ -282,16 +282,16 @@ describe('protected pages', () => {
 
   it('send signed-out visitors to log in, then back', async () => {
     const user = userEvent.setup();
-    const { router } = await openAt('/p/trip-demo/metrics');
+    const { router } = await openAt('/p/marketing-site/metrics');
     expect(router.state.location.pathname).toBe('/login');
-    expect(router.state.location.search).toBe('?next=%2Fp%2Ftrip-demo%2Fmetrics');
+    expect(router.state.location.search).toBe('?next=%2Fp%2Fmarketing-site%2Fmetrics');
 
     await user.type(field('Email'), ALEX.email);
     await user.type(field('Password'), PASSWORD);
     await user.click(submit('Log in'));
     await user.click(await screen.findByRole('link', { name: 'Open dashboard →' }));
-    expect(router.state.location.pathname).toBe('/p/trip-demo/metrics');
-    expect(screen.getByText('Alex Morgan')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/p/marketing-site/metrics');
+    expect(screen.getByText('Maya Chen')).toBeInTheDocument();
   });
 
   it('log out from the sidebar', async () => {

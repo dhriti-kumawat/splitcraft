@@ -35,14 +35,14 @@ describe('bookmark tab', () => {
       'open',
       vi.fn(() => win),
     );
-    expect(openForBookmark('https://mytrips.dev/?x', previewState(exp))).toBe(true);
-    expect(window.open).toHaveBeenCalledWith('https://mytrips.dev/?x', '_blank');
+    expect(openForBookmark('https://larkspurtravel.com/?x', previewState(exp))).toBe(true);
+    expect(window.open).toHaveBeenCalledWith('https://larkspurtravel.com/?x', '_blank');
 
     const hello = (source: unknown) =>
       window.dispatchEvent(
         new MessageEvent('message', {
           data: { source: 'splitcraft-preview', type: 'hello' },
-          origin: 'https://www.mytrips.dev',
+          origin: 'https://www.larkspurtravel.com',
           source: source as Window,
         }),
       );
@@ -51,7 +51,7 @@ describe('bookmark tab', () => {
     hello(win);
     expect(win.postMessage).toHaveBeenCalledWith(
       { source: 'splitcraft-dashboard', type: 'state', state: previewState(exp) },
-      'https://www.mytrips.dev',
+      'https://www.larkspurtravel.com',
     );
 
     const edited = previewState(exp, [
@@ -61,7 +61,7 @@ describe('bookmark tab', () => {
     updatePreview(edited);
     expect(win.postMessage).toHaveBeenLastCalledWith(
       expect.objectContaining({ state: expect.objectContaining({ variants: edited.variants }) }),
-      'https://www.mytrips.dev',
+      'https://www.larkspurtravel.com',
     );
     updatePreview({ ...edited, variantKey: 'control' }, true);
     expect(win.postMessage.mock.lastCall![0].state.variantKey).toBe('control');
@@ -69,7 +69,7 @@ describe('bookmark tab', () => {
     stopPreview();
     expect(win.postMessage).toHaveBeenLastCalledWith(
       { source: 'splitcraft-dashboard', type: 'stop' },
-      'https://www.mytrips.dev',
+      'https://www.larkspurtravel.com',
     );
   });
 
@@ -78,7 +78,7 @@ describe('bookmark tab', () => {
       'open',
       vi.fn(() => null),
     );
-    expect(openForBookmark('https://mytrips.dev/', previewState(exp))).toBe(false);
+    expect(openForBookmark('https://larkspurtravel.com/', previewState(exp))).toBe(false);
   });
 });
 
@@ -113,11 +113,15 @@ describe('extension', () => {
       r.type === 'ping' ? { version: '1.0.0', userScripts: true } : {},
     );
     expect(await pingExtension()).toEqual({ version: '1.0.0', userScripts: true });
-    await openWithExtension('https://mytrips.dev/', ['mytrips.dev'], previewState(exp));
+    await openWithExtension(
+      'https://larkspurtravel.com/',
+      ['larkspurtravel.com'],
+      previewState(exp),
+    );
     expect(ext.requests.at(-1)).toMatchObject({
       type: 'open',
-      url: 'https://mytrips.dev/',
-      hosts: ['mytrips.dev'],
+      url: 'https://larkspurtravel.com/',
+      hosts: ['larkspurtravel.com'],
     });
     updatePreview(previewState(exp));
     await vi.waitFor(() =>

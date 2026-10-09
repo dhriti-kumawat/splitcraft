@@ -13,7 +13,7 @@ const mvtData = () =>
   });
 
 async function open(data = mvtData()) {
-  renderApp('/p/trip-demo/experiments/trust/variants', { data: data.api });
+  renderApp('/p/marketing-site/experiments/trust/variants', { data: data.api });
   await screen.findByRole('region', { name: 'Variations' });
   return data;
 }

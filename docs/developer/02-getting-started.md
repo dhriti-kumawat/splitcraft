@@ -30,7 +30,7 @@ The dashboard has a development-only preview page that renders any route with th
 (example projects, experiments and results), signed in:
 
 ```
-http://localhost:5173/preview.html?path=/p/trip-demo/experiments/sticky/results
+http://localhost:5173/preview.html?path=/p/marketing-site/experiments/sticky/results
 http://localhost:5173/preview.html?path=/projects&workspaces=none   # first-run screen
 ```
 

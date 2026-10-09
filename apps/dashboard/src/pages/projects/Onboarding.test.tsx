@@ -33,7 +33,7 @@ describe('onboarding checklist', () => {
       fakeData({
         projects: PROJECTS.map((p) => ({
           ...p,
-          installedAt: p.id === 'trip-demo' ? p.installedAt : null,
+          installedAt: p.id === 'marketing-site' ? p.installedAt : null,
         })),
         experiments: draftOnly,
       }),
@@ -42,7 +42,7 @@ describe('onboarding checklist', () => {
     expect(within(card).getByText('3 of 5 done · about 10 minutes')).toBeInTheDocument();
     expect(within(card).getByRole('link', { name: 'Open experiment' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/experiments/trust/variants',
+      '/p/marketing-site/experiments/trust/variants',
     );
   });
 

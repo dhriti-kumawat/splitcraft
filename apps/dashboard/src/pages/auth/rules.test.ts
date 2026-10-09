@@ -8,10 +8,10 @@ describe('validate', () => {
       email: 'Enter your email address.',
       password: 'Enter your password.',
     });
-    expect(validate('login', { ...empty, email: 'alex@site', password: 'x' })).toEqual({
+    expect(validate('login', { ...empty, email: 'maya@site', password: 'x' })).toEqual({
       email: 'This email is missing something. Check for typos.',
     });
-    expect(validate('login', { ...empty, email: ' alex@site.dev ', password: 'x' })).toEqual({});
+    expect(validate('login', { ...empty, email: ' maya@site.dev ', password: 'x' })).toEqual({});
   });
 
   it('checks name, password rules and terms for sign-up', () => {

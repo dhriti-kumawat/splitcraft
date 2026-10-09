@@ -24,7 +24,7 @@ import type {
 
 export const WORKSPACE: Workspace = {
   id: 'ws_1',
-  name: 'Northwind Travel',
+  name: 'Larkspur Travel',
   plan: 'free',
   role: 'owner',
 };
@@ -43,42 +43,47 @@ const project = (p: Partial<Project> & Pick<Project, 'id' | 'name' | 'mainDomain
 // Matches the designs (10-projects.html), as test data.
 export const PROJECTS: Project[] = [
   project({
-    id: 'trip-demo',
-    name: 'Trip Demo',
-    mainDomain: 'mytrips.dev',
-    allowedDomains: ['staging.mytrips.dev', 'localhost:5173'],
+    id: 'marketing-site',
+    name: 'Marketing site',
+    mainDomain: 'larkspurtravel.com',
+    allowedDomains: ['staging.larkspurtravel.com', 'localhost:5173'],
   }),
   project({
-    id: 'checkout-lab',
-    name: 'Checkout Lab',
-    mainDomain: 'shoplab.dev',
+    id: 'booking-flow',
+    name: 'Booking flow',
+    mainDomain: 'book.larkspurtravel.com',
     allowedDomains: ['*.vercel.app'],
   }),
-  project({ id: 'portfolio', name: 'Portfolio', mainDomain: 'alexmorgan.dev', installedAt: null }),
+  project({
+    id: 'help-center',
+    name: 'Help center',
+    mainDomain: 'larkspurhelp.com',
+    installedAt: null,
+  }),
 ];
 
 // Recent activity from 10-projects.html, as the SQL function would return it.
 export const ACTIVITY: ActivityItem[] = [
   {
     kind: 'experiment_launched',
-    projectId: 'trip-demo',
-    projectName: 'Trip Demo',
+    projectId: 'marketing-site',
+    projectName: 'Marketing site',
     subjectId: 'sticky',
     subject: 'Sticky Book Now bar',
     at: new Date(Date.now() - 12 * 60_000).toISOString(),
   },
   {
     kind: 'segment_updated',
-    projectId: 'trip-demo',
-    projectName: 'Trip Demo',
+    projectId: 'marketing-site',
+    projectName: 'Marketing site',
     subjectId: 'seg-returners',
     subject: 'High-intent returners',
     at: new Date(Date.now() - 60 * 60_000).toISOString(),
   },
   {
     kind: 'metric_created',
-    projectId: 'checkout-lab',
-    projectName: 'Checkout Lab',
+    projectId: 'booking-flow',
+    projectName: 'Booking flow',
     subjectId: 'm-purchase',
     subject: 'Purchase',
     at: new Date(Date.now() - 3 * 3_600_000).toISOString(),
@@ -87,18 +92,18 @@ export const ACTIVITY: ActivityItem[] = [
 
 export const STATS: ProjectStats[] = [
   {
-    projectId: 'trip-demo',
+    projectId: 'marketing-site',
     liveTests: 2,
     visitors30d: 56_400,
     dailyVisitors: Array.from({ length: 30 }, (_, i) => 1500 + i * 20),
   },
   {
-    projectId: 'checkout-lab',
+    projectId: 'booking-flow',
     liveTests: 1,
     visitors30d: 8_200,
     dailyVisitors: Array(30).fill(270),
   },
-  { projectId: 'portfolio', liveTests: 0, visitors30d: 0, dailyVisitors: Array(30).fill(0) },
+  { projectId: 'help-center', liveTests: 0, visitors30d: 0, dailyVisitors: Array(30).fill(0) },
 ];
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -119,7 +124,7 @@ const variants = (id: string) => [
 const experiment = (
   e: Partial<Experiment> & Pick<Experiment, 'id' | 'name' | 'status'>,
 ): Experiment => ({
-  projectId: 'trip-demo',
+  projectId: 'marketing-site',
   key: e.id,
   hypothesis: '',
   type: 'ab',
@@ -223,7 +228,7 @@ export const EXPERIMENT_STATS: VariantStats[] = [
 const metric = (
   m: Partial<Metric> & Pick<Metric, 'id' | 'name' | 'eventKey' | 'source'>,
 ): Metric => ({
-  projectId: 'trip-demo',
+  projectId: 'marketing-site',
   sourceConfig: {},
   measure: 'unique',
   measureConfig: {},
@@ -275,7 +280,7 @@ export const SESSION_SAMPLE: SessionSample = {
   sessions: 6000,
   days: 30,
   sample: Array.from({ length: 20 }, (_, i) => ({
-    url: `https://mytrips.dev${i % 2 ? '/trips/norway' : i % 5 === 0 ? '/deals/summer' : '/'}`,
+    url: `https://larkspurtravel.com${i % 2 ? '/trips/norway' : i % 5 === 0 ? '/deals/summer' : '/'}`,
     props: {
       d: i < 12 ? ('mobile' as const) : i < 15 ? ('tablet' as const) : ('desktop' as const),
       w: i < 12 ? 390 : i < 15 ? 820 : 1440,
@@ -288,7 +293,7 @@ export const SESSION_SAMPLE: SessionSample = {
 export const TRIGGERS: Saved<'triggers'>[] = [
   {
     id: 'trg-engaged',
-    projectId: 'trip-demo',
+    projectId: 'marketing-site',
     name: 'Engaged mobile visit',
     updatedAt: daysAgo(2),
     rules: {
@@ -304,7 +309,7 @@ export const TRIGGERS: Saved<'triggers'>[] = [
 export const PAGE_SETS: Saved<'page_sets'>[] = [
   {
     id: 'ps-trips',
-    projectId: 'trip-demo',
+    projectId: 'marketing-site',
     name: 'Trip and deal pages',
     updatedAt: daysAgo(4),
     rules: {
@@ -320,7 +325,7 @@ export const PAGE_SETS: Saved<'page_sets'>[] = [
 export const SEGMENTS: Segment[] = [
   {
     id: 'seg-returners',
-    projectId: 'trip-demo',
+    projectId: 'marketing-site',
     name: 'High-intent returners',
     updatedAt: daysAgo(1),
     rules: {
@@ -343,7 +348,7 @@ export const SEGMENTS: Segment[] = [
   },
   {
     id: 'seg-mobile',
-    projectId: 'trip-demo',
+    projectId: 'marketing-site',
     name: 'Mobile first-timers',
     updatedAt: daysAgo(3),
     rules: {
@@ -386,12 +391,15 @@ export const RESULTS: Record<string, MetricArm[]> = {
   ],
 };
 
+// Noisy early days that settle, like a real test (sums: 616 and 672 conversions).
+const CONTROL_DAILY = [52, 38, 47, 41, 46, 43, 40, 45, 44, 42, 46, 43, 45, 44];
+const B_DAILY = [38, 55, 44, 52, 47, 50, 45, 49, 48, 47, 49, 50, 48, 50];
 export const DAILY: Record<string, DailyArm[]> = {
   sticky: Array.from({ length: 14 }, (_, i) => {
     const day = new Date(Date.now() - (13 - i) * DAY).toISOString().slice(0, 10);
     return [
-      { day, variantKey: 'control', visitors: 891, converters: 44 },
-      { day, variantKey: 'b', visitors: 884, converters: 48 },
+      { day, variantKey: 'control', visitors: 891, converters: CONTROL_DAILY[i]! },
+      { day, variantKey: 'b', visitors: 884, converters: B_DAILY[i]! },
     ];
   }).flat(),
 };
@@ -399,21 +407,21 @@ export const DAILY: Record<string, DailyArm[]> = {
 export const PEOPLE: Person[] = [
   {
     userId: 'u_1',
-    email: 'alex@mytrips.dev',
-    name: 'Alex Morgan',
+    email: 'maya@larkspurtravel.com',
+    name: 'Maya Chen',
     role: 'owner',
     joinedAt: '2026-09-01T09:00:00Z',
   },
   {
     userId: 'u_2',
-    email: 'ada@mytrips.dev',
-    name: 'Ada Admin',
+    email: 'daniel@larkspurtravel.com',
+    name: 'Daniel Reyes',
     role: 'admin',
     joinedAt: '2026-09-05T09:00:00Z',
   },
   {
     userId: 'u_3',
-    email: 'max@mytrips.dev',
+    email: 'max@larkspurtravel.com',
     name: null,
     role: 'member',
     joinedAt: '2026-09-10T09:00:00Z',
@@ -425,25 +433,31 @@ export const SITE_SCAN: SiteScan = {
   source: 'rules',
   pages: [
     {
-      url: 'https://mytrips.dev/',
-      title: 'MyTrips',
+      url: 'https://larkspurtravel.com/',
+      title: 'Larkspur Travel',
       h1: 'Small-group trips',
       ctas: ['Book now'],
       endpoints: ['/api/search'],
     },
-    { url: 'https://mytrips.dev/pricing', title: 'Pricing', h1: 'Plans', ctas: [], endpoints: [] },
+    {
+      url: 'https://larkspurtravel.com/pricing',
+      title: 'Pricing',
+      h1: 'Plans',
+      ctas: [],
+      endpoints: [],
+    },
   ],
   suggestions: [
     {
       name: 'Headline on home page',
       hypothesis: 'A headline that names the main benefit will keep more visitors on the page.',
-      page: 'https://mytrips.dev/',
+      page: 'https://larkspurtravel.com/',
       template: 'headline',
     },
     {
       name: 'Reviews near prices on /pricing',
       hypothesis: 'Showing reviews next to prices will reduce doubt and raise conversions.',
-      page: 'https://mytrips.dev/pricing',
+      page: 'https://larkspurtravel.com/pricing',
       template: 'trust',
     },
   ],
@@ -497,7 +511,7 @@ export function fakeData(
   const createdExperiments: string[] = [];
   const flags: Array<FeatureFlag & { projectId: string }> = (opts.flags ?? []).map((f) => ({
     ...f,
-    projectId: 'trip-demo',
+    projectId: 'marketing-site',
   }));
   const alerts: Array<ProjectAlert & { projectId: string }> = [];
   const testedAlerts: string[] = [];

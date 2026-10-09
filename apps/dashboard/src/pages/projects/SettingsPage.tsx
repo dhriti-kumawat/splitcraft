@@ -44,10 +44,10 @@ function General({ project }: { project: Project }) {
   const errors = {
     name: name.trim() ? '' : 'Enter a project name.',
     domain: !main
-      ? "Enter your site's domain, like mytrips.dev."
+      ? "Enter your site's domain, like larkspurtravel.com."
       : isValidMainDomain(main)
         ? ''
-        : 'Enter a domain like mytrips.dev or localhost:3000, without a wildcard.',
+        : 'Enter a domain like larkspurtravel.com or localhost:3000, without a wildcard.',
   };
   const snapshot = JSON.stringify({ name: name.trim(), main, allowed });
   const dirty =
