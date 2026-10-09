@@ -4,7 +4,7 @@ import { EXPERIMENTS, fakeData, RESULTS } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(id = 'sticky', data = fakeData()) {
-  renderApp(`/p/trip-demo/experiments/${id}/results`, { data: data.api });
+  renderApp(`/p/marketing-site/experiments/${id}/results`, { data: data.api });
   await screen.findByRole('navigation', { name: 'Experiment steps' });
   return data;
 }
@@ -94,7 +94,7 @@ describe('results', () => {
 describe('breakdown', () => {
   it('shows the primary goal by device and by traffic source', async () => {
     const user = userEvent.setup();
-    renderApp('/p/trip-demo/experiments/sticky/results');
+    renderApp('/p/marketing-site/experiments/sticky/results');
     const section = await screen.findByRole('region', { name: 'Book click by device' });
     const mobile = await within(section).findByRole('row', { name: /Mobile/ });
     expect(mobile).toHaveTextContent('4.94%');

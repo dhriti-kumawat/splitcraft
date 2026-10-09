@@ -4,7 +4,7 @@ import { EXPERIMENT_STATS, EXPERIMENTS, fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(data = fakeData()) {
-  const router = renderApp('/p/trip-demo/experiments', { data: data.api });
+  const router = renderApp('/p/marketing-site/experiments', { data: data.api });
   await screen.findByRole('heading', { level: 1, name: 'Experiments' });
   await screen.findByRole('table');
   return { router, ...data };
@@ -15,7 +15,9 @@ const row = (name: string) => screen.getByRole('link', { name }).closest('tr')!;
 describe('experiments list', () => {
   it('describes the project and counts statuses', async () => {
     await open();
-    expect(screen.getByText('5 experiments on mytrips.dev · 2 running now')).toBeInTheDocument();
+    expect(
+      screen.getByText('5 experiments on larkspurtravel.com · 2 running now'),
+    ).toBeInTheDocument();
     const filters = screen.getByRole('group', { name: 'Filter by status' });
     expect(
       within(filters)
@@ -33,7 +35,9 @@ describe('experiments list', () => {
         ),
       }),
     );
-    expect(screen.getByText('4 experiments on mytrips.dev · 2 running now')).toBeInTheDocument();
+    expect(
+      screen.getByText('4 experiments on larkspurtravel.com · 2 running now'),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Urgency banner: “3 spots left”' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Ended0' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Archived1' }));
@@ -58,7 +62,7 @@ describe('experiments list', () => {
     expect(within(sticky).getByRole('img', { name: 'Control 50%, B 50%' })).toBeInTheDocument();
     expect(within(sticky).getByRole('link')).toHaveAttribute(
       'href',
-      '/p/trip-demo/experiments/sticky/results',
+      '/p/marketing-site/experiments/sticky/results',
     );
   });
 
@@ -69,7 +73,7 @@ describe('experiments list', () => {
     expect(within(draft).getAllByText('—')).toHaveLength(3);
     expect(within(draft).getByRole('link')).toHaveAttribute(
       'href',
-      '/p/trip-demo/experiments/trust/basics',
+      '/p/marketing-site/experiments/trust/basics',
     );
   });
 
@@ -127,7 +131,7 @@ describe('experiments list', () => {
   });
 
   it('explains an empty project', async () => {
-    renderApp('/p/trip-demo/experiments', { data: fakeData({ experiments: [] }).api });
+    renderApp('/p/marketing-site/experiments', { data: fakeData({ experiments: [] }).api });
     expect(
       await screen.findByText('No experiments yet. Create one to start testing.'),
     ).toBeInTheDocument();
@@ -154,7 +158,7 @@ describe('new experiment', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Create draft' }));
     expect(createdExperiments).toEqual(['Free cancellation copy']);
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/exp-1/basics'),
+      expect(router.state.location.pathname).toBe('/p/marketing-site/experiments/exp-1/basics'),
     );
   });
 
@@ -227,13 +231,13 @@ describe('experiment ideas', () => {
       }),
     );
     await vi.waitFor(() =>
-      expect(router.state.location.pathname).toBe('/p/trip-demo/experiments/exp-1/variants'),
+      expect(router.state.location.pathname).toBe('/p/marketing-site/experiments/exp-1/variants'),
     );
     expect(patches.at(-1)).toEqual({
       id: 'exp-1',
       patch: {
         hypothesis: 'Showing reviews next to prices will reduce doubt and raise conversions.',
-        previewUrl: 'https://mytrips.dev/pricing',
+        previewUrl: 'https://larkspurtravel.com/pricing',
       },
     });
     expect(variantPatches.at(-1)!.patch).toMatchObject({
@@ -251,11 +255,13 @@ describe('experiment ideas', () => {
   it('shows why a scan failed', async () => {
     const user = userEvent.setup();
     await open(
-      fakeData({ siteScan: new Error("Couldn't load https://mytrips.dev. Is the site public?") }),
+      fakeData({
+        siteScan: new Error("Couldn't load https://larkspurtravel.com. Is the site public?"),
+      }),
     );
     await user.click(within(panel()).getByRole('button', { name: 'Scan site' }));
     expect(await within(panel()).findByRole('alert')).toHaveTextContent(
-      "Couldn't load https://mytrips.dev. Is the site public?",
+      "Couldn't load https://larkspurtravel.com. Is the site public?",
     );
     expect(within(panel()).getByRole('button', { name: 'Try again' })).toBeEnabled();
   });

@@ -307,60 +307,18 @@
 
 .url {
   margin-left: 16px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font: 400 11px var(--font-mono);
   color: var(--muted);
 }
 
-.app {
-  display: flex;
-  height: 470px;
-}
-
-.side {
-  width: 170px;
-  flex-shrink: 0;
-  background: var(--ink);
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sideBrand {
-  padding: 2px 6px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.sideItem {
-  padding: 7px 8px;
-  font-size: 12px;
-  color: #aeb4ac;
-  border-radius: 5px;
-}
-
-.sideOn {
-  background: var(--ink-3);
-  color: #ffffff;
-}
-
-.appMain {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px 24px;
-  background: var(--ground);
-  min-width: 0;
-}
-
-.appHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 700;
+.shotImg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .live {
@@ -368,70 +326,10 @@
   color: var(--accent);
 }
 
-.liveDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--accent);
-}
-
-.verdict {
-  padding: 12px 14px;
-  border-radius: 9px;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-soft-line);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent-hover);
-}
-
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.kpi {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-}
-
-.kpiLabel {
-  font-size: 10px;
-  color: var(--muted);
-}
-
-.kpiValue {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.up {
-  color: var(--accent);
-}
-
-.chartCard {
-  flex-grow: 1;
-  padding: 14px;
-  border-radius: 9px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
 .floatCode {
   position: absolute;
   left: -44px;
-  bottom: -36px;
+  bottom: -80px;
   padding: 16px 18px;
   border-radius: 12px;
   background: var(--ink);
@@ -1293,17 +1191,9 @@
   .ctaActions a {
     flex: 1 1 140px;
   }
-  .app {
-    height: auto;
-  }
-  .side,
   .floatCode,
-  .floatWho,
-  .chartCard {
+  .floatWho {
     display: none;
-  }
-  .kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .cta {
     padding: 40px 24px;

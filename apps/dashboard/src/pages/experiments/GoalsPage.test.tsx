@@ -4,7 +4,7 @@ import { fakeData } from '../../test/fakeData';
 import { renderApp } from '../../test/renderApp';
 
 async function open(id: string, data = fakeData()) {
-  renderApp(`/p/trip-demo/experiments/${id}/goals`, { data: data.api });
+  renderApp(`/p/marketing-site/experiments/${id}/goals`, { data: data.api });
   await screen.findByText('Primary goal');
   await screen.findByRole('heading', { name: /Secondary goals/ });
   return data;
@@ -85,15 +85,15 @@ describe('goals', () => {
     const aside = screen.getByRole('complementary', { name: 'Add a goal' });
     expect(within(aside).getByRole('link', { name: /Custom event/ })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=custom-js&experiment=trust&role=secondary',
+      '/p/marketing-site/metrics/new?source=custom-js&experiment=trust&role=secondary',
     );
     expect(within(aside).getByRole('link', { name: /Web Vitals/ })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=web-vitals&experiment=trust&role=secondary',
+      '/p/marketing-site/metrics/new?source=web-vitals&experiment=trust&role=secondary',
     );
     expect(screen.getByRole('link', { name: 'or create a new metric' })).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=primary',
+      '/p/marketing-site/metrics/new?source=click&experiment=trust&role=primary',
     );
     expect(within(aside).queryByText(/Coming later/)).not.toBeInTheDocument();
     expect(within(aside).queryByText(/Formula/)).not.toBeInTheDocument();
@@ -131,13 +131,13 @@ describe('goals', () => {
       screen.getByRole('link', { name: 'Add secondary goal: create a new metric' }),
     ).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=secondary',
+      '/p/marketing-site/metrics/new?source=click&experiment=trust&role=secondary',
     );
     expect(
       screen.getByRole('link', { name: 'Add guardrail: create a new metric' }),
     ).toHaveAttribute(
       'href',
-      '/p/trip-demo/metrics/new?source=click&experiment=trust&role=guardrail',
+      '/p/marketing-site/metrics/new?source=click&experiment=trust&role=guardrail',
     );
   });
 });

@@ -107,7 +107,7 @@ npm run dev -w apps/web       # http://localhost:5174
 ```
 
 To look at any dashboard screen without Supabase, open
-`http://localhost:5173/preview.html?path=/p/trip-demo/experiments/sticky/results`. It renders the
+`http://localhost:5173/preview.html?path=/p/marketing-site/experiments/sticky/results`. It renders the
 screen with the design's example data (development only).
 
 ### Supabase

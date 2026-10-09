@@ -6,8 +6,8 @@ describe('toProject', () => {
       toProject({
         id: 'p1',
         workspace_id: 'w1',
-        name: 'Trip Demo',
-        main_domain: 'mytrips.dev',
+        name: 'Marketing site',
+        main_domain: 'larkspurtravel.com',
         allowed_domains: null as unknown as string[],
         public_key: 'prj_x',
         installed_at: null,
@@ -17,8 +17,8 @@ describe('toProject', () => {
     ).toEqual({
       id: 'p1',
       workspaceId: 'w1',
-      name: 'Trip Demo',
-      mainDomain: 'mytrips.dev',
+      name: 'Marketing site',
+      mainDomain: 'larkspurtravel.com',
       allowedDomains: [],
       publicKey: 'prj_x',
       installedAt: null,

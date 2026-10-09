@@ -4,7 +4,7 @@ const t = {
   where: {
     include: [
       { op: 'matches' as const, value: '/trips/*' },
-      { op: 'regex' as const, value: '^https://mytrips\\.dev/deals/(summer|monsoon)' },
+      { op: 'regex' as const, value: '^https://larkspurtravel\\.com/deals/(summer|monsoon)' },
     ],
     exclude: [{ op: 'contains' as const, value: '/archive' }],
     elements: [{ selector: '.book-now-btn' }],
@@ -19,7 +19,7 @@ const t = {
 
 describe('testUrl', () => {
   it('matches include rules with the SDK matcher, even without a scheme', () => {
-    const r = testUrl('mytrips.dev/trips/norway?utm_source=google', t);
+    const r = testUrl('larkspurtravel.com/trips/norway?utm_source=google', t);
     expect(r.matches).toBe(true);
     expect(r.lines.map((l) => [l.ok, l.text])).toEqual([
       [true, 'Where: matches /trips/*'],
@@ -29,17 +29,17 @@ describe('testUrl', () => {
   });
 
   it('lets exclude win', () => {
-    const r = testUrl('https://mytrips.dev/trips/archive/2019', t);
+    const r = testUrl('https://larkspurtravel.com/trips/archive/2019', t);
     expect(r.matches).toBe(false);
     expect(r.lines[0]).toEqual({ ok: false, text: 'Excluded by contains /archive' });
   });
 
   it('reports when no include rule matches', () => {
-    expect(testUrl('https://mytrips.dev/about', t).lines[0]).toEqual({
+    expect(testUrl('https://larkspurtravel.com/about', t).lines[0]).toEqual({
       ok: false,
       text: 'Where: matches none of 2 include rules',
     });
-    expect(testUrl('https://mytrips.dev/deals/monsoon', t).matches).toBe(true);
+    expect(testUrl('https://larkspurtravel.com/deals/monsoon', t).matches).toBe(true);
   });
 
   it('matches every page without include rules, and rejects bad input', () => {

@@ -176,7 +176,7 @@ function Hero() {
   );
 }
 
-/** Illustration of the results screen, using the spec's worked example (not customer data). */
+/** Screenshot of the results screen with the demo project's example data (not customer data). */
 function ProductShot() {
   return (
     <figure
@@ -188,68 +188,17 @@ function ProductShot() {
           <span className={styles.dot} />
           <span className={styles.dot} />
           <span className={styles.dot} />
-          <span className={styles.url}>
-            splitcraft-app.vercel.app/trip-demo/experiments/sticky-book-bar
-          </span>
+          <span className={styles.url}>splitcraft-app.vercel.app/…/sticky/results</span>
         </div>
-        <div className={styles.app}>
-          <div className={styles.side}>
-            <span className={styles.sideBrand}>Splitcraft</span>
-            <span className={`${styles.sideItem} ${styles.sideOn}`}>Experiments</span>
-            <span className={styles.sideItem}>Audiences</span>
-            <span className={styles.sideItem}>Metrics</span>
-            <span className={styles.sideItem}>Install</span>
-          </div>
-          <div className={styles.appMain}>
-            <div className={styles.appHead}>
-              Sticky Book Now bar
-              <span className={`${styles.chip} ${styles.live}`}>
-                <span className={styles.liveDot} />
-                Live · day 14
-              </span>
-            </div>
-            <div className={styles.verdict}>
-              Variant B is ahead, with a 96% chance to beat Control
-            </div>
-            <div className={styles.kpis}>
-              {[
-                ['Visitors', '24,860', ''],
-                ['Uplift', '+9.7%', styles.up],
-                ['Chance to win', '96%', ''],
-                ['Sample ratio', '50.2 / 49.8', ''],
-              ].map(([label, value, cls]) => (
-                <div key={label} className={styles.kpi}>
-                  <span className={styles.kpiLabel}>{label}</span>
-                  <span className={`${styles.kpiValue} ${cls}`}>{value}</span>
-                </div>
-              ))}
-            </div>
-            <div className={styles.chartCard}>
-              Cumulative conversion rate
-              <svg viewBox="0 0 600 190" width="100%" height="190" preserveAspectRatio="none">
-                <line x1="0" y1="40" x2="600" y2="40" stroke="#EEF0EB" />
-                <line x1="0" y1="95" x2="600" y2="95" stroke="#EEF0EB" />
-                <line x1="0" y1="150" x2="600" y2="150" stroke="#EEF0EB" />
-                <polyline
-                  fill="none"
-                  stroke="#355E9C"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                  points="0,60 46,92 92,100 138,116 184,108 230,116 276,108 322,108 368,116 414,108 460,108 506,111 552,109 600,110"
-                />
-                <polyline
-                  fill="none"
-                  stroke="#D97A2B"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                  points="0,130 46,40 92,64 138,56 184,72 230,64 276,80 322,72 368,72 414,80 460,72 506,75 552,74 600,74"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
+        <img
+          className={styles.shotImg}
+          src="/shots/hero-results.jpg"
+          width={1720}
+          height={1236}
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+        />
       </div>
       <div className={styles.floatCode} aria-hidden="true">
         <pre>
