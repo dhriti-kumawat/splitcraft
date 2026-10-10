@@ -115,7 +115,13 @@ export function testPage(exp: Experiment, project: Pick<Project, 'mainDomain'>):
 }
 
 /** URL that opens the site with a variant forced and the QA panel shown. */
-export function previewUrl(exp: Experiment, project: Project, variantKey?: string): string {
+export function previewUrl(
+  exp: Experiment,
+  project: Project,
+  variantKey?: string,
+  /** This dashboard's origin: the snippet on the page then takes live edits from this tab. */
+  live?: string,
+): string {
   const key =
     variantKey ?? exp.variants.find((v) => v.key !== controlKey(exp))?.key ?? controlKey(exp);
   const url = new URL(testPage(exp, project));
@@ -123,6 +129,7 @@ export function previewUrl(exp: Experiment, project: Project, variantKey?: strin
     splitcraft_force: `${exp.key}:${key}`,
     // Loads this experiment even while it's a draft (or paused), on any page.
     splitcraft_preview: exp.previewToken,
+    ...(live && { splitcraft_live: live }),
   });
   params.forEach((v, k) => url.searchParams.set(k, v));
   // Repeated in the hash, which survives redirects that drop the query string. Skipped

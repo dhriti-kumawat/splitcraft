@@ -441,6 +441,61 @@ describe('boot', () => {
     sessionStorage.clear();
   });
 
+  describe('opened live from the dashboard', () => {
+    const open = (origin: string) => {
+      history.replaceState(
+        {},
+        '',
+        `/trips/norway?splitcraft_force=trust:b&splitcraft_preview=tok-1&splitcraft_live=${encodeURIComponent(origin)}`,
+      );
+      vi.stubGlobal('opener', {});
+      vi.stubGlobal('fetch', () => Promise.resolve(new Response(JSON.stringify(config([exp()])))));
+      return boot(
+        script({
+          src: 'https://splitcraft.vercel.app/sdk/v1.js',
+          'data-project': 'prj_1',
+          'data-config': 'https://api.test/config/prj_1.json',
+        }),
+      );
+    };
+    const previewScript = () =>
+      document.querySelector<HTMLScriptElement>('script[src$="splitcraft-preview.iife.js"]');
+
+    afterEach(() => {
+      delete (window as unknown as { __splitcraftPreview?: unknown }).__splitcraftPreview;
+    });
+
+    it('hands the forced experiment to the preview bundle and skips the QA panel', async () => {
+      runtime = (await open('http://localhost:5173'))!;
+      await settle();
+      const s = previewScript()!;
+      expect(s.src).toBe('https://splitcraft.vercel.app/sdk/splitcraft-preview.iife.js');
+      expect(s.dataset).toMatchObject({
+        mode: 'bookmark',
+        dashboard: 'http://localhost:5173',
+        config: 'https://api.test/config/prj_1.json?preview=tok-1',
+      });
+      expect(ran()).toBe(0);
+      expect(document.querySelector('script[src$="splitcraft-qa.iife.js"]')).toBeNull();
+    });
+
+    it('ignores dashboards it does not know, and tabs nobody opened', async () => {
+      runtime = (await open('https://evil.test'))!;
+      await settle();
+      expect(previewScript()).toBeNull();
+      expect(ran()).toBe(1);
+      runtime.stop();
+      removeVariant('trust');
+      document.head.innerHTML = '';
+      vi.stubGlobal('opener', null);
+      history.replaceState({}, '', '/trips/norway?splitcraft_live=http%3A%2F%2Flocalhost%3A5173');
+      runtime = (await boot(
+        script({ src: 'https://splitcraft.vercel.app/sdk/v1.js', 'data-project': 'prj_1' }),
+      ))!;
+      expect(previewScript()).toBeNull();
+    });
+  });
+
   it('shows the page and gives up when the config cannot load', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.stubGlobal('fetch', () => Promise.resolve(new Response('', { status: 404 })));

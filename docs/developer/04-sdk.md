@@ -61,7 +61,12 @@ Add `?splitcraft_force=<experimentKey>:<variantKey>` (several pairs separated by
 - with `splitcraft_preview=<token>` (added by **Preview on site**) the SDK asks the config for that
   experiment even before launch, with no targeting, and remembers the token for the tab.
 
-The dashboard's **Preview on site** button opens this link.
+The dashboard's **Preview on site** button opens this link. On a page that has the snippet it also
+adds `splitcraft_live=<dashboard origin>`: the SDK then loads the preview bundle
+(`splitcraft-preview.iife.js`) instead of running that experiment and showing the QA panel, and the
+preview takes the variants, unsaved edits included, from the dashboard tab that opened the page.
+This is how **Edit visually** works on sites with the snippet. The SDK accepts only Splitcraft's
+own dashboard origins, and only when that dashboard tab opened the page (`window.opener`).
 
 ## Bucketing
 
