@@ -17,8 +17,8 @@ import styles from './PreviewDialog.module.css';
 
 /**
  * "Preview on site": one clear way first (the extension if installed, else the snippet if
- * the site has it, else the bookmark), the rest folded away. The extension and the bookmark
- * show unsaved edits live; the snippet shows saved code.
+ * the site has it, else the bookmark), the rest folded away. All three show unsaved edits
+ * live and can start the visual editor: the snippet and the bookmark take them from this tab.
  */
 export function PreviewDialog({
   experiment,
@@ -36,9 +36,8 @@ export function PreviewDialog({
   const [error, setError] = useState('');
   const [opened, setOpened] = useState(false);
   const page = testPage(experiment, project);
-  // The snippet is on the site: the quickest way, no install. It shows saved code.
-  // Visual editing needs the live link to this tab, which the snippet link can't give.
-  const hasSnippet = Boolean(project.installedAt) && !visualVariant;
+  // The snippet is on the site: the quickest way, no install.
+  const hasSnippet = Boolean(project.installedAt);
   const state = () => ({
     ...previewState(experiment, undefined, visualVariant),
     ...(visualVariant && { visual: true }),
@@ -54,12 +53,18 @@ export function PreviewDialog({
       (e: unknown) => setError(e instanceof Error ? e.message : String(e)),
     );
   };
-  const openBookmarkTab = () => {
+  // The snippet way and the bookmark way both open the page linked to this tab.
+  const openLinkedTab = (live: boolean) => {
     setError('');
-    if (openForBookmark(previewUrl(experiment, project), state())) {
-      markQaDone(experiment.id);
-      setOpened(true);
-    } else setError('Your browser blocked the new tab. Allow pop-ups for this site and try again.');
+    const url = previewUrl(experiment, project, visualVariant, live ? location.origin : undefined);
+    if (!openForBookmark(url, state())) {
+      setError('Your browser blocked the new tab. Allow pop-ups for this site and try again.');
+      return;
+    }
+    markQaDone(experiment.id);
+    // The snippet starts the preview itself; the bookmark still needs a click on the page.
+    if (live) onClose();
+    else setOpened(true);
   };
 
   return (
@@ -95,9 +100,14 @@ export function PreviewDialog({
             <Button onClick={openExtension}>Open preview</Button>
           </section>
         ) : hasSnippet ? (
-          <SnippetOption experiment={experiment} project={project} primary />
+          <SnippetOption onOpen={() => openLinkedTab(true)} primary />
         ) : (
-          <BookmarkOption project={project} onOpen={openBookmarkTab} opened={opened} primary />
+          <BookmarkOption
+            project={project}
+            onOpen={() => openLinkedTab(false)}
+            opened={opened}
+            primary
+          />
         )}
 
         {ext === undefined ? (
@@ -108,7 +118,9 @@ export function PreviewDialog({
           !ext && (
             <section className={styles.option} aria-labelledby="pv-ext">
               <h3 id="pv-ext" className={styles.title}>
-                Want edits to show live? Get the extension
+                {hasSnippet
+                  ? 'Works on strict sites too: the extension'
+                  : 'Want edits to show live? Get the extension'}
               </h3>
               <p className={styles.muted}>Chrome, Edge, Brave and Arc. Takes about a minute.</p>
               <details className={styles.more}>
@@ -139,8 +151,12 @@ export function PreviewDialog({
           <details className={styles.more}>
             <summary>Other ways to open it</summary>
             <div className={styles.moreBody}>
-              {ext && hasSnippet && <SnippetOption experiment={experiment} project={project} />}
-              <BookmarkOption project={project} onOpen={openBookmarkTab} opened={opened} />
+              {ext && hasSnippet && <SnippetOption onOpen={() => openLinkedTab(true)} />}
+              <BookmarkOption
+                project={project}
+                onOpen={() => openLinkedTab(false)}
+                opened={opened}
+              />
             </div>
           </details>
         )}
@@ -154,30 +170,22 @@ export function PreviewDialog({
   );
 }
 
-function SnippetOption({
-  experiment,
-  project,
-  primary,
-}: {
-  experiment: Experiment;
-  project: Project;
-  primary?: boolean;
-}) {
+function SnippetOption({ onOpen, primary }: { onOpen(): void; primary?: boolean }) {
   return (
     <section className={primary ? styles.option : styles.plain} aria-labelledby="pv-snippet">
       <h3 id="pv-snippet" className={styles.title}>
         {primary ? 'Open it on your site' : 'With the snippet'}
       </h3>
-      <p className={styles.muted}>Shows your saved changes. Save first if you just edited.</p>
-      <a
-        className={primary ? styles.button : styles.link}
-        href={previewUrl(experiment, project)}
-        target="_blank"
-        rel="noreferrer"
-        onClick={() => markQaDone(experiment.id)}
-      >
-        {primary ? 'Open preview' : 'Open with the snippet'}
-      </a>
+      <p className={styles.muted}>
+        The snippet on your site shows your edits live, saved or not, while this tab stays open.
+      </p>
+      {primary ? (
+        <Button onClick={onOpen}>Open preview</Button>
+      ) : (
+        <button type="button" className={styles.link} onClick={onOpen}>
+          Open with the snippet
+        </button>
+      )}
     </section>
   );
 }
