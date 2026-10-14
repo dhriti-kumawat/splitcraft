@@ -1,6 +1,8 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
+  type RefObject,
   useState,
   type CSSProperties,
   type KeyboardEvent,
@@ -108,7 +110,7 @@ export function ThemeMenu({
                 setOpen(false);
               }}
             >
-              <span className={styles.swatch} data-swatch={t.id} aria-hidden="true" />
+              <span className={styles.themeSwatch} data-swatch={t.id} aria-hidden="true" />
               {t.label}
             </button>
           ))}
@@ -120,8 +122,8 @@ export function ThemeMenu({
 
 const STACKED = '(max-width: 1023px)';
 
-/** Below 1024 px the panes stack, and the bar resizes them up and down. */
-function useStacked(): boolean {
+/** Below 1024 px the page is one column (and full screen stacks JS above CSS). */
+export function useStacked(): boolean {
   const [stacked, setStacked] = useState(
     () => typeof matchMedia === 'function' && matchMedia(STACKED).matches,
   );
@@ -217,4 +219,29 @@ export function SplitPanes({ first, second }: { first: ReactNode; second: ReactN
       {second}
     </div>
   );
+}
+
+/**
+ * Sets `--fill` on the element: the height from its top to the bottom of the window, less
+ * the page's bottom padding, so the layout fills the screen without the page scrolling.
+ * Re-measured when the window or anything above it changes size.
+ */
+export function useFillHeight(ref: RefObject<HTMLElement | null>, bottom = 28): void {
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const scroller = el.closest('main');
+    const measure = () => {
+      const top = el.getBoundingClientRect().top + (scroller?.scrollTop ?? 0);
+      el.style.setProperty('--fill', `${Math.floor(window.innerHeight - top - bottom)}px`);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    const watch = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    if (scroller?.firstElementChild) watch?.observe(scroller.firstElementChild);
+    return () => {
+      window.removeEventListener('resize', measure);
+      watch?.disconnect();
+    };
+  }, [ref, bottom]);
 }

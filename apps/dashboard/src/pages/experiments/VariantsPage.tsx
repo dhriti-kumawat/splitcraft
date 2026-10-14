@@ -1,7 +1,7 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { CodeEditor } from '../../components/CodeEditor';
-import { SplitPanes, ThemeMenu, useEditorTheme } from './EditorTools';
+import { SplitPanes, ThemeMenu, useEditorTheme, useFillHeight, useStacked } from './EditorTools';
 import type { Experiment, Variant } from '../../data/api';
 import {
   useEditVariants,
@@ -133,13 +133,15 @@ function CodeVariants() {
   );
 
   const current: Draft = drafts[selected.id] ?? { js: selected.js, css: selected.css };
+  const layout = useRef<HTMLDivElement>(null);
+  useFillHeight(layout);
   const dirty = (v: Variant) => {
     const d = drafts[v.id];
     return Boolean(d && (d.js !== v.js || d.css !== v.css));
   };
 
   return (
-    <div className={styles.layout}>
+    <div className={styles.layout} ref={layout}>
       <section className={styles.variants} aria-labelledby="variants-label">
         <span className={styles.lbl} id="variants-label">
           Variations
@@ -313,6 +315,8 @@ function Editor({
   // Full screen, like VWO's code editor: JS and CSS side by side across the whole window.
   const [full, setFull] = useState(false);
   const [theme, setTheme] = useEditorTheme();
+  // One-column layout: the page scrolls, so the editor hands the wheel back at its ends.
+  const passWheel = useStacked() && !full;
   // The loaded Monaco editors, for Format. A plain map: nothing renders from it.
   const [editors] = useState(() => new Map<'js' | 'css', MonacoEditor.IStandaloneCodeEditor>());
   const keep = (f: 'js' | 'css') => (e: MonacoEditor.IStandaloneCodeEditor | null) => {
@@ -532,6 +536,7 @@ function Editor({
             fill
             key={file}
             theme={theme}
+            passWheel={passWheel}
             language={file === 'js' ? 'javascript' : 'css'}
             label={`${variant.name} ${file.toUpperCase()}`}
             value={file === 'js' ? code.js : code.css}

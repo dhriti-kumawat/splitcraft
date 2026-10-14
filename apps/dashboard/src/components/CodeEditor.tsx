@@ -82,6 +82,8 @@ interface Props {
    */
   fill?: boolean;
   theme?: EditorTheme;
+  /** At the top or bottom of the code, let the wheel scroll the page (one-column layouts). */
+  passWheel?: boolean;
   /** The Monaco editor once it has loaded, e.g. to run Format. */
   onEditor?(editor: MonacoEditor.IStandaloneCodeEditor | null): void;
 }
@@ -97,6 +99,7 @@ export function CodeEditor({
   fill,
   onEditor,
   theme = 'dark',
+  passWheel = false,
 }: Props) {
   // Monaco keeps the first command it is given, so route Cmd/Ctrl+S through a ref.
   const save = useRef(onSave);
@@ -132,8 +135,7 @@ export function CodeEditor({
         // Long lines wrap instead of running off the edge (no sideways scrolling).
         wordWrap: 'on',
         wrappingIndent: 'indent',
-        // At the top or bottom of the code, the wheel scrolls the page instead of stopping.
-        scrollbar: { alwaysConsumeMouseWheel: false, verticalScrollbarSize: 10 },
+        scrollbar: { alwaysConsumeMouseWheel: !passWheel, verticalScrollbarSize: 10 },
         fixedOverflowWidgets: true,
         tabSize: 2,
         automaticLayout: true,
