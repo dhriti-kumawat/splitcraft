@@ -39,8 +39,8 @@ To add a feature that needs data: add the method to `DataApi`, implement it in b
 
 ## Workspaces and roles
 
-Every account belongs to one or more workspaces (new accounts get one named after their company, or
-"My workspace"). Projects belong to a workspace.
+A new account creates its first workspace or joins one from an invite. Projects belong to a
+workspace.
 
 | Role   | Can                                                                     |
 | ------ | ----------------------------------------------------------------------- |
@@ -50,6 +50,19 @@ Every account belongs to one or more workspaces (new accounts get one named afte
 
 Invites are links (`/invite/<token>`) for one email address, valid for 7 days, used once. Every
 workspace keeps at least one owner (a database trigger enforces it).
+
+One account can be in several workspaces, and each is separate: being an admin in someone else's
+workspace gives them no access to yours. Switch or create workspaces from the menu at the top of
+the sidebar.
+
+- **New project** shows the workspace it will be created in, with a picker. When you're not the
+  owner of that workspace it says that everyone there can see and change the project, and its
+  owner and admins can delete it.
+- **Your own workspace**: someone who joined by invite and owns no workspace sees an offer on
+  Projects to create one ("Not now" hides it).
+- **Move to another workspace** (Project › Settings): moves the project with everything in it, and
+  the snippet keeps working. You must be an owner or admin of both workspaces, and you confirm by
+  typing the project's name. A project's workspace can't change any other way.
 
 ## Handy features
 

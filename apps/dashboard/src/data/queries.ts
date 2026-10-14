@@ -633,6 +633,14 @@ export function useProjectMutations(workspaceId: string) {
       },
     }),
     remove: useMutation({ mutationFn: (id: string) => api.deleteProject(id), onSuccess: refresh }),
+    move: useMutation({
+      mutationFn: ({ id, to }: { id: string; to: string }) => api.moveProject(id, to),
+      onSuccess: (_, { to }) => {
+        refresh();
+        void client.invalidateQueries({ queryKey: keys.projects(to) });
+        void client.invalidateQueries({ queryKey: keys.overview(to) });
+      },
+    }),
   };
 }
 

@@ -143,3 +143,32 @@ describe('alerts', () => {
     expect(within(section).getByText('Pick at least one alert.')).toBeInTheDocument();
   });
 });
+
+describe('move to another workspace', () => {
+  const MINE = { id: 'ws_mine', name: 'My projects', plan: 'free', role: 'owner' } as const;
+
+  it('moves the project after typing its name, then opens it in the new workspace', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({ workspaces: [WORKSPACE, MINE] });
+    const { router } = await open(data);
+    await user.click(screen.getByRole('button', { name: 'Move project' }));
+    const dialog = screen.getByRole('dialog', { name: 'Move “Marketing site”?' });
+    expect(within(dialog).getByLabelText('Move to')).toHaveValue(MINE.id);
+    const go = within(dialog).getByRole('button', { name: 'Move to My projects' });
+    expect(go).toBeDisabled();
+    await user.type(within(dialog).getByLabelText(/to confirm/), 'Marketing site');
+    await user.click(go);
+    await vi.waitFor(() =>
+      expect(data.projectsNow().find((p) => p.id === 'marketing-site')?.workspaceId).toBe(MINE.id),
+    );
+    expect(router.state.location.pathname).toBe('/p/marketing-site/settings');
+    expect(localStorage.getItem('splitcraft_workspace')).toBe(MINE.id);
+    localStorage.clear();
+  });
+
+  it('explains when there is nowhere to move it, or the role is too low', async () => {
+    await open();
+    expect(screen.getByRole('button', { name: 'Move project' })).toBeDisabled();
+    expect(screen.getByText(/owner or admin of another workspace/)).toBeInTheDocument();
+  });
+});
