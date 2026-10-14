@@ -25,6 +25,12 @@ export function Dialog({
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const descId = useId();
+  // The latest onClose, so a new function on each render doesn't re-run the effect below
+  // (which would pull focus back to the first field while someone types in another).
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  });
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
@@ -33,7 +39,7 @@ export function Dialog({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose();
+        close.current();
         return;
       }
       if (e.key !== 'Tab' || !ref.current) return;
@@ -53,7 +59,7 @@ export function Dialog({
       document.removeEventListener('keydown', onKey);
       opener?.focus();
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div className={styles.overlay} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
