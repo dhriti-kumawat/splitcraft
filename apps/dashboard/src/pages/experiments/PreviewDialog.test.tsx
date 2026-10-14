@@ -30,12 +30,26 @@ describe('Preview on site without the extension', () => {
       /^javascript:/,
     );
     // The demo site has the snippet, so that is the first way offered.
-    expect(within(dialog).getByRole('link', { name: 'Open preview' })).toHaveAttribute(
-      'href',
-      expect.stringMatching(/^https:\/\/larkspurtravel\.com\/\?splitcraft_force=trust%3Ab/),
-    );
+    expect(within(dialog).getByRole('button', { name: 'Open preview' })).toBeInTheDocument();
     expect(within(dialog).getByText('How to install')).toBeInTheDocument();
     expect(within(dialog).getByText('Other ways to open it')).toBeInTheDocument();
+  });
+
+  it('opens the page through the snippet, linked to this tab for live edits', async () => {
+    const user = userEvent.setup();
+    const win = { postMessage: vi.fn() };
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(win as unknown as Window);
+    await open();
+    await user.click(screen.getByRole('button', { name: 'Preview on site' }));
+    await user.click(screen.getByRole('button', { name: 'Open preview' }));
+    const url = new URL(openSpy.mock.calls[0]![0] as string);
+    expect(url.origin).toBe('https://larkspurtravel.com');
+    expect(url.searchParams.get('splitcraft_force')).toBe('trust:b');
+    expect(url.searchParams.get('splitcraft_live')).toBe(location.origin);
+    expect(openSpy.mock.calls[0]![1]).toBe('_blank');
+    expect(screen.queryByRole('dialog', { name: 'Preview on site' })).not.toBeInTheDocument();
+    expect(screen.getByText('Previewing live')).toBeInTheDocument();
+    openSpy.mockRestore();
   });
 
   it('opens the page for the bookmark in a tab it can talk to', async () => {

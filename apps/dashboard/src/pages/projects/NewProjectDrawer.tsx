@@ -15,17 +15,31 @@ import styles from './NewProjectDrawer.module.css';
  * "New project" drawer from 10-projects.html in two steps: details, then install.
  * The snippet needs the project's public key, so it appears once the project exists.
  */
-export function NewProjectDrawer({ onClose }: { onClose(): void }) {
+export function NewProjectDrawer({ onClose: close }: { onClose(): void }) {
   const [project, setProject] = useState<Project | null>(null);
+  const { workspace, selectWorkspace } = useWorkspace();
   const headingId = useId();
+  // Made in another workspace: switch to it on the way out. Switching at once would reload
+  // the page under the drawer and lose the install step.
+  const leave = () => {
+    if (project && project.workspaceId !== workspace.id) selectWorkspace(project.workspaceId);
+  };
+  const onClose = () => {
+    leave();
+    close();
+  };
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
   return (
     <aside className={styles.drawer} aria-labelledby={headingId}>
@@ -53,21 +67,29 @@ export function NewProjectDrawer({ onClose }: { onClose(): void }) {
           </svg>
         </button>
       </div>
-      {project ? <InstallStep project={project} /> : <DetailsStep onCreated={setProject} />}
+      {project ? (
+        <InstallStep project={project} onLeave={leave} />
+      ) : (
+        <DetailsStep onCreated={setProject} />
+      )}
     </aside>
   );
 }
 
 function DetailsStep({ onCreated }: { onCreated(project: Project): void }) {
-  const { workspace } = useWorkspace();
+  const { workspace, workspaces } = useWorkspace();
   const create = useCreateProject();
+  // Where the project goes, shown up front (like Vercel's scope picker): a project made in
+  // someone else's workspace belongs to them.
+  const [targetId, setTargetId] = useState(workspace.id);
+  const target = workspaces.find((w) => w.id === targetId) ?? workspace;
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [allowed, setAllowed] = useState<string[]>([]);
   const [allowedError, setAllowedError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
-  const ids = { name: useId(), domain: useId(), allowed: useId() };
+  const ids = { name: useId(), domain: useId(), allowed: useId(), workspace: useId() };
 
   useEffect(() => nameRef.current?.focus(), []);
 
@@ -87,7 +109,7 @@ function DetailsStep({ onCreated }: { onCreated(project: Project): void }) {
     if (errors.name || errors.domain || allowedError) return;
     create.mutate(
       {
-        workspaceId: workspace.id,
+        workspaceId: target.id,
         name: name.trim(),
         mainDomain,
         allowedDomains: allowed.filter((d) => d !== mainDomain),
@@ -106,6 +128,36 @@ function DetailsStep({ onCreated }: { onCreated(project: Project): void }) {
             Couldn't create the project: {create.error.message}
           </div>
         )}
+        <div className={styles.field}>
+          <label htmlFor={ids.workspace} className={styles.label}>
+            Workspace
+          </label>
+          <select
+            id={ids.workspace}
+            className={styles.input}
+            value={target.id}
+            onChange={(e) => setTargetId(e.target.value)}
+            aria-describedby={target.role === 'owner' ? undefined : `${ids.workspace}-note`}
+          >
+            {workspaces.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name}
+                {w.role === 'owner'
+                  ? ''
+                  : ` (you're ${w.role === 'admin' ? 'an admin' : 'a member'})`}
+              </option>
+            ))}
+          </select>
+          {target.role !== 'owner' && (
+            <span id={`${ids.workspace}-note`} className={styles.note}>
+              Everyone in {target.name} can see and change this project, and its owner and admins
+              can delete it.
+              {workspaces.some((w) => w.role === 'owner')
+                ? ' For a project of your own, pick your workspace.'
+                : ' For a project of your own, create your own workspace from the workspace menu.'}
+            </span>
+          )}
+        </div>
         <div className={styles.row}>
           <div className={styles.field}>
             <label htmlFor={ids.name} className={styles.label}>
@@ -184,7 +236,7 @@ function DetailsStep({ onCreated }: { onCreated(project: Project): void }) {
   );
 }
 
-function InstallStep({ project }: { project: Project }) {
+function InstallStep({ project, onLeave }: { project: Project; onLeave(): void }) {
   const status = useInstallStatus(project.id);
   const installed = Boolean(status.data?.installedAt ?? project.installedAt);
   const client = useQueryClient();
@@ -206,6 +258,7 @@ function InstallStep({ project }: { project: Project }) {
         <Link
           to={`/p/${project.id}/experiments`}
           className={`${buttonStyles.button} ${buttonStyles.primary}`}
+          onClick={onLeave}
         >
           Open project
         </Link>

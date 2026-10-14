@@ -10,7 +10,13 @@ import {
   sessionPing,
   type VisitorState,
 } from './context';
-import { clearForcedVariants, getForcedVariants, getPreviewToken, withForce } from './qa/force';
+import {
+  clearForcedVariants,
+  getForcedVariants,
+  getLiveDashboard,
+  getPreviewToken,
+  withForce,
+} from './qa/force';
 import { loadGlobal } from './load';
 import type {
   BrowsingKind,
@@ -341,12 +347,27 @@ export function boot(script: HTMLScriptElement): Promise<Runtime | null> {
   const configUrl = config.href;
   const qaPanelUrl = new URL('splitcraft-qa.iife.js', base).href;
   const metricsUrl = new URL('splitcraft-metrics.iife.js', base).href;
+  // Opened live from the dashboard: the preview bundle shows the forced experiment with
+  // the dashboard's unsaved edits (and the visual editor), so the snippet leaves it alone.
+  const live = getLiveDashboard();
+  if (live) {
+    const w = window as unknown as { __splitcraftPreview?: Record<string, boolean> };
+    for (const key of Object.keys(getForcedVariants())) (w.__splitcraftPreview ??= {})[key] = true;
+    const s = document.createElement('script');
+    s.src = new URL('splitcraft-preview.iife.js', base).href;
+    s.dataset.mode = 'bookmark';
+    s.dataset.dashboard = live;
+    s.dataset.config = configUrl;
+    document.head.appendChild(s);
+  }
   return fetch(configUrl, { credentials: 'omit' })
     .then((res) => {
       if (!res.ok) throw new Error(`config ${res.status}`);
       return res.json() as Promise<ProjectConfig>;
     })
-    .then((config) => start(config, { qaPanelUrl, metricsUrl, reveal }))
+    .then((config) =>
+      start(config, { qaPanelUrl: live ? undefined : qaPanelUrl, metricsUrl, reveal }),
+    )
     .catch((err: unknown) => {
       reveal();
       console.error('[splitcraft] Could not start:', err);

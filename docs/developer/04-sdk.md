@@ -34,8 +34,21 @@ npm-only: `init(options)`, `start(config)`, `variant(key)`, `ready()`, `subscrib
 
 ## Variant code
 
-Each variant has JS and CSS, written in the dashboard (Monaco editor, with templates and version
-history).
+Each variant has JS and CSS, written in the dashboard's Variations & code step. The page has
+two columns: the variations (rename with the pencil, delete with the bin while the experiment is
+a draft) with the traffic split under them, and the code editor (Monaco). On a desktop the page
+fills the window and doesn't scroll: each column scrolls on its own, so the wheel moves whatever
+is under the pointer. Below 1024 px the page is one column and scrolls, and the editor hands the
+wheel back to the page at the top and bottom of the code.
+
+The editor bar has, from the left: **Built-in helpers** (the `splitcraft.*` functions, which are
+also suggested as you type), **Version history** (load an earlier save into the editor, then save
+to keep it), the theme (**Dark**, **Grey** or **Light**), **Format** (Shift+Alt+F), **Full
+screen**, **Edit visually**, **Template** and **Save** (Cmd/Ctrl+S). The status bar shows syntax
+errors, the variation's key, the code's size and whether it's saved. Long lines wrap. Full screen
+shows JS and CSS side by side across the whole window (Esc leaves it); drag the bar between them
+to resize (or focus it and use the arrow keys; double-click resets), and below 1024 px they stack
+and the bar resizes them up and down. The theme and the split are remembered in your browser.
 
 - **CSS** goes into one `<style>` per experiment.
 - **JS** runs inside `try / catch` with a `splitcraft` object in scope: `waitForElement`,
@@ -61,7 +74,12 @@ Add `?splitcraft_force=<experimentKey>:<variantKey>` (several pairs separated by
 - with `splitcraft_preview=<token>` (added by **Preview on site**) the SDK asks the config for that
   experiment even before launch, with no targeting, and remembers the token for the tab.
 
-The dashboard's **Preview on site** button opens this link.
+The dashboard's **Preview on site** button opens this link. On a page that has the snippet it also
+adds `splitcraft_live=<dashboard origin>`: the SDK then loads the preview bundle
+(`splitcraft-preview.iife.js`) instead of running that experiment and showing the QA panel, and the
+preview takes the variants, unsaved edits included, from the dashboard tab that opened the page.
+This is how **Edit visually** works on sites with the snippet. The SDK accepts only Splitcraft's
+own dashboard origins, and only when that dashboard tab opened the page (`window.opener`).
 
 ## Bucketing
 

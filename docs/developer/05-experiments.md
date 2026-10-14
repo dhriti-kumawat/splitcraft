@@ -96,7 +96,7 @@ groups.
   | --- | --- | --- | --- |
   | **Splitcraft Preview extension** | Chrome, Edge, Brave or Arc, installed once | Any page of the project's domains, snippet or not | Yes: CSS as you type, JS with an automatic reload |
   | **Preview bookmark** | Dragging a bookmark once | Pages without the snippet | Yes, while the dashboard tab that opened the page stays open; otherwise the saved code |
-  | **With the snippet** | The snippet on the page | Saved code, with the QA panel | No: save, then reload |
+  | **With the snippet** | The snippet on the page | Any page with the snippet | Yes, while the dashboard tab that opened the page stays open |
 
   With the extension installed, **Preview on site** opens the preview at once; the arrow next to
   it shows the other ways. A floating **Splitcraft preview** panel on the page shows which variant
@@ -120,7 +120,8 @@ groups.
 ## Visual editor
 
 Click **Edit visually** above a variation's code (or **Edit visually** in the preview panel on the
-page). Your test page opens with the editor docked on the right, like Optimizely's:
+page). Your test page opens with the editor docked on the right, like Optimizely's. It works through
+the extension, the preview bookmark, or the snippet when your site already has it:
 
 | Area | What you can do |
 | --- | --- |
@@ -155,7 +156,7 @@ tag/class/position path); check them on pages whose markup changes.
 - The editor checks syntax as you type; saving keeps the previous code as a version you can restore.
 - **+ Add variant** asks for the variant's name first. An experiment can have up to 26 variants
   (Control plus keys `b` to `z`); names can be changed later, keys can't.
-- **Traffic split** (on Basics and next to the variants) sets each variant's share. Adding or
+- **Traffic split** (on Basics and under the variations list) sets each variant's share. Adding or
   removing a variant splits traffic evenly again; change any share afterwards, as long as they add
   up to 100%, or use **Split evenly**. The split locks at launch. **Traffic** (Basics) sets how many
   matching visitors enter at all.

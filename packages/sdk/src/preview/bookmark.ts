@@ -16,7 +16,8 @@ const HELP =
   'Open this page from Splitcraft with "Preview on site", then click the bookmark again.';
 
 /**
- * Started by the "Splitcraft preview" bookmark on a page without the snippet.
+ * Started by the "Splitcraft preview" bookmark on a page without the snippet, or by the
+ * snippet itself when the dashboard opens the page with `splitcraft_live`.
  * 1. Live: the dashboard tab that opened this page sends the variants, including unsaved
  *    edits, and every later edit.
  * 2. Saved: otherwise the preview link's token and variant (query string or hash, which

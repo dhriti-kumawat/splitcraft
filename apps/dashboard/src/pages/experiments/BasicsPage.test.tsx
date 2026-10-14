@@ -203,15 +203,16 @@ describe('launching', () => {
     await open('/p/marketing-site/experiments/trust/basics', withExperiments(ready));
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
     const dialog = screen.getByRole('dialog', { name: 'Preview on site' });
-    const snippet = within(dialog).getByRole('link', { name: 'Open preview' });
-    expect(snippet.getAttribute('href')).toMatch(
+    const openSpy = vi
+      .spyOn(window, 'open')
+      .mockReturnValue({ postMessage: vi.fn() } as unknown as Window);
+    await user.click(within(dialog).getByRole('button', { name: 'Open preview' }));
+    expect(openSpy.mock.calls[0]![0]).toMatch(
       new RegExp(
-        `^https://${PROJECTS[0]!.mainDomain}/\\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#`,
+        `^https://${PROJECTS[0]!.mainDomain}/\\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust&splitcraft_live=`,
       ),
     );
-    expect(snippet).toHaveAttribute('target', '_blank');
-    snippet.addEventListener('click', (e) => e.preventDefault());
-    await user.click(snippet);
+    openSpy.mockRestore();
     expect(localStorage.getItem('splitcraft_qa_trust')).toBe('1');
     localStorage.removeItem('splitcraft_qa_trust');
   });
@@ -254,9 +255,14 @@ describe('test page', () => {
       }),
     );
     await user.click(screen.getByRole('button', { name: 'Preview on site' }));
-    expect(screen.getByRole('link', { name: 'Open preview' }).getAttribute('href')).toMatch(
-      /^https:\/\/larkspurtravel\.com\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust#/,
+    const openSpy = vi
+      .spyOn(window, 'open')
+      .mockReturnValue({ postMessage: vi.fn() } as unknown as Window);
+    await user.click(screen.getByRole('button', { name: 'Open preview' }));
+    expect(openSpy.mock.calls[0]![0]).toMatch(
+      /^https:\/\/larkspurtravel\.com\/trips\/norway\?splitcraft_force=trust%3Ab&splitcraft_preview=tok-trust&splitcraft_live=/,
     );
+    openSpy.mockRestore();
   });
 
   it('refuses other sites and warns about pages outside WHERE', async () => {

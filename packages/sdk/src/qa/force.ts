@@ -20,6 +20,23 @@ export function getPreviewToken(search = linkParams()): string | null {
   return token;
 }
 
+export const LIVE_PARAM = 'splitcraft_live';
+/** Dashboards that may drive a live preview through the snippet. They send variant code. */
+export const DASHBOARD_ORIGINS = [
+  'https://splitcraft-app.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+
+/**
+ * The dashboard origin from `?splitcraft_live=` ("Preview on site" or "Edit visually" on a
+ * page with the snippet), only when it is an allowed dashboard and that tab opened this one.
+ */
+export function getLiveDashboard(search = linkParams()): string | null {
+  const origin = new URLSearchParams(search).get(LIVE_PARAM);
+  return origin && DASHBOARD_ORIGINS.includes(origin) && window.opener ? origin : null;
+}
+
 /** experimentKey → variantKey */
 export type ForcedVariants = Record<string, string>;
 

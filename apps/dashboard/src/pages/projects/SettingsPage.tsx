@@ -13,7 +13,7 @@ import styles from './SettingsPage.module.css';
 
 const date = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-/** Project › Settings: details, SDK key, alerts and deleting the project. */
+/** Project › Settings: details, SDK key, alerts, moving and deleting the project. */
 export function SettingsPage() {
   const project = useCurrentProject()!;
   return (
@@ -23,6 +23,7 @@ export function SettingsPage() {
         <General key={project.id} project={project} />
         <Sdk project={project} />
         <Alerts project={project} />
+        <MoveProject project={project} />
         <DangerZone project={project} />
       </div>
     </>
@@ -377,6 +378,119 @@ function Alerts({ project }: { project: Project }) {
           {create.isPending ? 'Adding…' : 'Add alert'}
         </Button>
       </div>
+    </section>
+  );
+}
+
+/**
+ * Move the project to another workspace, like a Vercel or GitHub transfer: everything in it
+ * moves and the snippet keeps working. Owners and admins of both workspaces only.
+ */
+function MoveProject({ project }: { project: Project }) {
+  const { workspace, workspaces, selectWorkspace } = useWorkspace();
+  const { move } = useProjectMutations(workspace.id);
+  const navigate = useNavigate();
+  const runs = (role: string) => role === 'owner' || role === 'admin';
+  const targets = workspaces.filter((w) => w.id !== workspace.id && runs(w.role));
+  const [open, setOpen] = useState(false);
+  const [to, setTo] = useState('');
+  const [typed, setTyped] = useState('');
+  const ids = { to: useId(), typed: useId() };
+  const target = targets.find((w) => w.id === to) ?? targets[0];
+  const close = () => {
+    setOpen(false);
+    setTyped('');
+    move.reset();
+  };
+
+  return (
+    <section className={styles.section} aria-labelledby="move-h">
+      <div className={styles.dangerRow}>
+        <div className={styles.head}>
+          <h2 className={styles.title} id="move-h">
+            Move to another workspace
+          </h2>
+          <p className={styles.sub}>
+            {!runs(workspace.role)
+              ? 'Only workspace owners and admins can move a project.'
+              : targets.length
+                ? 'Experiments, audiences, goals, flags and results move with it. The snippet keeps working.'
+                : 'You need to be an owner or admin of another workspace. Create your own from the workspace menu.'}
+          </p>
+        </div>
+        <Button
+          variant="secondary"
+          disabled={!runs(workspace.role) || !targets.length}
+          onClick={() => setOpen(true)}
+        >
+          Move project
+        </Button>
+      </div>
+      {open && target && (
+        <Dialog
+          title={`Move “${project.name}”?`}
+          description={`Everyone in ${workspace.name} loses access to it. People in the workspace you pick get access.`}
+          onClose={close}
+        >
+          <div className={dialogStyles.body}>
+            {move.isError && (
+              <div role="alert" className={dialogStyles.alert}>
+                Couldn't move it: {move.error.message}
+              </div>
+            )}
+            <div className={dialogStyles.field}>
+              <label htmlFor={ids.to} className={dialogStyles.label}>
+                Move to
+              </label>
+              <select
+                id={ids.to}
+                className={dialogStyles.input}
+                value={target.id}
+                onChange={(e) => setTo(e.target.value)}
+              >
+                {targets.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className={dialogStyles.field}>
+              <label htmlFor={ids.typed} className={dialogStyles.label}>
+                Type <strong>{project.name}</strong> to confirm
+              </label>
+              <input
+                id={ids.typed}
+                className={dialogStyles.input}
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+          <div className={dialogStyles.foot}>
+            <Button variant="secondary" onClick={close}>
+              Cancel
+            </Button>
+            <Button
+              disabled={typed !== project.name || move.isPending}
+              onClick={() =>
+                move.mutate(
+                  { id: project.id, to: target.id },
+                  {
+                    onSuccess: () => {
+                      selectWorkspace(target.id);
+                      navigate(`/p/${project.id}/settings`, { replace: true });
+                    },
+                  },
+                )
+              }
+            >
+              {move.isPending ? 'Moving…' : `Move to ${target.name}`}
+            </Button>
+          </div>
+        </Dialog>
+      )}
     </section>
   );
 }
