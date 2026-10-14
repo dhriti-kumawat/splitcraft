@@ -37,7 +37,10 @@ npm-only: `init(options)`, `start(config)`, `variant(key)`, `ready()`, `subscrib
 Each variant has JS and CSS, written in the dashboard (Monaco editor, with templates and version
 history). The editor fits the window and stays in view while the panels beside it scroll; long
 lines wrap. **Format** tidies the code (Shift+Alt+F), **Full screen** shows JS and CSS side by side
-across the whole window (Esc leaves it), and Cmd/Ctrl+S saves.
+across the whole window (Esc leaves it), and Cmd/Ctrl+S saves. In full screen, drag the bar between
+JS and CSS to resize them (or focus it and use the arrow keys; double-click resets); below 1024 px
+they stack and the bar resizes them up and down. The theme button switches the editor between
+**Dark**, **Grey** and **Light**. The theme and the split are remembered in your browser.
 
 - **CSS** goes into one `<style>` per experiment.
 - **JS** runs inside `try / catch` with a `splitcraft` object in scope: `waitForElement`,

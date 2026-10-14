@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { CodeEditor } from '../../components/CodeEditor';
+import { SplitPanes, ThemeMenu, useEditorTheme } from './EditorTools';
 import type { Experiment, Variant } from '../../data/api';
 import {
   useEditVariants,
@@ -311,6 +312,7 @@ function Editor({
   const tabId = useId();
   // Full screen, like VWO's code editor: JS and CSS side by side across the whole window.
   const [full, setFull] = useState(false);
+  const [theme, setTheme] = useEditorTheme();
   // The loaded Monaco editors, for Format. A plain map: nothing renders from it.
   const [editors] = useState(() => new Map<'js' | 'css', MonacoEditor.IStandaloneCodeEditor>());
   const keep = (f: 'js' | 'css') => (e: MonacoEditor.IStandaloneCodeEditor | null) => {
@@ -364,6 +366,26 @@ function Editor({
   };
 
   const slug = variant.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const pane = (f: 'js' | 'css') => (
+    <div className={styles.pane}>
+      <span className={styles.paneHead}>
+        {slug}.{f}
+      </span>
+      <div className={styles.code}>
+        <CodeEditor
+          fill
+          theme={theme}
+          language={f === 'js' ? 'javascript' : 'css'}
+          label={`${variant.name} ${f.toUpperCase()}`}
+          value={code[f]}
+          onChange={(value) => onChange({ ...code, [f]: value })}
+          onSave={doSave}
+          readOnly={readOnly}
+          onEditor={keep(f)}
+        />
+      </div>
+    </div>
+  );
   const bytes = new Blob([code.js, code.css]).size;
 
   if (isControl) {
@@ -383,6 +405,7 @@ function Editor({
   return (
     <section
       className={`${styles.editor} ${full ? styles.full : ''}`}
+      data-theme={theme}
       aria-label={`Code for ${variant.name}`}
     >
       <div className={styles.editorBar}>
@@ -409,6 +432,7 @@ function Editor({
           </div>
         )}
         <div className={styles.barActions}>
+          <ThemeMenu theme={theme} onChange={setTheme} />
           {!readOnly && (
             <button
               type="button"
@@ -496,27 +520,7 @@ function Editor({
         />
       )}
       {full ? (
-        <div className={styles.split}>
-          {(['js', 'css'] as const).map((f) => (
-            <div key={f} className={styles.pane}>
-              <span className={styles.paneHead}>
-                {slug}.{f}
-              </span>
-              <div className={styles.code}>
-                <CodeEditor
-                  fill
-                  language={f === 'js' ? 'javascript' : 'css'}
-                  label={`${variant.name} ${f.toUpperCase()}`}
-                  value={code[f]}
-                  onChange={(value) => onChange({ ...code, [f]: value })}
-                  onSave={doSave}
-                  readOnly={readOnly}
-                  onEditor={keep(f)}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+        <SplitPanes first={pane('js')} second={pane('css')} />
       ) : (
         <div
           className={styles.code}
@@ -527,6 +531,7 @@ function Editor({
           <CodeEditor
             fill
             key={file}
+            theme={theme}
             language={file === 'js' ? 'javascript' : 'css'}
             label={`${variant.name} ${file.toUpperCase()}`}
             value={file === 'js' ? code.js : code.css}
@@ -559,10 +564,7 @@ function Editor({
         </span>
       </div>
       {experiment.status === 'live' && (
-        <p
-          className={styles.note}
-          style={{ margin: 0, padding: '8px 16px', background: 'var(--ink-2)' }}
-        >
+        <p className={styles.liveNote}>
           This experiment is live: saved code reaches visitors within about a minute.
         </p>
       )}

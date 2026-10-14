@@ -94,6 +94,46 @@
   opacity: 0.6;
 }
 
+/* Editor themes: dark (default), light and grey. Monaco's own colours are in CodeEditor. */
+.editor {
+  --ed-bg: var(--code-bg);
+  --ed-chrome: var(--ink-2);
+  --ed-line: var(--ink-3);
+  --ed-text: #d8dcd5;
+  --ed-muted: #8c938a;
+  --ed-strong: #ffffff;
+  --ed-btn-border: #3a4044;
+  --ed-accent: var(--highlight);
+  --ed-ok: #5fb89f;
+  --ed-bad: #f2a39c;
+  --ed-bad-dot: #e5645b;
+  --ed-warn: #e0a84f;
+}
+
+.editor[data-theme='grey'] {
+  --ed-bg: #2b2f33;
+  --ed-chrome: #33383d;
+  --ed-line: #41474d;
+  --ed-text: #e6e9e4;
+  --ed-muted: #a3aaa1;
+  --ed-btn-border: #4c5359;
+}
+
+.editor[data-theme='light'] {
+  --ed-bg: #ffffff;
+  --ed-chrome: var(--ground);
+  --ed-line: var(--line);
+  --ed-text: var(--ink);
+  --ed-muted: var(--muted);
+  --ed-strong: var(--ink);
+  --ed-btn-border: var(--line-strong);
+  --ed-accent: var(--variant-b);
+  --ed-ok: var(--accent);
+  --ed-bad: var(--danger);
+  --ed-bad-dot: var(--danger);
+  --ed-warn: var(--warn);
+}
+
 /* Sized to the window and kept in view while the side panels scroll, so the status bar is
    always visible and the page and the editor don't fight over the scroll wheel. */
 .editor {
@@ -106,7 +146,7 @@
   max-height: 960px;
   display: flex;
   flex-direction: column;
-  background: var(--code-bg);
+  background: var(--ed-bg);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -125,14 +165,116 @@
 .fullTitle {
   padding: 0 16px;
   font: 600 13px var(--font-ui);
-  color: #d8dcd5;
+  color: var(--ed-text);
 }
 
 .split {
   flex-grow: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, var(--first, 1fr)) 9px minmax(0, var(--second, 1fr));
+}
+
+/* The bar between JS and CSS: drag it, or focus it and use the arrow keys. */
+.splitBar {
+  position: relative;
+  background: var(--ed-chrome);
+  border-left: 1px solid var(--ed-line);
+  border-right: 1px solid var(--ed-line);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.splitBar::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 32px;
+  border-radius: 2px;
+  background: var(--ed-btn-border);
+  transform: translate(-50%, -50%);
+}
+
+.splitBar:hover::after,
+.splitBar:focus-visible::after {
+  background: var(--ed-accent);
+}
+
+.splitBar:focus-visible {
+  outline: 2px solid var(--ed-accent);
+  outline-offset: -2px;
+}
+
+/* While dragging: no text selection, and the resize cursor everywhere. */
+.resizing,
+.resizing * {
+  user-select: none;
+}
+
+.themeMenu {
+  position: relative;
+}
+
+.themeList {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--ed-btn-border);
+  background: var(--ed-chrome);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.themeOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ed-text);
+  font: 500 13px var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.themeOption:hover,
+.themeOption:focus-visible {
+  background: var(--ed-line);
+  outline: none;
+}
+
+.themeOption[aria-pressed='true'] {
+  color: var(--ed-accent);
+  font-weight: 600;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--ed-btn-border);
+}
+
+.swatch[data-swatch='dark'] {
+  background: #15171a;
+}
+
+.swatch[data-swatch='grey'] {
+  background: #2b2f33;
+}
+
+.swatch[data-swatch='light'] {
+  background: #ffffff;
 }
 
 .pane {
@@ -141,22 +283,18 @@
   flex-direction: column;
 }
 
-.pane + .pane {
-  border-left: 1px solid var(--ink-3);
-}
-
 .paneHead {
   padding: 8px 16px;
-  border-bottom: 1px solid var(--ink-3);
+  border-bottom: 1px solid var(--ed-line);
   font: 500 12px var(--font-mono);
-  color: #8c938a;
+  color: var(--ed-muted);
 }
 
 .editorBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--ink-3);
+  border-bottom: 1px solid var(--ed-line);
   padding-right: 10px;
 }
 
@@ -170,14 +308,14 @@
   border: none;
   border-bottom: 2px solid transparent;
   background: transparent;
-  color: #8c938a;
+  color: var(--ed-muted);
   font: 500 12.5px var(--font-mono);
   cursor: pointer;
 }
 
 .fileTab[aria-selected='true'] {
-  color: #ffffff;
-  border-bottom-color: var(--highlight);
+  color: var(--ed-strong);
+  border-bottom-color: var(--ed-accent);
 }
 
 .fileTab:focus-visible,
@@ -201,19 +339,19 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 1px solid #3a4044;
-  background: var(--ink-2);
-  color: #d8dcd5;
+  border: 1px solid var(--ed-btn-border);
+  background: var(--ed-chrome);
+  color: var(--ed-text);
   cursor: pointer;
 }
 
 .iconButton:hover {
-  background: var(--ink-3);
+  background: var(--ed-line);
 }
 
 .iconButton[aria-pressed='true'] {
-  border-color: var(--highlight);
-  color: var(--highlight);
+  border-color: var(--ed-accent);
+  color: var(--ed-accent);
 }
 
 .iconButton:focus-visible {
@@ -228,9 +366,9 @@
   height: 28px;
   padding: 0 10px;
   border-radius: 6px;
-  border: 1px solid #3a4044;
-  background: var(--ink-2);
-  color: #d8dcd5;
+  border: 1px solid var(--ed-btn-border);
+  background: var(--ed-chrome);
+  color: var(--ed-text);
   font: 500 12px var(--font-ui);
   cursor: pointer;
   white-space: nowrap;
@@ -266,7 +404,7 @@
   justify-content: center;
   gap: 8px;
   padding: 40px;
-  color: #aeb4ac;
+  color: var(--ed-muted);
   text-align: center;
   font-size: 14px;
 }
@@ -278,10 +416,10 @@
   gap: 12px;
   min-height: 34px;
   padding: 0 16px;
-  background: var(--ink-2);
-  border-top: 1px solid var(--ink-3);
+  background: var(--ed-chrome);
+  border-top: 1px solid var(--ed-line);
   font: 500 12px var(--font-mono);
-  color: #8c938a;
+  color: var(--ed-muted);
 }
 
 .statusOk,
@@ -297,15 +435,15 @@
   width: 7px;
   height: 7px;
   border-radius: 4px;
-  background: #5fb89f;
+  background: var(--ed-ok);
 }
 
 .statusBad {
-  color: #f2a39c;
+  color: var(--ed-bad);
 }
 
 .statusBad::before {
-  background: #e5645b;
+  background: var(--ed-bad-dot);
 }
 
 .aside {
@@ -416,6 +554,15 @@
   color: var(--warn);
 }
 
+.liveNote {
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--ed-chrome);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ed-warn);
+}
+
 @media (max-width: 1023px) {
   .layout {
     flex-direction: column;
@@ -429,12 +576,19 @@
 
   .split {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, var(--first, 1fr)) 9px minmax(0, var(--second, 1fr));
   }
 
-  .pane + .pane {
-    border-left: 0;
-    border-top: 1px solid var(--ink-3);
+  .splitBar {
+    border: 0;
+    border-top: 1px solid var(--ed-line);
+    border-bottom: 1px solid var(--ed-line);
+    cursor: row-resize;
+  }
+
+  .splitBar::after {
+    width: 32px;
+    height: 3px;
   }
 
   .variants,
@@ -464,6 +618,6 @@
   margin: 0;
   padding: 8px 16px;
   font-size: 13px;
-  color: #f0a39d;
-  background: #1d2023;
+  color: var(--ed-bad);
+  background: var(--ed-chrome);
 }

@@ -160,6 +160,25 @@ describe('editor', () => {
       'true',
     );
     expect(document.body.style.overflow).toBe('hidden');
+
+    // The bar between them resizes with the arrow keys, and the size is remembered.
+    const bar = screen.getByRole('separator', { name: 'Resize JS and CSS' });
+    expect(bar).toHaveAttribute('aria-valuenow', '50');
+    bar.focus();
+    await user.keyboard('{Shift>}{ArrowRight}{/Shift}{ArrowLeft}');
+    expect(bar).toHaveAttribute('aria-valuenow', '58');
+    await user.keyboard('{End}');
+    expect(bar).toHaveAttribute('aria-valuetext', 'JS 80%, CSS 20%');
+    expect(localStorage.getItem('splitcraft_editor_split')).toBe('80');
+
+    // Themes: picked from the menu, applied to the whole editor, and remembered.
+    await user.click(screen.getByRole('button', { name: 'Editor theme: Dark' }));
+    await user.click(screen.getByRole('button', { name: 'Grey' }));
+    expect(region).toHaveAttribute('data-theme', 'grey');
+    expect(localStorage.getItem('splitcraft_editor_theme')).toBe('grey');
+    expect(screen.getByRole('button', { name: 'Exit full screen' })).toBeInTheDocument();
+    localStorage.clear();
+
     await user.keyboard('{Escape}');
     expect(screen.getByRole('button', { name: 'Full screen' })).toHaveAttribute(
       'aria-pressed',
