@@ -174,7 +174,8 @@ describe('project data', () => {
       as(db, alice, () =>
         rows('update projects set workspace_id = $1 where id = $2', [bobWs, aliceProject]),
       ),
-    ).rejects.toThrow(/row-level security/);
+      // Only move_project() changes a project's workspace (move-project.test.ts).
+    ).rejects.toThrow(/Move to another workspace/);
   });
 
   it('gives each project a unique public key', async () => {
