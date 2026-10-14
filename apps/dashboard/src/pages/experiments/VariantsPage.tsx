@@ -1,7 +1,14 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { CodeEditor } from '../../components/CodeEditor';
-import { SplitPanes, ThemeMenu, useEditorTheme, useFillHeight, useStacked } from './EditorTools';
+import {
+  BarPopover,
+  SplitPanes,
+  ThemeMenu,
+  useEditorTheme,
+  useFillHeight,
+  useStacked,
+} from './EditorTools';
 import type { Experiment, Variant } from '../../data/api';
 import {
   useEditVariants,
@@ -135,6 +142,10 @@ function CodeVariants() {
   const current: Draft = drafts[selected.id] ?? { js: selected.js, css: selected.css };
   const layout = useRef<HTMLDivElement>(null);
   useFillHeight(layout);
+  // Variations can be deleted in a draft, as long as one is left besides the original.
+  const canDelete =
+    experiment.status === 'draft' &&
+    experiment.variants.filter((v) => v.key !== control).length > 1;
   const dirty = (v: Variant) => {
     const d = drafts[v.id];
     return Boolean(d && (d.js !== v.js || d.css !== v.css));
@@ -162,6 +173,19 @@ function CodeVariants() {
                   label={isControl ? 'Original name' : 'Variation name'}
                   canRename={experiment.status !== 'ended'}
                   onRename={(name) => rename.mutate([{ id: v.id, patch: { name } }])}
+                  onDelete={
+                    canDelete && !isControl
+                      ? () =>
+                          edits.remove.mutate(v.id, {
+                            onSuccess: () =>
+                              v.id === selected.id &&
+                              select(
+                                experiment.variants.find((x) => x.key !== control && x.id !== v.id)
+                                  ?.id ?? experiment.variants[0]!.id,
+                              ),
+                          })
+                      : undefined
+                  }
                 >
                   <button
                     type="button"
@@ -199,6 +223,11 @@ function CodeVariants() {
             onAdded={(key) => setAddedKey(key)}
           />
         )}
+        {experiment.type !== 'personalization' && (
+          <section className={styles.splitCard} aria-label="Traffic split">
+            <TrafficSplit experiment={experiment} />
+          </section>
+        )}
         <p className={styles.visualTip}>
           No code needed for simple changes: click <b>Edit visually</b> above the code to open your
           page with the visual editor. Point at text to rewrite it, recolour it or hide it.
@@ -221,46 +250,8 @@ function CodeVariants() {
             return next;
           })
         }
+        onRestore={(v) => setDrafts((d) => ({ ...d, [selected.id]: { js: v.js, css: v.css } }))}
       />
-
-      <aside className={styles.aside} aria-label="Variant details">
-        <VariantSettings
-          key={`${selected.id}:${selected.name}`}
-          experiment={experiment}
-          variant={selected}
-          onDeleted={() =>
-            select(
-              experiment.variants.find((v) => v.key !== control && v.id !== selected.id)?.id ??
-                experiment.variants[0]!.id,
-            )
-          }
-          remove={edits.remove}
-        />
-        {experiment.type !== 'personalization' && (
-          <section className={styles.card} aria-label="Traffic split">
-            <TrafficSplit experiment={experiment} />
-          </section>
-        )}
-        <section className={styles.card} aria-labelledby="helpers-h">
-          <h2 className={styles.cardTitle} id="helpers-h">
-            Built-in helpers
-          </h2>
-          <dl className={styles.helpers}>
-            {HELPERS.map(([sig, text]) => (
-              <div key={sig}>
-                <dt>{sig}</dt>
-                <dd>{text}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-        {selected.key !== control && (
-          <History
-            variant={selected}
-            onRestore={(v) => setDrafts((d) => ({ ...d, [selected.id]: { js: v.js, css: v.css } }))}
-          />
-        )}
-      </aside>
     </div>
   );
 }
@@ -274,6 +265,7 @@ function Editor({
   onFile,
   onChange,
   onSaved,
+  onRestore,
 }: {
   experiment: Experiment;
   variant: Variant;
@@ -283,6 +275,7 @@ function Editor({
   onFile(f: 'js' | 'css'): void;
   onChange(code: Draft): void;
   onSaved(): void;
+  onRestore(v: Draft): void;
 }) {
   const save = useSaveVariantCode(experiment);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
@@ -398,8 +391,8 @@ function Editor({
         <div className={styles.control}>
           <strong style={{ color: '#fff' }}>{variant.name} is the page as it is</strong>
           <span>
-            Visitors here see your site unchanged, so it has no code. Rename it on the right, or
-            pick a variation to edit its code.
+            Visitors here see your site unchanged, so it has no code. Rename it with the pencil in
+            the list, or pick a variation to edit its code.
           </span>
         </div>
       </section>
@@ -436,6 +429,35 @@ function Editor({
           </div>
         )}
         <div className={styles.barActions}>
+          <BarPopover label="Built-in helpers" wide icon={<HelpIcon />}>
+            {() => (
+              <>
+                <p className={styles.popTitle}>Built-in helpers</p>
+                <dl className={styles.popHelpers}>
+                  {HELPERS.map(([sig, text]) => (
+                    <div key={sig}>
+                      <dt>splitcraft.{sig}</dt>
+                      <dd>{text}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className={styles.popHint}>
+                  Type <span className="mono">splitcraft.</span> in the JS to get them suggested.
+                </p>
+              </>
+            )}
+          </BarPopover>
+          <BarPopover label="Version history" wide icon={<HistoryIcon />}>
+            {(close) => (
+              <VersionList
+                variant={variant}
+                onRestore={(v) => {
+                  onRestore(v);
+                  close();
+                }}
+              />
+            )}
+          </BarPopover>
           <ThemeMenu theme={theme} onChange={setTheme} />
           {!readOnly && (
             <button
@@ -556,7 +578,7 @@ function Editor({
           <span className={styles.statusOk}>No errors</span>
         )}
         <span>
-          {(bytes / 1024).toFixed(1)} KB ·{' '}
+          Key {variant.key} · {(bytes / 1024).toFixed(1)} KB ·{' '}
           {save.isError
             ? `Couldn't save: ${save.error.message}`
             : dirty
@@ -594,98 +616,74 @@ function Editor({
   );
 }
 
-function VariantSettings({
-  experiment,
-  variant,
-  onDeleted,
-  remove,
-}: {
-  experiment: Experiment;
-  variant: Variant;
-  onDeleted(): void;
-  remove: ReturnType<typeof useEditVariants>['remove'];
-}) {
-  const update = useUpdateVariants(experiment);
-  const [name, setName] = useState(variant.name);
-  const id = useId();
-  const nonControl = experiment.variants.filter((v) => v.key !== controlKey(experiment)).length;
-  return (
-    <section className={styles.card} aria-labelledby={`${id}-h`}>
-      <h2 className={styles.cardTitle} id={`${id}-h`}>
-        {variant.key === controlKey(experiment) ? 'Original' : 'Variation'}
-      </h2>
-      <div className={styles.field}>
-        <label htmlFor={id} className={styles.fieldLabel}>
-          Name
-        </label>
-        <input
-          id={id}
-          className={styles.input}
-          value={name}
-          maxLength={60}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() =>
-            name.trim() &&
-            name.trim() !== variant.name &&
-            update.mutate([{ id: variant.id, patch: { name: name.trim() } }])
-          }
-        />
-        <span className={`${styles.muted} mono`} style={{ fontSize: 12 }}>
-          Key: {variant.key}
-        </span>
-      </div>
-      {experiment.status === 'draft' &&
-        variant.key !== controlKey(experiment) &&
-        nonControl > 1 && (
-          <button
-            type="button"
-            className={styles.danger}
-            disabled={remove.isPending}
-            onClick={() => remove.mutate(variant.id, { onSuccess: onDeleted })}
-          >
-            Delete variant
-          </button>
-        )}
-    </section>
-  );
-}
-
-function History({
-  variant,
-  onRestore,
-}: {
-  variant: Variant;
-  onRestore(v: { js: string; css: string }): void;
-}) {
+function VersionList({ variant, onRestore }: { variant: Variant; onRestore(v: Draft): void }) {
   const versions = useVersionsQuery(variant.id);
   const older = versions.data ?? [];
   return (
-    <section className={styles.card} aria-labelledby="history-h">
-      <h2 className={styles.cardTitle} id="history-h">
-        Version history
-      </h2>
-      <ul className={styles.versions}>
+    <>
+      <p className={styles.popTitle}>Version history</p>
+      <ul className={styles.popVersions}>
         <li>
           <span style={{ fontWeight: 600 }}>v{variant.version} · current</span>
         </li>
         {older.map((v, i) => (
           <li key={v.id}>
+            <span>
+              v{variant.version - 1 - i}
+              {v.note ? ` · ${v.note}` : ''}
+              <br />
+              <span className={styles.popVersionDate}>{date.format(new Date(v.createdAt))}</span>
+            </span>
             <button
               type="button"
-              className={styles.versionLink}
+              className={styles.restore}
               onClick={() => onRestore(v)}
               aria-label={`Load v${variant.version - 1 - i} into the editor`}
             >
-              v{variant.version - 1 - i}
-              {v.note ? ` · ${v.note}` : ''}
+              Load
             </button>
-            <span className={styles.muted}>{date.format(new Date(v.createdAt))}</span>
           </li>
         ))}
-        {versions.isSuccess && older.length === 0 && (
-          <li className={styles.muted}>No earlier versions yet.</li>
-        )}
+        {versions.isSuccess && older.length === 0 && <li>No earlier versions yet.</li>}
       </ul>
-    </section>
+      <p className={styles.popHint}>Loading a version puts it in the editor. Save to keep it.</p>
+    </>
+  );
+}
+
+function HelpIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="8" cy="8" r="6.2" />
+      <path d="M6.3 6.3a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1M8 11.4v.1" />
+    </svg>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v2.6h2.6" />
+      <path d="M8 5v3l2 1.5" />
+    </svg>
   );
 }

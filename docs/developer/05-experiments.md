@@ -156,7 +156,7 @@ tag/class/position path); check them on pages whose markup changes.
 - The editor checks syntax as you type; saving keeps the previous code as a version you can restore.
 - **+ Add variant** asks for the variant's name first. An experiment can have up to 26 variants
   (Control plus keys `b` to `z`); names can be changed later, keys can't.
-- **Traffic split** (on Basics and next to the variants) sets each variant's share. Adding or
+- **Traffic split** (on Basics and under the variations list) sets each variant's share. Adding or
   removing a variant splits traffic evenly again; change any share afterwards, as long as they add
   up to 100%, or use **Split evenly**. The split locks at launch. **Traffic** (Basics) sets how many
   matching visitors enter at all.

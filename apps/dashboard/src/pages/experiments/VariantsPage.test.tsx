@@ -61,14 +61,34 @@ describe('variants list', () => {
     const { variantPatches } = await open();
     await user.click(screen.getByRole('button', { name: /^Control/ }));
     expect(screen.getByText('Control is the page as it is')).toBeInTheDocument();
-    const name = screen.getByLabelText('Name');
+    await user.click(screen.getByRole('button', { name: 'Rename Control' }));
+    const name = screen.getByRole('textbox', { name: 'Original name' });
     await user.clear(name);
-    await user.type(name, 'Original');
-    await user.tab();
+    await user.type(name, 'Original{Enter}');
     await vi.waitFor(() =>
       expect(variantPatches).toContainEqual({ id: 'trust-c', patch: { name: 'Original' } }),
     );
-    expect(screen.queryByRole('button', { name: 'Delete variant' })).toBeNull();
+    // The original can't be deleted, and the last variation neither.
+    expect(screen.queryByRole('button', { name: /^Delete / })).toBeNull();
+  });
+
+  it('deletes a variation from the list after confirming', async () => {
+    const user = userEvent.setup();
+    const data = await open();
+    await user.click(screen.getByRole('button', { name: '+ Add variation' }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'New variation name' }),
+      'Price first{Enter}',
+    );
+    await screen.findByRole('button', { name: /^Price first0 lines/ });
+    await user.click(screen.getByRole('button', { name: 'Delete Price first' }));
+    const confirm = screen.getByRole('group', { name: 'Delete Price first?' });
+    expect(within(confirm).getByRole('button', { name: 'Keep' })).toHaveFocus();
+    await user.click(within(confirm).getByRole('button', { name: 'Delete' }));
+    await vi.waitFor(() =>
+      expect(screen.queryByRole('button', { name: /^Price first/ })).not.toBeInTheDocument(),
+    );
+    expect(data.experimentsNow().find((e) => e.id === 'trust')!.variants).toHaveLength(2);
   });
 
   it('adds a variant and rebalances the split in a draft', async () => {
@@ -240,6 +260,8 @@ describe('editor', () => {
     await screen.findByText(/Saved \d\d:\d\d/);
     type('B JS', 'second()');
     await user.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText(/Saved \d\d:\d\d/);
+    await user.click(screen.getByRole('button', { name: 'Version history' }));
     await screen.findByText('v3 · current');
 
     await user.click(await screen.findByRole('button', { name: 'Load v2 into the editor' }));
@@ -261,17 +283,20 @@ describe('editor', () => {
   });
 });
 
-describe('variant settings', () => {
-  it('renames a variant', async () => {
+describe('editor tools', () => {
+  it('shows the helpers and the variation key, and the split beside the list', async () => {
     const user = userEvent.setup();
-    const { variantPatches } = await open();
-    const name = screen.getByRole('textbox', { name: 'Name' });
-    await user.clear(name);
-    await user.type(name, 'Trust badges');
-    await user.tab();
-    await vi.waitFor(() =>
-      expect(variantPatches).toContainEqual({ id: 'trust-b', patch: { name: 'Trust badges' } }),
+    await open();
+    expect(screen.queryByRole('complementary', { name: 'Variant details' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Built-in helpers' }));
+    expect(screen.getByRole('dialog', { name: 'Built-in helpers' })).toHaveTextContent(
+      'splitcraft.waitForElement(sel, fn)',
     );
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Built-in helpers' })).toBeNull();
+    expect(screen.getByText(/Key b ·/)).toBeInTheDocument();
+    const split = screen.getByRole('region', { name: 'Traffic split' });
+    expect(within(split).getByLabelText('B %')).toHaveValue('50');
   });
 });
 

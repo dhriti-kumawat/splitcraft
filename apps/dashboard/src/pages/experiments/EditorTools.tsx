@@ -245,3 +245,64 @@ export function useFillHeight(ref: RefObject<HTMLElement | null>, bottom = 28): 
     };
   }, [ref, bottom]);
 }
+
+/**
+ * An icon button in the editor bar that opens a small panel below it (helpers, history).
+ * Closes on a click outside or Escape.
+ */
+export function BarPopover({
+  label,
+  icon,
+  wide,
+  children,
+}: {
+  label: string;
+  icon: ReactNode;
+  wide?: boolean;
+  children(close: () => void): ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', away);
+    return () => document.removeEventListener('mousedown', away);
+  }, [open]);
+  const close = () => setOpen(false);
+
+  return (
+    <div
+      className={styles.themeMenu}
+      ref={ref}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && open) {
+          e.stopPropagation();
+          close();
+        }
+      }}
+    >
+      <button
+        type="button"
+        className={styles.iconButton}
+        aria-label={label}
+        title={label}
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        {icon}
+      </button>
+      {open && (
+        <div
+          className={`${styles.themeList} ${wide ? styles.popWide : ''}`}
+          role="dialog"
+          aria-label={label}
+        >
+          {children(close)}
+        </div>
+      )}
+    </div>
+  );
+}

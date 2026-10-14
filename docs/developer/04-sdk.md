@@ -34,15 +34,21 @@ npm-only: `init(options)`, `start(config)`, `variant(key)`, `ready()`, `subscrib
 
 ## Variant code
 
-Each variant has JS and CSS, written in the dashboard (Monaco editor, with templates and version
-history). On a desktop the page fills the window and doesn't scroll: the variations list, the
-code and the side panels each scroll on their own, so the wheel moves whatever is under the
-pointer. Below 1024 px the page is one column and scrolls, and the editor hands the wheel back
-to the page at the top and bottom of the code. Long lines wrap. **Format** tidies the code (Shift+Alt+F), **Full screen** shows JS and CSS side by side
-across the whole window (Esc leaves it), and Cmd/Ctrl+S saves. In full screen, drag the bar between
-JS and CSS to resize them (or focus it and use the arrow keys; double-click resets); below 1024 px
-they stack and the bar resizes them up and down. The theme button switches the editor between
-**Dark**, **Grey** and **Light**. The theme and the split are remembered in your browser.
+Each variant has JS and CSS, written in the dashboard's Variations & code step. The page has
+two columns: the variations (rename with the pencil, delete with the bin while the experiment is
+a draft) with the traffic split under them, and the code editor (Monaco). On a desktop the page
+fills the window and doesn't scroll: each column scrolls on its own, so the wheel moves whatever
+is under the pointer. Below 1024 px the page is one column and scrolls, and the editor hands the
+wheel back to the page at the top and bottom of the code.
+
+The editor bar has, from the left: **Built-in helpers** (the `splitcraft.*` functions, which are
+also suggested as you type), **Version history** (load an earlier save into the editor, then save
+to keep it), the theme (**Dark**, **Grey** or **Light**), **Format** (Shift+Alt+F), **Full
+screen**, **Edit visually**, **Template** and **Save** (Cmd/Ctrl+S). The status bar shows syntax
+errors, the variation's key, the code's size and whether it's saved. Long lines wrap. Full screen
+shows JS and CSS side by side across the whole window (Esc leaves it); drag the bar between them
+to resize (or focus it and use the arrow keys; double-click resets), and below 1024 px they stack
+and the bar resizes them up and down. The theme and the split are remembered in your browser.
 
 - **CSS** goes into one `<style>` per experiment.
 - **JS** runs inside `try / catch` with a `splitcraft` object in scope: `waitForElement`,
