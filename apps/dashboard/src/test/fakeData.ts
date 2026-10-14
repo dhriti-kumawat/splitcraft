@@ -634,6 +634,7 @@ export function fakeData(
       created.push(input);
       const p = project({
         id: `new-${created.length}`,
+        workspaceId: input.workspaceId,
         name: input.name,
         mainDomain: input.mainDomain,
         allowedDomains: input.allowedDomains,
@@ -650,6 +651,10 @@ export function fakeData(
     async deleteProject(id) {
       const i = projects.findIndex((x) => x.id === id);
       if (i >= 0) projects.splice(i, 1);
+    },
+    async moveProject(id, workspaceId) {
+      const p = projects.find((x) => x.id === id);
+      if (p) p.workspaceId = workspaceId;
     },
     listExperiments: async (projectId) =>
       experiments.filter((e) => e.projectId === projectId).map((e) => ({ ...e })),

@@ -362,3 +362,65 @@ describe('project numbers', () => {
     expect(within(card).getByText('Visitors, 30d').nextSibling).toHaveTextContent('—');
   });
 });
+
+describe('working across workspaces', () => {
+  const ACME = { id: 'ws_acme', name: 'Acme Inc.', plan: 'free', role: 'admin' } as const;
+
+  afterEach(() => localStorage.clear());
+
+  it('shows which workspace a new project goes into, and warns when it is someone else’s', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({ workspaces: [WORKSPACE, ACME] });
+    await openProjects(data);
+    await user.click(screen.getAllByRole('button', { name: 'New project' })[0]!);
+    const drawer = screen.getByRole('complementary', { name: 'New project' });
+    const workspace = within(drawer).getByLabelText('Workspace');
+    expect(workspace).toHaveValue(WORKSPACE.id);
+    expect(within(drawer).queryByText(/will belong to/)).not.toBeInTheDocument();
+
+    await user.selectOptions(workspace, ACME.id);
+    expect(workspace).toHaveAccessibleDescription(
+      /^Everyone in Acme Inc\. can see and change this project.*pick your workspace\.$/,
+    );
+    await user.type(within(drawer).getByLabelText('Project name'), 'Side project');
+    await user.type(within(drawer).getByLabelText('Main domain'), 'side.dev');
+    await user.click(within(drawer).getByRole('button', { name: 'Create project' }));
+    await within(drawer).findByText('Step 2 of 2 · Install');
+    expect(data.projectsNow().find((p) => p.name === 'Side project')?.workspaceId).toBe(ACME.id);
+    // Leaving the drawer switches to the workspace the project is in.
+    await user.click(within(drawer).getByRole('button', { name: 'Close' }));
+    expect(localStorage.getItem('splitcraft_workspace')).toBe(ACME.id);
+    expect(await screen.findByRole('button', { name: /Switch workspace/ })).toHaveTextContent(
+      'Acme Inc.',
+    );
+  });
+
+  it('offers a workspace of your own to someone who only joined others', async () => {
+    const user = userEvent.setup();
+    const data = fakeData({ workspaces: [ACME] });
+    await openProjects(data);
+    const offer = screen.getByRole('region', { name: 'Want a workspace for your own projects?' });
+    expect(offer).toHaveTextContent('You’re in Acme Inc. as an admin'.replace('’', "'"));
+    await user.click(within(offer).getByRole('button', { name: 'Create my workspace' }));
+    const dialog = screen.getByRole('dialog', { name: 'New workspace' });
+    await user.type(within(dialog).getByLabelText('Name'), 'Dhriti’s projects');
+    await user.click(within(dialog).getByRole('button', { name: 'Create workspace' }));
+    await waitFor(() => expect(data.workspacesNow()).toHaveLength(2));
+    // Now owning a workspace, the offer is gone.
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('region', { name: 'Want a workspace for your own projects?' }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
+  it('remembers "Not now"', async () => {
+    const user = userEvent.setup();
+    const { router } = await openProjects(fakeData({ workspaces: [ACME] }));
+    await user.click(screen.getByRole('button', { name: 'Not now' }));
+    expect(screen.queryByText('Want a workspace for your own projects?')).not.toBeInTheDocument();
+    router.dispose();
+    await openProjects(fakeData({ workspaces: [ACME] }));
+    expect(screen.queryByText('Want a workspace for your own projects?')).not.toBeInTheDocument();
+  });
+});

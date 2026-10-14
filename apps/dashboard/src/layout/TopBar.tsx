@@ -11,11 +11,14 @@ import styles from './TopBar.module.css';
 export function TopBar({
   actionsRef,
   navOpen,
+  sidebarHidden = false,
   onOpenNav,
   onOpenSearch,
 }: {
   actionsRef: (el: HTMLDivElement | null) => void;
   navOpen: boolean;
+  /** The sidebar is hidden on a wide screen: the menu button shows it again. */
+  sidebarHidden?: boolean;
   onOpenNav(): void;
   onOpenSearch(): void;
 }) {
@@ -41,8 +44,10 @@ export function TopBar({
       <div className={styles.lead}>
         <button
           type="button"
-          className={styles.menuButton}
-          aria-label="Open navigation"
+          id="show-sidebar"
+          className={`${styles.menuButton} ${sidebarHidden ? styles.showOnWide : ''}`}
+          aria-label={sidebarHidden ? 'Show sidebar' : 'Open navigation'}
+          title={sidebarHidden ? 'Show sidebar (Ctrl/Cmd+\\)' : undefined}
           aria-controls="app-sidebar"
           aria-expanded={navOpen}
           onClick={onOpenNav}

@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button';
+import { NewWorkspaceDialog } from '../../components/NewWorkspaceDialog';
 import { PlusIcon } from '../../components/icons';
 import { PageHeader } from '../../components/PageHeader';
 import { Pill } from '../../components/Pill';
@@ -29,7 +30,7 @@ const LINE = [
 
 /** Workspace › Projects grid with the New project drawer (10-projects.html). */
 export function ProjectsPage() {
-  const { workspace, projects, user } = useWorkspace();
+  const { workspace, workspaces, projects, user } = useWorkspace();
   const overview = useOverviewQuery(workspace.id);
   const [drawerOpen, setDrawerOpen] = useState(false);
   // Real numbers from project_overview; a project without activity counts as zero, and
@@ -68,6 +69,7 @@ export function ProjectsPage() {
         {user.role === 'owner' && isDefaultName(workspace.name) && (
           <NameWorkspace key={workspace.id} />
         )}
+        {!workspaces.some((w) => w.role === 'owner') && <OwnWorkspace />}
         <ul className={styles.grid}>
           {projects.map((project, i) => (
             <li key={project.id}>
@@ -103,6 +105,62 @@ export function ProjectsPage() {
  */
 function isDefaultName(name: string): boolean {
   return /^my workspace$/i.test(name.trim()) || /['’]s workspace$/i.test(name.trim());
+}
+
+const OWN_HINT_KEY = 'splitcraft_own_workspace_hint';
+
+/**
+ * Someone who joined by invite and runs no workspace of their own: offer one, so their own
+ * projects don't end up in a workspace someone else owns (like Notion's and Linear's nudge).
+ */
+function OwnWorkspace() {
+  const { workspace, user, selectWorkspace } = useWorkspace();
+  const [creating, setCreating] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(OWN_HINT_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const id = useId();
+  if (dismissed) return null;
+  const dismiss = () => {
+    setDismissed(true);
+    try {
+      localStorage.setItem(OWN_HINT_KEY, '1');
+    } catch {
+      // Storage blocked: hidden until the next visit.
+    }
+  };
+
+  return (
+    <section className={styles.nameCard} aria-labelledby={`${id}-h`}>
+      <div className={styles.nameText}>
+        <h2 id={`${id}-h`} className={styles.nameTitle}>
+          Want a workspace for your own projects?
+        </h2>
+        <p className={styles.nameHint}>
+          You're in {workspace.name} as {workspace.role === 'admin' ? 'an admin' : 'a member'}, so
+          projects here belong to {workspace.name}. A workspace of your own is separate: only you
+          see it unless you invite people.
+        </p>
+      </div>
+      <div className={styles.nameForm}>
+        <Button onClick={() => setCreating(true)}>Create my workspace</Button>
+        <button type="button" className={styles.later} onClick={dismiss}>
+          Not now
+        </button>
+      </div>
+      {creating && (
+        <NewWorkspaceDialog
+          userId={user.id}
+          onCreated={selectWorkspace}
+          onClose={() => setCreating(false)}
+        />
+      )}
+    </section>
+  );
 }
 
 function NameWorkspace() {

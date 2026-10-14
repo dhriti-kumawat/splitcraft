@@ -266,3 +266,30 @@ describe('back button', () => {
     expect(screen.queryByRole('button', { name: /^Go back/ })).not.toBeInTheDocument();
   });
 });
+
+describe('hiding the sidebar', () => {
+  afterEach(() => localStorage.clear());
+
+  it('hides and shows it from the buttons and the keyboard, and remembers it', async () => {
+    const user = userEvent.setup();
+    const router = await renderAt('/projects');
+    const sidebar = screen.getByRole('complementary', { name: 'Sidebar' });
+    await user.click(within(sidebar).getByRole('button', { name: 'Hide sidebar' }));
+    expect(sidebar.className).toMatch(/hidden/);
+    expect(localStorage.getItem('splitcraft_sidebar')).toBe('hidden');
+    const show = screen.getByRole('button', { name: 'Show sidebar' });
+    await waitFor(() => expect(show).toHaveFocus());
+
+    await user.click(show);
+    expect(sidebar.className).not.toMatch(/hidden/);
+    expect(localStorage.getItem('splitcraft_sidebar')).toBeNull();
+
+    await user.keyboard('{Control>}\\{/Control}');
+    expect(sidebar.className).toMatch(/hidden/);
+    router.dispose();
+
+    // Still hidden on the next visit.
+    await renderAt('/projects');
+    expect(screen.getByRole('complementary', { name: 'Sidebar' }).className).toMatch(/hidden/);
+  });
+});

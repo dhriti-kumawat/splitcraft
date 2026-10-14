@@ -11,18 +11,24 @@ import type { ExperimentType } from './data/api';
 import { DataContext } from './data/context';
 import { routes } from './router';
 import { fakeAuth } from './test/fakeAuth';
-import { EXPERIMENTS, fakeData, PROJECTS } from './test/fakeData';
+import { EXPERIMENTS, fakeData, PROJECTS, WORKSPACE } from './test/fakeData';
 
 const params = new URLSearchParams(location.search);
 const path = params.get('path') ?? '/projects';
 const signedIn = !/^\/(login|signup|forgot-password)/.test(path);
-// &workspaces=none shows the first-run screen for an account without a workspace.
+// &workspaces=none shows the first-run screen for an account without a workspace;
+// &workspaces=joined an account that is only an admin in someone else's workspace;
+// &workspaces=both that plus a workspace of its own.
 // &type=split_url or &type=mvt turns the "trust" draft into that kind of test.
 // &site=localhost:4321 points the demo project at a local page, to try Preview on site.
 const type = params.get('type') as ExperimentType | null;
 const site = params.get('site');
 const data = fakeData({
   ...(params.get('workspaces') === 'none' && { workspaces: [] }),
+  ...(params.get('workspaces') === 'joined' && { workspaces: [{ ...WORKSPACE, role: 'admin' }] }),
+  ...(params.get('workspaces') === 'both' && {
+    workspaces: [WORKSPACE, { id: 'ws_mine', name: 'My projects', plan: 'free', role: 'owner' }],
+  }),
   ...(site && { projects: PROJECTS.map((p, i) => (i === 0 ? { ...p, mainDomain: site } : p)) }),
   ...(type && {
     experiments: EXPERIMENTS.map((e) =>

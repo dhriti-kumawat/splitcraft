@@ -33,7 +33,36 @@
   background: var(--ink-3);
 }
 
+/* Hide the sidebar (wide screens only; below 1024 px it is a drawer). */
+.hide {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #aeb4ac;
+  cursor: pointer;
+}
+
+.hide:hover {
+  color: #ffffff;
+  background: var(--ink-3);
+}
+
+@media (min-width: 1024px) {
+  .sidebar.hidden {
+    display: none;
+  }
+}
+
 @media (max-width: 1023px) {
+  .hide {
+    display: none;
+  }
+
   .sidebar {
     position: fixed;
     z-index: 50;

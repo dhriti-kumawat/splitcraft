@@ -519,6 +519,10 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       check(await supabase.from('projects').delete().eq('id', projectId));
     },
 
+    async moveProject(projectId, workspaceId) {
+      check(await supabase.rpc('move_project', { p_project: projectId, p_workspace: workspaceId }));
+    },
+
     async listExperiments(projectId) {
       const rows = check(
         await supabase

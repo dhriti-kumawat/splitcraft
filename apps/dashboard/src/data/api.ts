@@ -406,6 +406,8 @@ export interface DataApi {
   ): Promise<Project>;
   /** Deletes the project with its experiments, audiences, metrics and events. */
   deleteProject(projectId: string): Promise<void>;
+  /** Moves a project and everything in it; owner or admin of both workspaces (decision #34). */
+  moveProject(projectId: string, workspaceId: string): Promise<void>;
   listExperiments(projectId: string): Promise<Experiment[]>;
   experimentStats(projectId: string): Promise<VariantStats[]>;
   /** Time of the project's most recent event, or null if it never sent one. */
