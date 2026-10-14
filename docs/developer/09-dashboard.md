@@ -68,6 +68,9 @@ the sidebar.
 
 - **⌘K / Ctrl+K**: search pages, projects, experiments in every project, and the current project's
   audiences and metrics.
+- **Hide the sidebar** (from 1024 px): the button at the top of the sidebar, or Ctrl/Cmd+\. The
+  menu button at the start of the top bar shows it again. The choice is remembered in your
+  browser. Below 1024 px the sidebar is a drawer instead.
 - **Responsive**: below 1440 px the search box becomes an icon (⌘K still works); below 1280 px the
   breadcrumb keeps only the nearest parent ("… › Experiments › name"); below 1024 px the sidebar
   becomes a drawer and page actions move to a second row when they don't fit; below 720 px only

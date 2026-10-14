@@ -32,6 +32,11 @@
   cursor: pointer;
 }
 
+/* A hidden sidebar on a wide screen: the same button shows it again. */
+.menuButton.showOnWide {
+  display: inline-flex;
+}
+
 .menuButton:hover {
   background: var(--surface-2);
 }

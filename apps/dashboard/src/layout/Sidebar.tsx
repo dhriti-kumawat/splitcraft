@@ -47,7 +47,18 @@ function Item(props: NavLinkProps) {
  * 240 px dark sidebar from design/README.md "App shell". Below 1024 px it is a drawer
  * that the top bar's menu button opens.
  */
-export function Sidebar({ open, onClose }: { open: boolean; onClose(): void }) {
+export function Sidebar({
+  open,
+  hidden = false,
+  onClose,
+  onHide,
+}: {
+  open: boolean;
+  /** Hidden on a wide screen (the top bar's menu button shows it again). */
+  hidden?: boolean;
+  onClose(): void;
+  onHide?(): void;
+}) {
   const { user, workspace, workspaces, projects, selectWorkspace } = useWorkspace();
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -64,7 +75,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose(): void }) {
   return (
     <aside
       id="app-sidebar"
-      className={`${styles.sidebar} ${open ? styles.open : ''}`}
+      className={`${styles.sidebar} ${open ? styles.open : ''} ${hidden ? styles.hidden : ''}`}
       aria-label="Sidebar"
     >
       <div className={styles.head}>
@@ -81,6 +92,32 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose(): void }) {
         >
           <CloseIcon />
         </button>
+        {onHide && (
+          <button
+            type="button"
+            id="hide-sidebar"
+            className={styles.hide}
+            aria-label="Hide sidebar"
+            title={'Hide sidebar (Ctrl/Cmd+\\)'}
+            aria-controls="app-sidebar"
+            onClick={onHide}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="14" height="12" rx="2" />
+              <path d="M8 4v12M13 8l-2 2 2 2" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <Switcher
