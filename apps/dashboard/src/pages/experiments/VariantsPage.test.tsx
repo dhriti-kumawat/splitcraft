@@ -146,6 +146,31 @@ describe('editor', () => {
     expect(screen.getByRole('button', { name: /^B1 lines JS · 1 lines CSS/ })).toBeInTheDocument();
   });
 
+  it('opens full screen with JS and CSS side by side, and Escape closes it', async () => {
+    const user = userEvent.setup();
+    await open();
+    await user.click(screen.getByRole('button', { name: 'Full screen' }));
+    const region = screen.getByRole('region', { name: 'Code for B' });
+    expect(within(region).queryByRole('tablist')).not.toBeInTheDocument();
+    // Both files at once, editable side by side.
+    type('B JS', 'splitcraft.trackEvent("x")');
+    type('B CSS', '.x { color: red; }');
+    expect(screen.getByRole('button', { name: 'Exit full screen' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('button', { name: 'Full screen' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(document.body.style.overflow).toBe('');
+    // The edits made full screen are still there.
+    expect(screen.getByText(/Unsaved changes/)).toBeInTheDocument();
+    expect(editor('B JS')).toHaveValue('splitcraft.trackEvent("x")');
+  });
+
   it('keeps unsaved edits when switching variants', async () => {
     const user = userEvent.setup();
     await open();

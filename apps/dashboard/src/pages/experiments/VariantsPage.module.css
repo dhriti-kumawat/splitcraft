@@ -1,8 +1,7 @@
 .layout {
   display: flex;
   gap: 20px;
-  align-items: stretch;
-  min-height: 560px;
+  align-items: flex-start;
 }
 
 .variants {
@@ -95,14 +94,62 @@
   opacity: 0.6;
 }
 
+/* Sized to the window and kept in view while the side panels scroll, so the status bar is
+   always visible and the page and the editor don't fight over the scroll wheel. */
 .editor {
+  position: sticky;
+  top: 0;
   flex-grow: 1;
   min-width: 0;
+  height: calc(100dvh - 210px);
+  min-height: 440px;
+  max-height: 960px;
   display: flex;
   flex-direction: column;
   background: var(--code-bg);
   border-radius: 10px;
   overflow: hidden;
+}
+
+/* Full screen: the whole window, JS and CSS side by side (like VWO's code editor). */
+.full {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  border-radius: 0;
+}
+
+.fullTitle {
+  padding: 0 16px;
+  font: 600 13px var(--font-ui);
+  color: #d8dcd5;
+}
+
+.split {
+  flex-grow: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pane + .pane {
+  border-left: 1px solid var(--ink-3);
+}
+
+.paneHead {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--ink-3);
+  font: 500 12px var(--font-mono);
+  color: #8c938a;
 }
 
 .editorBar {
@@ -144,6 +191,34 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #3a4044;
+  background: var(--ink-2);
+  color: #d8dcd5;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--ink-3);
+}
+
+.iconButton[aria-pressed='true'] {
+  border-color: var(--highlight);
+  color: var(--highlight);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: -2px;
 }
 
 .darkButton {
@@ -180,7 +255,7 @@
 .code {
   position: relative;
   flex-grow: 1;
-  min-height: 420px;
+  min-height: 0;
 }
 
 .control {
@@ -344,7 +419,22 @@
 @media (max-width: 1023px) {
   .layout {
     flex-direction: column;
-    min-height: 0;
+    align-items: stretch;
+  }
+
+  .editor:not(.full) {
+    position: relative;
+    height: 520px;
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+
+  .pane + .pane {
+    border-left: 0;
+    border-top: 1px solid var(--ink-3);
   }
 
   .variants,

@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react';
+import type { editor as MonacoEditor } from 'monaco-editor';
 import { CodeEditor } from '../../components/CodeEditor';
 import type { Experiment, Variant } from '../../data/api';
 import {
@@ -308,6 +309,37 @@ function Editor({
     else setVisualDialog(true);
   };
   const tabId = useId();
+  // Full screen, like VWO's code editor: JS and CSS side by side across the whole window.
+  const [full, setFull] = useState(false);
+  // The loaded Monaco editors, for Format. A plain map: nothing renders from it.
+  const [editors] = useState(() => new Map<'js' | 'css', MonacoEditor.IStandaloneCodeEditor>());
+  const keep = (f: 'js' | 'css') => (e: MonacoEditor.IStandaloneCodeEditor | null) => {
+    if (e) editors.set(f, e);
+    else editors.delete(f);
+  };
+  const format = () => {
+    for (const e of editors.values()) void e.getAction('editor.action.formatDocument')?.run();
+  };
+  useEffect(() => {
+    if (!full) return;
+    const onKey = (e: KeyboardEvent) => {
+      // Escape first closes Monaco's own popups (suggestions, find).
+      if (
+        e.key === 'Escape' &&
+        !document.querySelector(
+          '.monaco-editor .suggest-widget.visible, .monaco-editor .find-widget.visible',
+        )
+      )
+        setFull(false);
+    };
+    document.addEventListener('keydown', onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [full]);
   const readOnly = experiment.status === 'ended';
   const dirty = code.js !== variant.js || code.css !== variant.css;
   const [error, setError] = useState<string | null>(null);
@@ -349,25 +381,82 @@ function Editor({
   }
 
   return (
-    <section className={styles.editor} aria-label={`Code for ${variant.name}`}>
+    <section
+      className={`${styles.editor} ${full ? styles.full : ''}`}
+      aria-label={`Code for ${variant.name}`}
+    >
       <div className={styles.editorBar}>
-        <div className={styles.fileTabs} role="tablist" aria-label="File">
-          {(['js', 'css'] as const).map((f) => (
-            <button
-              key={f}
-              type="button"
-              role="tab"
-              id={`${tabId}-${f}`}
-              aria-selected={file === f}
-              aria-controls={`${tabId}-panel`}
-              className={styles.fileTab}
-              onClick={() => onFile(f)}
-            >
-              {slug}.{f}
-            </button>
-          ))}
-        </div>
+        {full ? (
+          <span className={styles.fullTitle}>
+            {experiment.name} · {variant.name}
+          </span>
+        ) : (
+          <div className={styles.fileTabs} role="tablist" aria-label="File">
+            {(['js', 'css'] as const).map((f) => (
+              <button
+                key={f}
+                type="button"
+                role="tab"
+                id={`${tabId}-${f}`}
+                aria-selected={file === f}
+                aria-controls={`${tabId}-panel`}
+                className={styles.fileTab}
+                onClick={() => onFile(f)}
+              >
+                {slug}.{f}
+              </button>
+            ))}
+          </div>
+        )}
         <div className={styles.barActions}>
+          {!readOnly && (
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={format}
+              aria-label="Format code"
+              title="Format code (Shift+Alt+F)"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <path d="M2 3.5h12M5 6.5h9M5 9.5h9M2 12.5h12" />
+              </svg>
+            </button>
+          )}
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-pressed={full}
+            aria-label={full ? 'Exit full screen' : 'Full screen'}
+            title={full ? 'Exit full screen (Esc)' : 'Full screen: JS and CSS side by side'}
+            onClick={() => setFull((f) => !f)}
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              {full ? (
+                <path d="M6 2v4H2M10 2v4h4M6 14v-4H2M10 14v-4h4" />
+              ) : (
+                <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+              )}
+            </svg>
+          </button>
           {!readOnly && !isControl && (
             <button type="button" className={styles.darkButton} onClick={editVisually}>
               Edit visually
@@ -406,25 +495,50 @@ function Editor({
           onClose={() => setVisualDialog(false)}
         />
       )}
-      <div
-        className={styles.code}
-        role="tabpanel"
-        id={`${tabId}-panel`}
-        aria-labelledby={`${tabId}-${file}`}
-      >
-        <CodeEditor
-          fill
-          key={file}
-          language={file === 'js' ? 'javascript' : 'css'}
-          label={`${variant.name} ${file.toUpperCase()}`}
-          value={file === 'js' ? code.js : code.css}
-          onChange={(value) =>
-            onChange(file === 'js' ? { ...code, js: value } : { ...code, css: value })
-          }
-          onSave={doSave}
-          readOnly={readOnly}
-        />
-      </div>
+      {full ? (
+        <div className={styles.split}>
+          {(['js', 'css'] as const).map((f) => (
+            <div key={f} className={styles.pane}>
+              <span className={styles.paneHead}>
+                {slug}.{f}
+              </span>
+              <div className={styles.code}>
+                <CodeEditor
+                  fill
+                  language={f === 'js' ? 'javascript' : 'css'}
+                  label={`${variant.name} ${f.toUpperCase()}`}
+                  value={code[f]}
+                  onChange={(value) => onChange({ ...code, [f]: value })}
+                  onSave={doSave}
+                  readOnly={readOnly}
+                  onEditor={keep(f)}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div
+          className={styles.code}
+          role="tabpanel"
+          id={`${tabId}-panel`}
+          aria-labelledby={`${tabId}-${file}`}
+        >
+          <CodeEditor
+            fill
+            key={file}
+            language={file === 'js' ? 'javascript' : 'css'}
+            label={`${variant.name} ${file.toUpperCase()}`}
+            value={file === 'js' ? code.js : code.css}
+            onChange={(value) =>
+              onChange(file === 'js' ? { ...code, js: value } : { ...code, css: value })
+            }
+            onSave={doSave}
+            readOnly={readOnly}
+            onEditor={keep(file)}
+          />
+        </div>
+      )}
       <div className={styles.status} role="status">
         {error ? (
           <span className={styles.statusBad}>JS error: {error}</span>

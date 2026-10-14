@@ -1,4 +1,5 @@
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
+import type { editor as MonacoEditor } from 'monaco-editor';
 import { useEffect, useRef } from 'react';
 import { SPLITCRAFT_DTS } from '../lib/templates';
 
@@ -38,17 +39,34 @@ interface Props {
    * its parent's height, which a min-height alone leaves undefined (it collapses to 5 px).
    */
   fill?: boolean;
+  /** The Monaco editor once it has loaded, e.g. to run Format. */
+  onEditor?(editor: MonacoEditor.IStandaloneCodeEditor | null): void;
 }
 
 /** Monaco editor, themed to the design. Monaco itself is loaded from a CDN on first use. */
-export function CodeEditor({ language, value, onChange, label, readOnly, onSave, fill }: Props) {
+export function CodeEditor({
+  language,
+  value,
+  onChange,
+  label,
+  readOnly,
+  onSave,
+  fill,
+  onEditor,
+}: Props) {
   // Monaco keeps the first command it is given, so route Cmd/Ctrl+S through a ref.
   const save = useRef(onSave);
   useEffect(() => {
     save.current = onSave;
   }, [onSave]);
+  const ready = useRef(onEditor);
+  useEffect(() => {
+    ready.current = onEditor;
+  }, [onEditor]);
+  useEffect(() => () => ready.current?.(null), []);
   const onMount: OnMount = (editor, monaco) => {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => save.current?.());
+    ready.current?.(editor);
   };
   const editor = (
     <Editor
@@ -67,6 +85,12 @@ export function CodeEditor({ language, value, onChange, label, readOnly, onSave,
         fontSize: 13,
         lineHeight: 24,
         scrollBeyondLastLine: false,
+        // Long lines wrap instead of running off the edge (no sideways scrolling).
+        wordWrap: 'on',
+        wrappingIndent: 'indent',
+        // At the top or bottom of the code, the wheel scrolls the page instead of stopping.
+        scrollbar: { alwaysConsumeMouseWheel: false, verticalScrollbarSize: 10 },
+        fixedOverflowWidgets: true,
         tabSize: 2,
         automaticLayout: true,
         padding: { top: 18, bottom: 18 },

@@ -35,7 +35,9 @@ npm-only: `init(options)`, `start(config)`, `variant(key)`, `ready()`, `subscrib
 ## Variant code
 
 Each variant has JS and CSS, written in the dashboard (Monaco editor, with templates and version
-history).
+history). The editor fits the window and stays in view while the panels beside it scroll; long
+lines wrap. **Format** tidies the code (Shift+Alt+F), **Full screen** shows JS and CSS side by side
+across the whole window (Esc leaves it), and Cmd/Ctrl+S saves.
 
 - **CSS** goes into one `<style>` per experiment.
 - **JS** runs inside `try / catch` with a `splitcraft` object in scope: `waitForElement`,
