@@ -25,6 +25,11 @@ const type = params.get('type') as ExperimentType | null;
 const site = params.get('site');
 const data = fakeData({
   ...(params.get('workspaces') === 'none' && { workspaces: [] }),
+  // &setup=1: a workspace half way through the first-test guide (one draft, one snippet).
+  ...(params.get('setup') === '1' && {
+    experiments: EXPERIMENTS.filter((e) => e.id === 'trust'),
+    projects: PROJECTS.map((p, i) => (i === 0 ? p : { ...p, installedAt: null })),
+  }),
   ...(params.get('workspaces') === 'joined' && { workspaces: [{ ...WORKSPACE, role: 'admin' }] }),
   ...(params.get('workspaces') === 'both' && {
     workspaces: [WORKSPACE, { id: 'ws_mine', name: 'My projects', plan: 'free', role: 'owner' }],
