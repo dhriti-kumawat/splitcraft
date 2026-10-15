@@ -230,7 +230,7 @@ describe('workspaces', () => {
 
   it('asks owners to name a workspace that still has a default name', async () => {
     const user = userEvent.setup();
-    const data = fakeData({ workspaces: [{ ...WORKSPACE, name: "Jo's Workspace" }] });
+    const data = fakeData({ workspaces: [{ ...WORKSPACE, name: 'My workspace' }] });
     renderApp('/projects', { data: data.api });
     await screen.findByRole('heading', { name: 'Give your workspace a name' });
     await user.type(screen.getByLabelText('Workspace name'), 'Larkspur Travel');
@@ -243,7 +243,7 @@ describe('workspaces', () => {
 
   it("doesn't ask again after Later, or about a workspace named on purpose", async () => {
     const user = userEvent.setup();
-    const data = fakeData({ workspaces: [{ ...WORKSPACE, name: "Jo's Workspace" }] });
+    const data = fakeData({ workspaces: [{ ...WORKSPACE, name: 'My workspace' }] });
     const router = renderApp('/projects', { data: data.api });
     await screen.findByRole('heading', { name: 'Give your workspace a name' });
     await user.click(screen.getByRole('button', { name: 'Later' }));
@@ -263,6 +263,14 @@ describe('workspaces', () => {
     await screen.findByRole('heading', { level: 1, name: 'Projects' });
     expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull();
     localStorage.clear();
+  });
+
+  it("doesn't ask about a name someone may have chosen, like Dhriti's Workspace", async () => {
+    renderApp('/projects', {
+      data: fakeData({ workspaces: [{ ...WORKSPACE, name: "Dhriti's Workspace" }] }).api,
+    });
+    await screen.findByRole('heading', { level: 1, name: 'Projects' });
+    expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull();
   });
 
   it("doesn't ask non-owners to name the workspace", async () => {
