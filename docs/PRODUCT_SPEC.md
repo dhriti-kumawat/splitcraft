@@ -49,10 +49,11 @@ versions; every combination becomes a variant and results add a main effect per 
 2. **Variations & code**: the Original (no code) + variations, each renamable in the list. Each variant has `variant.js` and
    `variant.css` in a Monaco editor, a template picker, built-in helpers list, save,
    version history, syntax check, "Preview on site" (opens the site with `?splitcraft_force=`).
-3. **Targeting**: WHO / WHERE / HOW / WHEN (see §4).
-4. **Goals**: one primary goal (can change at any time; results are recalculated), any number of secondary goals,
+3. **Audience**: WHO (see §4).
+4. **Targeting**: WHERE / HOW / WHEN (see §4).
+5. **Goals**: one primary goal (can change at any time; results are recalculated), any number of secondary goals,
    guardrails with auto-pause.
-5. **Results**: see §6.
+6. **Results**: see §6.
 
 Statuses: Draft → Live → Paused → Ended. Launch is blocked until: snippet installed,
 primary goal set, variant code saved without errors. QA preview is a warning, not a blocker.

@@ -63,13 +63,12 @@ export function ExperimentLayout() {
   const steps = [
     { path: 'basics', label: 'Basics', done: experiment.hypothesis.trim().length > 0 },
     { path: 'variants', label: VARIANTS_STEP[experiment.type], done: variantsReady(experiment) },
+    { path: 'audience', label: 'Audience', done: Boolean(experiment.targeting.who) },
     {
       path: 'targeting',
       label: 'Targeting',
       done: Boolean(
-        experiment.targeting.where?.include?.length ||
-        experiment.targeting.who?.segmentIds.length ||
-        experiment.targeting.how?.length,
+        experiment.targeting.where?.include?.length || experiment.targeting.how?.length,
       ),
     },
     { path: 'goals', label: 'Goals', done: Boolean(experiment.primaryMetricId) },

@@ -1,43 +1,34 @@
 import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router';
 import type { Experiment, Project } from '../../data/api';
-import {
-  useExperimentsQuery,
-  useGoalsQuery,
-  useOverviewQuery,
-  useUpdateExperiment,
-} from '../../data/queries';
+import { useExperimentsQuery, useOverviewQuery, useUpdateExperiment } from '../../data/queries';
 import { useWorkspace } from '../../data/workspace';
 import { matchWhereUrl } from '../../../../../packages/sdk/src/targeting';
 import { launchChecks, qaDone, testPageUrl } from '../../lib/launch';
+import { seriesColor, variantColors } from '../../lib/chartColors';
 import { sampleSizePerVariant } from '../../lib/stats';
 import { useExperiment } from './experimentContext';
 import styles from './BasicsPage.module.css';
-import { TrafficSplit } from './TrafficSplit';
 
 const number = new Intl.NumberFormat('en-US');
-const COLORS = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
 
-/** Experiment step 1 (12-exp-step1-basics.html). */
+/**
+ * Experiment step 1 (12-exp-step1-basics.html): what the test is, how much traffic it gets,
+ * what it needs before launch and how long it should run. The other steps have their own
+ * tabs, so this page doesn't repeat them.
+ */
 export function BasicsPage() {
   const { experiment, project } = useExperiment();
+  const base = `/p/${project.id}/experiments/${experiment.id}`;
   return (
     <div className={styles.layout}>
       <div className={styles.main}>
         <About experiment={experiment} project={project} />
-        <TargetingSummary
-          experiment={experiment}
-          base={`/p/${project.id}/experiments/${experiment.id}`}
-        />
-        <Traffic experiment={experiment} />
-        <GoalsSummary
-          experiment={experiment}
-          base={`/p/${project.id}/experiments/${experiment.id}`}
-        />
+        <Traffic experiment={experiment} base={base} />
       </div>
       <aside className={styles.aside} aria-label="Planning">
+        <Checklist base={base} />
         <SampleSize experiment={experiment} />
-        <Checklist />
       </aside>
     </div>
   );
@@ -74,7 +65,7 @@ function About({ experiment, project }: { experiment: Experiment; project: Proje
     <section className={styles.section} aria-labelledby={`${ids.hyp}-h`}>
       <div className={styles.sectionHead}>
         <h2 className={styles.title} id={`${ids.hyp}-h`}>
-          Hypothesis
+          About this test
         </h2>
         <span className={update.isError ? styles.error : styles.saved} role="status">
           {status}
@@ -140,7 +131,7 @@ function About({ experiment, project }: { experiment: Experiment; project: Proje
         >
           {pageResult.error ??
             (outsideWhere
-              ? "This page isn't in the experiment's WHERE rules, so the variant won't show there. Change the page or the targeting."
+              ? "This page isn't in the test's page rules (Targeting), so the variant won't show there. Change the page or the rules."
               : `The page this test runs on. The snippet must be on it (install it site-wide). Empty: ${project.mainDomain}'s home page.`)}
         </span>
       </div>
@@ -148,61 +139,7 @@ function About({ experiment, project }: { experiment: Experiment; project: Proje
   );
 }
 
-function TargetingSummary({ experiment, base }: { experiment: Experiment; base: string }) {
-  const t = experiment.targeting;
-  const who = t.who?.segmentIds.length
-    ? `${t.who.segmentIds.length} ${t.who.segmentIds.length === 1 ? 'segment' : 'segments'}, ${t.who.mode}`
-    : 'Everyone';
-  const urlRules = (t.where?.include?.length ?? 0) + (t.where?.exclude?.length ?? 0);
-  const elements = t.where?.elements?.length ?? 0;
-  const where =
-    urlRules || elements
-      ? [
-          urlRules && `${urlRules} URL ${urlRules === 1 ? 'rule' : 'rules'}`,
-          elements && `${elements} element ${elements === 1 ? 'rule' : 'rules'}`,
-        ]
-          .filter(Boolean)
-          .join(' + ')
-      : 'All pages';
-  const triggers = (t.how ?? []).reduce((n, g) => n + g.items.length, 0);
-  const how = triggers ? `${triggers} ${triggers === 1 ? 'trigger' : 'triggers'}` : 'Any visit';
-  const when = {
-    every_load: 'Every page load',
-    once: 'Once per visitor',
-    once_per_session: 'Once per session',
-    every_n_days: `Every ${t.when?.mode === 'every_n_days' ? t.when.days : ''} days`,
-  }[t.when?.mode ?? 'every_load'];
-
-  return (
-    <section className={styles.section} aria-labelledby="targeting-h">
-      <div className={styles.sectionHead}>
-        <h2 className={styles.title} id="targeting-h">
-          Targeting
-        </h2>
-        <Link to={`${base}/targeting`} className={styles.editLink}>
-          Edit targeting
-        </Link>
-      </div>
-      <dl className={styles.grid4} style={{ margin: 0 }}>
-        {[
-          ['Who', who],
-          ['Where', where],
-          ['How', how],
-          ['When', when],
-        ].map(([label, value]) => (
-          <div key={label} className={styles.fact}>
-            <dt className={styles.lbl}>{label}</dt>
-            <dd className={styles.factValue} style={{ margin: 0 }}>
-              {value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
-function Traffic({ experiment }: { experiment: Experiment }) {
+function Traffic({ experiment, base }: { experiment: Experiment; base: string }) {
   const update = useUpdateExperiment(experiment);
   const [traffic, setTraffic] = useState(String(experiment.trafficPct));
   const total = experiment.variants.reduce((s, v) => s + v.weight, 0) || 1;
@@ -225,20 +162,20 @@ function Traffic({ experiment }: { experiment: Experiment }) {
         <h2 className={styles.title} id="traffic-h">
           Traffic
         </h2>
-        <div className={styles.trafficRow}>
-          <label htmlFor={id}>Include</label>
-          <input
-            id={id}
-            className={styles.small}
-            inputMode="decimal"
-            value={traffic}
-            onChange={(e) => setTraffic(e.target.value)}
-            onBlur={saveTraffic}
-            aria-invalid={Boolean(trafficError)}
-            aria-describedby={trafficError ? `${id}-err` : undefined}
-          />
-          <span>% of matching visitors</span>
-        </div>
+      </div>
+      <div className={styles.trafficRow}>
+        <label htmlFor={id}>Include</label>
+        <input
+          id={id}
+          className={styles.small}
+          inputMode="decimal"
+          value={traffic}
+          onChange={(e) => setTraffic(e.target.value)}
+          onBlur={saveTraffic}
+          aria-invalid={Boolean(trafficError)}
+          aria-describedby={trafficError ? `${id}-err` : undefined}
+        />
+        <span>% of the visitors who match the audience and targeting</span>
       </div>
       {trafficError && (
         <span id={`${id}-err`} className={styles.error}>
@@ -251,24 +188,41 @@ function Traffic({ experiment }: { experiment: Experiment }) {
         </span>
       ) : (
         <>
+          <div className={styles.splitHead}>
+            <span className={styles.label}>Split between variants</span>
+            <Link to={`${base}/variants`} className={styles.editLink}>
+              Edit split
+            </Link>
+          </div>
           <div className={styles.splitBar} aria-hidden="true">
             {experiment.variants.map((v, i) => (
               <div
                 key={v.id}
-                title={`${v.name} · ${Math.round((v.weight / total) * 100)}%`}
                 style={{
                   width: `${(v.weight / total) * 100}%`,
-                  background: COLORS[i % COLORS.length],
+                  background: seriesColor(i),
                 }}
-              >
-                {v.name} · {Math.round((v.weight / total) * 100)}%
-              </div>
+              />
             ))}
           </div>
-          <TrafficSplit experiment={experiment} />
+          <ul className={styles.legend}>
+            {experiment.variants.map((v, i) => {
+              const c = variantColors(i);
+              return (
+                <li key={v.id} style={{ background: c.soft, color: c.text }}>
+                  <span className={styles.legendDot} style={{ background: c.line }} />
+                  {v.name}
+                  <b>{Math.round((v.weight / total) * 100)}%</b>
+                </li>
+              );
+            })}
+          </ul>
         </>
       )}
-      <ExclusionGroup experiment={experiment} />
+      <details className={styles.more} open={Boolean(experiment.exclusionGroup) || undefined}>
+        <summary>Run alongside other tests</summary>
+        <ExclusionGroup experiment={experiment} />
+      </details>
     </section>
   );
 }
@@ -322,43 +276,6 @@ function ExclusionGroup({ experiment }: { experiment: Experiment }) {
             : 'Tests with the same group never show to the same visitor. Use it for tests that change the same page or element.')}
       </span>
     </div>
-  );
-}
-
-function GoalsSummary({ experiment, base }: { experiment: Experiment; base: string }) {
-  const goals = useGoalsQuery(experiment.id);
-  const secondary = goals.data?.filter((g) => g.role === 'secondary') ?? [];
-  const guardrails = goals.data?.filter((g) => g.role === 'guardrail') ?? [];
-  const list = (items: typeof secondary) => items.map((g) => g.metric.name).join(', ');
-  return (
-    <section className={styles.section} aria-labelledby="goals-h">
-      <div className={styles.sectionHead}>
-        <h2 className={styles.title} id="goals-h">
-          Goals
-        </h2>
-        <Link to={`${base}/goals`} className={styles.editLink}>
-          Edit goals
-        </Link>
-      </div>
-      <div className={styles.goalRow}>
-        <span className={`${styles.tag} ${styles.primary}`}>Primary</span>
-        <span>{experiment.primaryMetricName ?? 'Not set'}</span>
-      </div>
-      <div className={styles.goalRow}>
-        <span className={`${styles.tag} ${styles.secondary}`}>Secondary</span>
-        <span>
-          {secondary.length} {secondary.length === 1 ? 'goal' : 'goals'}
-        </span>
-        {secondary.length > 0 && <span className="mono">{list(secondary)}</span>}
-      </div>
-      <div className={styles.goalRow}>
-        <span className={`${styles.tag} ${styles.guardrail}`}>Guardrail</span>
-        <span>
-          {guardrails.length} {guardrails.length === 1 ? 'limit' : 'limits'}
-        </span>
-        {guardrails.length > 0 && <span className="mono">{list(guardrails)}</span>}
-      </div>
-    </section>
   );
 }
 
@@ -467,15 +384,28 @@ function SampleSize({ experiment }: { experiment: Experiment }) {
   );
 }
 
-function Checklist() {
+const FIX: Record<string, { to: (base: string, projectId: string) => string; label: string }> = {
+  snippet: { to: (_, p) => `/p/${p}/install`, label: 'Install' },
+  goal: { to: (b) => `${b}/goals`, label: 'Set goal' },
+  code: { to: (b) => `${b}/variants`, label: 'Add code' },
+  where: { to: (b) => `${b}/targeting`, label: 'Add pages' },
+};
+
+function Checklist({ base }: { base: string }) {
   const { experiment, project } = useExperiment();
   const checks = launchChecks(experiment, project, qaDone(experiment.id));
   if (experiment.status !== 'draft') return null;
+  const left = checks.filter((c) => !c.ok && c.blocking).length;
   return (
     <section className={styles.section} aria-labelledby="launch-h">
-      <h2 className={styles.title} id="launch-h">
-        Before you launch
-      </h2>
+      <div className={styles.sectionHead}>
+        <h2 className={styles.title} id="launch-h">
+          Before you launch
+        </h2>
+        <span className={left ? styles.left : styles.ready}>
+          {left ? `${left} to do` : 'Ready to launch'}
+        </span>
+      </div>
       <ul className={styles.checklist} id="launch-blockers">
         {checks.map((c) => (
           <li key={c.id} className={c.ok ? '' : c.blocking ? styles.blocked : styles.todo}>
@@ -506,10 +436,20 @@ function Checklist() {
                 <circle cx="10" cy="10" r="7" />
               </svg>
             )}
-            {c.label}
-            <span className="visually-hidden">
-              {c.ok ? ' (done)' : c.blocking ? ' (required before launch)' : ' (recommended)'}
+            <span className={styles.checkText}>
+              {c.label}
+              <span className="visually-hidden">
+                {c.ok ? ' (done)' : c.blocking ? ' (required before launch)' : ' (recommended)'}
+              </span>
             </span>
+            {!c.ok && FIX[c.id] && (
+              <Link to={FIX[c.id]!.to(base, project.id)} className={styles.fix}>
+                {FIX[c.id]!.label}
+              </Link>
+            )}
+            {!c.ok && c.id === 'qa' && (
+              <span className={styles.fixHint}>Preview on site, top right</span>
+            )}
           </li>
         ))}
       </ul>

@@ -1,3 +1,4 @@
+import { markNamed } from '../lib/workspaceNames';
 import { useId, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../auth/context';
@@ -84,6 +85,7 @@ function CreateCard({ userId, onCreated }: { userId: string; onCreated(id: strin
     if (error) return;
     create.mutate(name.trim(), {
       onSuccess: (workspaceId) => {
+        markNamed(workspaceId);
         onCreated(workspaceId);
         navigate('/projects');
       },

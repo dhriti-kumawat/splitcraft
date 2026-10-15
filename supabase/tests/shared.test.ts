@@ -150,8 +150,24 @@ describe('toSdkTargeting', () => {
     expect(who[0]).toEqual({ mode: 'none', items: [{ mode: 'all', items: [] }] });
   });
 
+  it("adds the test's own audience conditions next to saved audiences", () => {
+    const own: ConditionGroup = { mode: 'all', items: [{ type: 'visitor_type', value: 'new' }] };
+    expect(
+      toSdkTargeting({ who: { mode: 'all', segmentIds: [], rules: own } }, segments).who,
+    ).toEqual([own]);
+    expect(
+      toSdkTargeting({ who: { mode: 'any', segmentIds: ['s2'], rules: own } }, segments).who,
+    ).toEqual([{ mode: 'any', items: [mobile, own] }]);
+  });
+
   it('omits empty parts', () => {
     expect(toSdkTargeting({ who: { mode: 'all', segmentIds: [] }, how: [] }, segments)).toEqual({});
+    expect(
+      toSdkTargeting(
+        { who: { mode: 'all', segmentIds: [], rules: { mode: 'all', items: [] } } },
+        segments,
+      ),
+    ).toEqual({});
   });
 });
 

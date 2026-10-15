@@ -64,15 +64,16 @@ A personalization has no comparison: its original gets weight 0 and **Personaliz
 everyone who matches the targeting sees the change. The SDK treats it like any other test. A goal
 is optional; Results shows visitors reached and each goal's conversion rate instead of uplift.
 
-## The five steps
+## The six steps
 
 | Step            | What you set                                                                            |
 | --------------- | --------------------------------------------------------------------------------------- |
-| 1 Basics        | Name, hypothesis, **test page**, traffic split, sample-size planner, launch checklist   |
+| 1 Basics        | Name, hypothesis, **test page**, traffic included, exclusion group, launch checklist (each item links to its fix), sample-size planner |
 | 2 Variants      | A/B: JS and CSS per variant, templates, version history. Split URL: a page per variant. MVT: sections and their variations |
-| 3 Targeting     | WHO / WHERE / HOW / WHEN, evaluation settings, reach estimate, URL tester (see [Targeting](targeting)) |
-| 4 Goals         | One primary goal, secondary goals, guardrails (see [Metrics](metrics))                  |
-| 5 Results       | Verdict, uplift and range, chance to win, SRM, cumulative chart (see [Results](results)) |
+| 3 Audience      | Who can see it: everyone, or saved audiences and/or conditions for this test only, with reach (see [Targeting](targeting)) |
+| 4 Targeting     | Pages, triggers, frequency; activation and evaluation under Advanced; reach and URL tester (see [Targeting](targeting)) |
+| 5 Goals         | One primary goal, secondary goals, guardrails (see [Metrics](metrics))                  |
+| 6 Results       | Verdict, uplift and range, chance to win, SRM, cumulative chart (see [Results](results)) |
 
 A step shows a tick when it's done.
 
@@ -156,7 +157,7 @@ tag/class/position path); check them on pages whose markup changes.
 - The editor checks syntax as you type; saving keeps the previous code as a version you can restore.
 - **+ Add variant** asks for the variant's name first. An experiment can have up to 26 variants
   (Control plus keys `b` to `z`); names can be changed later, keys can't.
-- **Traffic split** (on Basics and under the variations list) sets each variant's share. Adding or
+- **Traffic split** (under the variations list; Basics shows it as a bar) sets each variant's share. Adding or
   removing a variant splits traffic evenly again; change any share afterwards, as long as they add
   up to 100%, or use **Split evenly**. The split locks at launch. **Traffic** (Basics) sets how many
   matching visitors enter at all.

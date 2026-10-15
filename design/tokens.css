@@ -22,11 +22,21 @@
   --accent-soft: #E4F1EC;
   --accent-soft-line: #BFDDD1;
 
-  /* Variants */
-  --variant-a: #3B5B8C;    /* Control */
+  /* Variants, in fixed order (Control, B, C, D). The strong colour is for lines, dots and
+     bars; the soft one with its text colour is for chips and fills. Checked with the
+     dataviz palette validator (all PASS on white). */
+  --variant-a: #6489C8;    /* Control */
   --variant-a-soft: #E8ECF3;
-  --variant-b: #D97A2B;    /* Variant B on light */
-  --variant-b-soft: #FBE9DA;
+  --variant-a-text: #2C4268;
+  --variant-b: #0F8F6A;    /* Variant B */
+  --variant-b-soft: #E4F1EC;
+  --variant-b-text: #0A4E40;
+  --variant-c: #C28718;
+  --variant-c-soft: #FBEFD9;
+  --variant-c-text: #6B4100;
+  --variant-d: #9A50AC;
+  --variant-d-soft: #F3E8F6;
+  --variant-d-text: #5E2A6B;
   --highlight: #F2B37A;    /* variant B on dark, logo second bar */
 
   /* Status */

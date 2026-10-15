@@ -8,7 +8,7 @@ import { useExperiment } from './experimentContext';
 import { TrafficSplit } from './TrafficSplit';
 import styles from './SplitUrlVariants.module.css';
 
-const COLORS = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
+import { seriesColor } from '../../lib/chartColors';
 
 /** Experiment step 2 for split URL tests: one page URL per variant. */
 export function SplitUrlVariants() {
@@ -32,7 +32,7 @@ export function SplitUrlVariants() {
               experiment={experiment}
               project={project}
               variant={v}
-              color={COLORS[i % COLORS.length]!}
+              color={seriesColor(i)}
               isControl={v.key === control}
               canDelete={isDraft && others > 1}
               remove={edits.remove}

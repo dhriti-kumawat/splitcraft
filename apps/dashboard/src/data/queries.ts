@@ -5,6 +5,7 @@ import type { ConditionGroup } from '../lib/targeting';
 import { TEMPLATES } from '../lib/templates';
 import type {
   Experiment,
+  FeedbackInput,
   FlagPatch,
   ProjectAlert,
   ExperimentSuggestion,
@@ -713,4 +714,9 @@ export function useInviteQuery(token: string) {
     queryFn: () => api.inviteDetails(token),
     retry: false,
   });
+}
+
+export function useSendFeedback() {
+  const api = useData();
+  return useMutation({ mutationFn: (input: FeedbackInput) => api.sendFeedback(input) });
 }

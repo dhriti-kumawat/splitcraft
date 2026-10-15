@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { CodeEditor } from '../../components/CodeEditor';
+import { seriesColor } from '../../lib/chartColors';
 import {
   BarPopover,
   SplitPanes,
@@ -38,8 +39,6 @@ import { RenamableItem } from './RenamableItem';
 import { TemplatePicker } from './TemplatePicker';
 import { TrafficSplit } from './TrafficSplit';
 import styles from './VariantsPage.module.css';
-
-const COLORS = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
 
 const HELPERS = [
   ['waitForElement(sel, fn)', 'Runs once the element exists'],
@@ -194,10 +193,7 @@ function CodeVariants() {
                     onClick={() => select(v.id)}
                   >
                     <span className={styles.variantName}>
-                      <span
-                        className={styles.swatch}
-                        style={{ background: COLORS[i % COLORS.length] }}
-                      />
+                      <span className={styles.swatch} style={{ background: seriesColor(i) }} />
                       {v.name}
                       {dirty(v) && <span className={styles.muted}> · unsaved</span>}
                     </span>

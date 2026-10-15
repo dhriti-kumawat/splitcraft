@@ -20,6 +20,7 @@ import type {
   SiteScan,
   FeatureFlag,
   ProjectAlert,
+  FeedbackInput,
 } from '../data/api';
 
 export const WORKSPACE: Workspace = {
@@ -493,6 +494,7 @@ export function fakeData(
   const variantPatches: Array<{ id: string; patch: unknown }> = [];
   let metrics = METRICS.map((m) => ({ ...m }));
   let workspaces = (opts.workspaces ?? [WORKSPACE]).map((w) => ({ ...w }));
+  const feedback: FeedbackInput[] = [];
   let people = (opts.people ?? PEOPLE).map((p) => ({ ...p }));
   let invites: Invite[] = [];
   const invitesByToken: Record<string, { invite: Invite; workspaceName: string }> = {};
@@ -576,6 +578,10 @@ export function fakeData(
         expired: Date.parse(found.invite.expiresAt) < Date.now(),
         accepted: found.invite.acceptedAt !== null,
       };
+    },
+    async sendFeedback(input) {
+      feedback.push(input);
+      return feedback.length <= 10;
     },
     async acceptInvite(token) {
       const found = invitesByToken[token];
@@ -939,6 +945,7 @@ export function fakeData(
     savedNow: () => saved,
     metricsNow: () => metrics,
     projectsNow: () => projects,
+    feedbackNow: () => feedback,
     experimentsNow: () => experiments,
     workspacesNow: () => workspaces,
     peopleNow: () => people,

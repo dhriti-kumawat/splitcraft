@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate, type NavLinkProps } from 'react-router';
+import { FeedbackDialog } from '../components/FeedbackDialog';
 import { NewWorkspaceDialog } from '../components/NewWorkspaceDialog';
 import { useAuth } from '../auth/context';
 import {
@@ -68,6 +69,7 @@ export function Sidebar({
   const limit = EVENT_LIMIT[workspace.plan];
   const { api } = useAuth();
   const [creating, setCreating] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const navigate = useNavigate();
   const project = useCurrentProject();
   const base = project ? `/p/${project.id}` : '';
@@ -212,6 +214,27 @@ export function Sidebar({
       )}
 
       <nav className={styles.external} aria-label="Splitcraft site">
+        <button
+          type="button"
+          className={styles.externalLink}
+          aria-haspopup="dialog"
+          onClick={() => setFeedbackOpen(true)}
+        >
+          Help and feedback
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 4.5h12a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z" />
+          </svg>
+        </button>
         <a href={DOCS_URL} target="_blank" rel="noreferrer" className={styles.externalLink}>
           Documentation
           <span aria-hidden="true">↗</span>
@@ -283,6 +306,9 @@ export function Sidebar({
           Log out
         </button>
       </div>
+      {feedbackOpen && (
+        <FeedbackDialog workspaceId={workspace.id} onClose={() => setFeedbackOpen(false)} />
+      )}
       {creating && (
         <NewWorkspaceDialog
           userId={user.id}
