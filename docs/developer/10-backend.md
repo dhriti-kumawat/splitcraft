@@ -33,6 +33,7 @@ policies at all: only the contact function writes it, and you read it in the Sup
 | `project_session_sample`         | Reach estimates                                         |
 | `duplicate_experiment`           | Duplicate                                               |
 | `workspace_people`, `invite_details`, `accept_invite` | Team and invites                   |
+| `send_feedback`                  | Help and feedback from the dashboard into `feedback` (read in the Supabase dashboard; 10 an hour per account) |
 | `move_project`                   | Move a project to another workspace (owner or admin of both); a trigger blocks any other change to `projects.workspace_id` |
 | `sdk_config_source`, `ingest_events` | The two Edge Functions (service role only)          |
 

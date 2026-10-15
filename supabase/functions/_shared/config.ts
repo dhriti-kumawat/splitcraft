@@ -141,9 +141,13 @@ export function toSdkTargeting(
   segments: Record<string, ConditionGroup>,
 ): SdkProjectConfig['experiments'][number]['targeting'] {
   const out: SdkProjectConfig['experiments'][number]['targeting'] = {};
-  if (t.who && t.who.segmentIds.length > 0) {
-    // A deleted segment must not widen the audience, so it becomes "matches nobody".
-    const groups = t.who.segmentIds.map((id) => segments[id] ?? NEVER);
+  // WHO: each saved audience, plus this test's own conditions, combined by any / all.
+  // A deleted segment must not widen the audience, so it becomes "matches nobody".
+  const groups = [
+    ...(t.who?.segmentIds ?? []).map((id) => segments[id] ?? NEVER),
+    ...(t.who?.rules?.items.length ? [t.who.rules] : []),
+  ];
+  if (t.who && groups.length > 0) {
     out.who = t.who.mode === 'any' ? [{ mode: 'any', items: groups }] : groups;
   }
   if (t.where) out.where = t.where;

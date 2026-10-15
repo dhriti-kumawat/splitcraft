@@ -382,6 +382,18 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
         : null;
     },
 
+    async sendFeedback({ kind, message, page, workspaceId }) {
+      const result = check(
+        await supabase.rpc('send_feedback', {
+          p_kind: kind,
+          p_message: message,
+          p_page: page,
+          p_workspace: workspaceId,
+        }),
+      ) as number;
+      return result === 1;
+    },
+
     async acceptInvite(token) {
       return check(await supabase.rpc('accept_invite', { p_token: token })) as string;
     },

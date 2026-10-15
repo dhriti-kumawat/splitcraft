@@ -91,6 +91,12 @@ export const routes: RouteObject[] = [
                     }),
                   },
                   {
+                    path: 'audience',
+                    lazy: async () => ({
+                      Component: (await import('./pages/experiments/AudiencePage')).AudiencePage,
+                    }),
+                  },
+                  {
                     path: 'targeting',
                     lazy: async () => ({
                       Component: (await import('./pages/experiments/TargetingPage')).TargetingPage,

@@ -11,7 +11,7 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 
 ## Design
 - Designs live in the Claude canvas "Splitcraft Dashboard". Match them.
-- Colors: ink `#15171A`, ground `#F4F5F2`, surface `#FFFFFF`, line `#E3E5DF`, muted text `#5F6660`, accent `#0F6B57`, accent soft `#E4F1EC`, variant A `#3B5B8C`, variant B `#D97A2B`, highlight `#F2B37A`, danger `#B3261E`.
+- Colors: ink `#15171A`, ground `#F4F5F2`, surface `#FFFFFF`, line `#E3E5DF`, muted text `#5F6660`, accent `#0F6B57`, accent soft `#E4F1EC`, variants in fixed order Control `#6489C8`, B `#0F8F6A`, C `#C28718`, D `#9A50AC` (soft chip fills in `design/tokens.css`; use `lib/chartColors.ts` for anything showing a variant), highlight `#F2B37A`, danger `#B3261E`.
 - Fonts: Instrument Sans (UI), JetBrains Mono (code, numbers, keys).
 - No emoji in UI. Buttons, inputs and labels must be real elements with visible focus states.
 

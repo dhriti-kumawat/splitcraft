@@ -17,10 +17,13 @@ export function Menu({
   label,
   children,
   items,
+  text = false,
 }: {
   label: string;
   children: ReactNode;
   items: MenuItem[];
+  /** A trigger with words in it, instead of the square icon button. */
+  text?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -71,7 +74,7 @@ export function Menu({
       <button
         ref={buttonRef}
         type="button"
-        className={styles.trigger}
+        className={text ? styles.textTrigger : styles.trigger}
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}

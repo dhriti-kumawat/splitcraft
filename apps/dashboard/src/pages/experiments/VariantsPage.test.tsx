@@ -283,6 +283,36 @@ describe('editor', () => {
   });
 });
 
+describe('traffic split', () => {
+  it('validates and saves the split next to the variations', async () => {
+    const user = userEvent.setup();
+    const { variantPatches } = await open();
+    const control = screen.getByRole('textbox', { name: 'Control %' });
+    await user.clear(control);
+    await user.type(control, '30');
+    await user.tab();
+    expect(screen.getByText('The split must add up to 100% (now 80%).')).toBeInTheDocument();
+    const b = screen.getByRole('textbox', { name: 'B %' });
+    await user.clear(b);
+    await user.type(b, '70');
+    await user.tab();
+    await vi.waitFor(() =>
+      expect(variantPatches).toEqual([
+        { id: 'trust-c', patch: { weight: 30 } },
+        { id: 'trust-b', patch: { weight: 70 } },
+      ]),
+    );
+  });
+
+  it('locks the split once started', async () => {
+    await open('sticky');
+    expect(screen.getByRole('textbox', { name: 'Control %' })).toBeDisabled();
+    expect(
+      screen.getByText(/The split is locked once an experiment has started/),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('editor tools', () => {
   it('shows the helpers and the variation key, and the split beside the list', async () => {
     const user = userEvent.setup();

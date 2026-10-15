@@ -1,3 +1,4 @@
+import { markNamed } from '../../lib/workspaceNames';
 import { useId, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../../components/Button';
@@ -57,7 +58,12 @@ export function WorkspaceSettingsPage() {
                 disabled={
                   !isOwner || Boolean(error) || name.trim() === workspace.name || rename.isPending
                 }
-                onClick={() => rename.mutate({ id: workspace.id, name: name.trim() })}
+                onClick={() =>
+                  rename.mutate(
+                    { id: workspace.id, name: name.trim() },
+                    { onSuccess: () => markNamed(workspace.id) },
+                  )
+                }
               >
                 Save
               </Button>

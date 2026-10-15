@@ -1,6 +1,6 @@
 ---
 title: Targeting
-description: WHO / WHERE / HOW / WHEN, conditions, saved audiences, evaluation settings and reach.
+description: Audience (WHO) and targeting (WHERE / HOW / WHEN), conditions, saved audiences, evaluation settings and reach.
 ---
 
 # Targeting
@@ -13,6 +13,20 @@ description: WHO / WHERE / HOW / WHEN, conditions, saved audiences, evaluation s
 | WHEN   | Frequency                                 | Per visitor                         |
 
 A visitor is in the experiment when all four match; then traffic and bucketing decide the variant.
+
+In an experiment, WHO is the **Audience** step and WHERE / HOW / WHEN are the **Targeting** step.
+Each step saves only its own part.
+
+## Audience (WHO)
+
+- **Everyone**, or **Specific visitors**.
+- **Saved audiences**: segments from Project › Audiences, shared across tests and linked by id, so
+  editing one changes every test that uses it. **Add saved audience** picks one; each shows what it
+  means.
+- **Only for this test**: conditions stored with the experiment (`targeting.who.rules`, the same
+  shape a segment stores). **Save as an audience to reuse in other tests** turns them into a saved
+  audience and the test then uses that.
+- With two or more of these, **Visitors must match** any or all of them.
 
 ## WHERE
 
@@ -62,8 +76,10 @@ change cancels them. After activation, WHO, HOW and WHEN are checked as usual.
 
 ## Evaluation settings
 
-- **Once matched, stay in audience**: after a visitor has seen the experiment, WHO and HOW aren't
-  checked again (WHERE and WHEN still are).
+Targeting › **Advanced** holds activation and these settings:
+
+- **Once matched, stay in the test**: after a visitor has seen the experiment, the audience and
+  triggers aren't checked again (pages and frequency still are).
 - **Wait for dataLayer up to N ms** (0–5,000): before deciding, wait until every dataLayer key the
   rules use has a value.
 
@@ -72,9 +88,9 @@ change cancels them. After activation, WHO, HOW and WHEN are checked as usual.
 Project › **Audiences** has three tabs:
 
 - **Segments**: linked by id. Editing a segment changes every experiment that uses it, from the next page load.
-- **Triggers** and **Page sets**: inserted as copies (**Insert saved trigger**, **Use saved page
-  set**), so later edits don't change experiments. Save the current rules with **Save these
-  conditions as a trigger** / **Save these rules as a page set**.
+- **Triggers** and **Page sets**: inserted as copies (**Use saved trigger**, **Use saved page
+  set**), so later edits don't change experiments. Save the current rules with **Save as trigger**
+  / **Save as page set**.
 - **Insert saved audience** in the segment builder adds another segment's rules as extra groups.
 
 ## Reach estimate

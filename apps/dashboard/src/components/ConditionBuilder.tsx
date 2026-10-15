@@ -24,6 +24,8 @@ interface Props {
   groups: ConditionGroup[];
   onChange(groups: ConditionGroup[]): void;
   /** Used in accessible names, e.g. "Segment" or "Trigger". */
+  /** Shown when there are no groups. */
+  emptyText?: string;
   noun: string;
   /** Allow several top-level groups (ANDed). Default true. */
   multipleGroups?: boolean;
@@ -41,6 +43,7 @@ export function ConditionBuilder({
   groups,
   onChange,
   noun,
+  emptyText = 'No conditions: everyone matches.',
   multipleGroups = true,
   defaultMode = 'all',
   estimate,
@@ -51,7 +54,7 @@ export function ConditionBuilder({
 
   return (
     <div className={styles.builder}>
-      {groups.length === 0 && <p className={styles.empty}>No conditions: everyone matches.</p>}
+      {groups.length === 0 && <p className={styles.empty}>{emptyText}</p>}
       {groups.map((g, i) => (
         <Fragment key={i}>
           {i > 0 && <span className={styles.and}>AND</span>}

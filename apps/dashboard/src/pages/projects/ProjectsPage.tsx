@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button';
 import { NewWorkspaceDialog } from '../../components/NewWorkspaceDialog';
+import { isNamed, markNamed } from '../../lib/workspaceNames';
 import { PlusIcon } from '../../components/icons';
 import { PageHeader } from '../../components/PageHeader';
 import { Pill } from '../../components/Pill';
@@ -66,7 +67,7 @@ export function ProjectsPage() {
           description="One project per product. Each has its own snippet, audiences, goals and experiments."
         />
         <Onboarding onNewProject={() => setDrawerOpen(true)} />
-        {user.role === 'owner' && isDefaultName(workspace.name) && (
+        {user.role === 'owner' && isDefaultName(workspace.name) && !isNamed(workspace.id) && (
           <NameWorkspace key={workspace.id} />
         )}
         {!workspaces.some((w) => w.role === 'owner') && <OwnWorkspace />}
@@ -173,7 +174,11 @@ function NameWorkspace() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (name.trim()) rename.mutate({ id: workspace.id, name: name.trim() });
+    if (name.trim())
+      rename.mutate(
+        { id: workspace.id, name: name.trim() },
+        { onSuccess: () => markNamed(workspace.id) },
+      );
   };
 
   return (
@@ -203,7 +208,15 @@ function NameWorkspace() {
         <Button type="submit" disabled={!name.trim() || rename.isPending}>
           Save name
         </Button>
-        <button type="button" className={styles.later} onClick={() => setDismissed(true)}>
+        <button
+          type="button"
+          className={styles.later}
+          onClick={() => {
+            // Remembered: the card doesn't come back for this workspace.
+            markNamed(workspace.id);
+            setDismissed(true);
+          }}
+        >
           Later
         </button>
       </form>

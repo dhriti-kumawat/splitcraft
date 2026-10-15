@@ -5,29 +5,25 @@ import { renderApp } from '../../test/renderApp';
 
 async function open(id = 'trust', data = fakeData()) {
   renderApp(`/p/marketing-site/experiments/${id}/targeting`, { data: data.api });
-  await screen.findByRole('heading', { name: 'Segment' });
-  await screen.findByRole('button', { name: 'Add segment' });
+  await screen.findByRole('heading', { name: 'Pages' });
   return data;
 }
 
 const saved = (patches: Array<{ id: string; patch: unknown }>) =>
   (patches.at(-1)!.patch as { targeting: unknown }).targeting;
 
-describe('targeting', () => {
-  it('creates a new segment from the + menu in a new tab', async () => {
-    const user = userEvent.setup();
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
-    await open();
-    await user.click(screen.getByRole('button', { name: 'Add segment' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Create new segment…' }));
-    expect(openSpy).toHaveBeenCalledWith('/p/marketing-site/audiences/new', '_blank', 'noopener');
-    openSpy.mockRestore();
-  });
+const openAdvanced = async (user: ReturnType<typeof userEvent.setup>) => {
+  const advanced = screen.getByText('Advanced').closest('details')!;
+  if (!advanced.open) await user.click(screen.getByText('Advanced'));
+};
 
+describe('targeting', () => {
   it('starts as everyone, every page, every load', async () => {
     await open();
-    expect(screen.getByText('everyone (no segment)')).toBeInTheDocument();
     expect(screen.getByText('Runs on every page of the site.')).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Narrow down who sees it in Audience' }),
+    ).toHaveAttribute('href', '/p/marketing-site/experiments/trust/audience');
     expect(screen.getByRole('radio', { name: 'Every page load' })).toHaveAttribute(
       'aria-checked',
       'true',
@@ -36,19 +32,14 @@ describe('targeting', () => {
     expect(screen.getByRole('button', { name: 'Save targeting' })).toBeDisabled();
   });
 
-  it('builds WHO, WHERE, HOW and WHEN and saves them', async () => {
+  it('builds pages, triggers and frequency and saves them, keeping the audience', async () => {
     const user = userEvent.setup();
-    const { patches } = await open();
+    const { patches } = await open('hero');
 
-    await user.click(screen.getByRole('button', { name: 'Add segment' }));
-    await user.click(screen.getByRole('menuitem', { name: 'High-intent returners' }));
-    await user.click(screen.getByRole('button', { name: 'Add segment' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Mobile first-timers' }));
-    await user.click(screen.getByRole('button', { name: 'all' }));
-
-    await user.click(screen.getByRole('button', { name: '+ Rule' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Page rule 1' }));
+    await user.click(screen.getByRole('button', { name: '+ URL rule' }));
     await user.type(screen.getByRole('textbox', { name: 'Page rule 1 value' }), '/trips/*');
-    await user.click(screen.getByRole('button', { name: '+ Rule' }));
+    await user.click(screen.getByRole('button', { name: '+ URL rule' }));
     await user.selectOptions(
       screen.getByRole('combobox', { name: 'Page rule 2 include or exclude' }),
       'EXCLUDE',
@@ -64,7 +55,11 @@ describe('targeting', () => {
       '.book-now-btn',
     );
 
-    await user.click(screen.getByRole('button', { name: '+ Add group' }));
+    await user.click(
+      within(screen.getByRole('region', { name: 'Triggers' })).getByRole('button', {
+        name: '+ Add group',
+      }),
+    );
     await user.selectOptions(
       screen.getByRole('combobox', { name: 'Trigger group 1, condition 1 field' }),
       'Pages viewed this visit',
@@ -78,14 +73,15 @@ describe('targeting', () => {
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'High-intent returners and Mobile first-timers, on pages /trips/*, except /archive, with .book-now-btn on the page, when pages viewed this visit is at least 2, every 14 days.',
+        'High-intent returners, on pages /trips/*, except /archive, with .book-now-btn on the page, when pages viewed this visit is at least 2, every 14 days.',
       ),
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Save targeting' }));
     expect(await screen.findByText('Saved.')).toBeInTheDocument();
-    expect(saved(patches)).toEqual({
-      who: { mode: 'all', segmentIds: ['seg-returners', 'seg-mobile'] },
+    expect(saved(patches)).toMatchObject({
+      // The audience is the Audience step's; saving targeting keeps it.
+      who: { segmentIds: ['seg-returners'] },
       where: {
         include: [{ op: 'matches', value: '/trips/*' }],
         exclude: [{ op: 'contains', value: '/archive' }],
@@ -99,7 +95,7 @@ describe('targeting', () => {
   it('refuses to save empty or invalid rules', async () => {
     const user = userEvent.setup();
     await open();
-    await user.click(screen.getByRole('button', { name: '+ Rule' }));
+    await user.click(screen.getByRole('button', { name: '+ URL rule' }));
     await user.selectOptions(
       screen.getByRole('combobox', { name: 'Page rule 1 operator' }),
       'regex',
@@ -113,20 +109,21 @@ describe('targeting', () => {
     );
   });
 
-  it('removes segments and rules', async () => {
+  it('removes rules', async () => {
     const user = userEvent.setup();
     await open('hero');
-    expect(screen.getByText('High-intent returners')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Remove High-intent returners' }));
     await user.click(screen.getByRole('button', { name: 'Remove Page rule 1' }));
-    expect(screen.getByText('Everyone, on every page, on every page load.')).toBeInTheDocument();
+    expect(
+      screen.getByText('High-intent returners, on every page, on every page load.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Edit audience' })).toBeInTheDocument();
   });
 
   it('shows live traffic and warns that saved rules apply to live visitors', async () => {
     const user = userEvent.setup();
     await open('sticky');
     expect(
-      screen.getByText(/visitors a day entered this test in the last 7 days/),
+      await screen.findByText(/visitors a day entered this test in the last 7 days/),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: 'Once' }));
     expect(
@@ -165,7 +162,11 @@ describe('reach estimate', () => {
     expect(reach).toHaveTextContent('100% of sessions · ≈ 200 visitors a day');
     expect(reach).toHaveTextContent('From 20 of 6,000 sessions in the last 30 days.');
 
-    await user.click(screen.getByRole('button', { name: '+ Add group' }));
+    await user.click(
+      within(screen.getByRole('region', { name: 'Triggers' })).getByRole('button', {
+        name: '+ Add group',
+      }),
+    );
     await user.selectOptions(
       screen.getByRole('combobox', { name: 'Trigger group 1, condition 1 field' }),
       'Device type',
@@ -189,15 +190,11 @@ describe('saved targeting', () => {
   it('uses a saved page set and inserts a saved trigger as copies', async () => {
     const user = userEvent.setup();
     const { patches } = await open();
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Use saved page set' }),
-      'Trip and deal pages · 3 URL rules',
-    );
+    await user.click(await screen.findByRole('button', { name: 'Use saved page set' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Trip and deal pages · 3 URL rules' }));
     expect(screen.getByRole('textbox', { name: 'Page rule 1 value' })).toHaveValue('/trips/*');
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Insert saved trigger' }),
-      'Engaged mobile visit',
-    );
+    await user.click(await screen.findByRole('button', { name: 'Use saved trigger' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Engaged mobile visit' }));
     await user.click(screen.getByRole('button', { name: 'Save targeting' }));
     await vi.waitFor(() => expect(patches.length).toBe(1));
     expect(saved(patches)).toMatchObject({
@@ -215,9 +212,9 @@ describe('saved targeting', () => {
   it('saves the current page rules as a page set', async () => {
     const user = userEvent.setup();
     const data = await open();
-    await user.click(screen.getByRole('button', { name: '+ Rule' }));
+    await user.click(screen.getByRole('button', { name: '+ URL rule' }));
     await user.type(screen.getByRole('textbox', { name: 'Page rule 1 value' }), '/checkout');
-    await user.click(screen.getByRole('button', { name: 'Save these rules as a page set' }));
+    await user.click(screen.getByRole('button', { name: 'Save as page set' }));
     await user.type(screen.getByLabelText('Name'), 'Checkout');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText('Saved “Checkout” to Audiences.')).toBeInTheDocument();
@@ -232,7 +229,8 @@ describe('evaluation settings', () => {
   it('saves stay in audience and a dataLayer wait', async () => {
     const user = userEvent.setup();
     const { patches } = await open();
-    await user.click(screen.getByRole('checkbox', { name: /Once matched, stay in audience/ }));
+    await openAdvanced(user);
+    await user.click(screen.getByRole('checkbox', { name: /Once matched, stay in the test/ }));
     const wait = screen.getByLabelText('Wait for dataLayer up to');
     await user.clear(wait);
     await user.type(wait, '9000');
@@ -251,6 +249,7 @@ describe('activation', () => {
   it('saves activation when an element appears, with a time limit', async () => {
     const user = userEvent.setup();
     const { patches } = await open();
+    await openAdvanced(user);
     expect(screen.getByRole('radio', { name: /Immediately/ })).toBeChecked();
     await user.click(screen.getByRole('radio', { name: /When an element appears/ }));
     await user.click(screen.getByRole('button', { name: 'Save targeting' }));
@@ -270,6 +269,7 @@ describe('activation', () => {
   it('shows the code to call for manual activation and saves it', async () => {
     const user = userEvent.setup();
     const { patches } = await open();
+    await openAdvanced(user);
     await user.click(screen.getByRole('radio', { name: /Manually/ }));
     expect(screen.getByText("splitcraft.activate('trust')")).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Save targeting' }));
@@ -280,6 +280,7 @@ describe('activation', () => {
   it('needs a JS condition and a sensible wait', async () => {
     const user = userEvent.setup();
     const { patches } = await open();
+    await openAdvanced(user);
     await user.click(screen.getByRole('radio', { name: /When a JS condition is true/ }));
     await user.click(screen.getByRole('button', { name: 'Save targeting' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Write the condition');

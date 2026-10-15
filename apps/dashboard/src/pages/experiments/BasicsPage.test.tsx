@@ -25,7 +25,7 @@ const withExperiments = (...list: Experiment[]) =>
   });
 
 describe('experiment layout', () => {
-  it('shows the name, status and the five steps', async () => {
+  it('shows the name, status and the six steps', async () => {
     await open();
     expect(
       screen.getByRole('heading', { level: 1, name: 'Trust badges under Book button' }),
@@ -38,9 +38,10 @@ describe('experiment layout', () => {
     ).toEqual([
       '1Basics',
       '2Variations & code',
-      '3Targeting',
-      '4Goals (done)'.replace('4', '✓'),
-      '5Results',
+      '3Audience',
+      '4Targeting',
+      '5Goals (done)'.replace('5', '✓'),
+      '6Results',
     ]);
     expect(within(steps).getByRole('link', { name: /Basics/ })).toHaveAttribute(
       'aria-current',
@@ -81,25 +82,26 @@ describe('basics', () => {
     );
   });
 
-  it('summarises targeting and goals with links to edit them', async () => {
+  it("shows only what the other steps don't: no audience, targeting or goals summary", async () => {
     await open('/p/marketing-site/experiments/sticky/basics');
-    const targeting = screen.getByRole('region', { name: 'Targeting' });
-    expect(within(targeting).getByText('1 URL rule')).toBeInTheDocument();
-    expect(within(targeting).getByText('1 trigger')).toBeInTheDocument();
-    expect(within(targeting).getByText('Everyone')).toBeInTheDocument();
-    expect(within(targeting).getByRole('link', { name: 'Edit targeting' })).toHaveAttribute(
-      'href',
-      '/p/marketing-site/experiments/sticky/targeting',
-    );
-    const goals = screen.getByRole('region', { name: 'Goals' });
-    expect(within(goals).getByText('Book click')).toBeInTheDocument();
-    expect(await within(goals).findByText('Confirmation page')).toBeInTheDocument();
-    expect(within(goals).getByText('1 limit')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'About this test' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Audience and targeting' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Goals' })).toBeNull();
   });
 
-  it('validates and saves traffic and the split', async () => {
+  it('lists what is left before launch, with a link to fix each', async () => {
+    await open();
+    const launch = screen.getByRole('region', { name: 'Before you launch' });
+    expect(within(launch).getByText('1 to do')).toBeInTheDocument();
+    expect(within(launch).getByRole('link', { name: 'Add code' })).toHaveAttribute(
+      'href',
+      '/p/marketing-site/experiments/trust/variants',
+    );
+  });
+
+  it('validates and saves traffic, and links the split to Variations', async () => {
     const user = userEvent.setup();
-    const { patches, variantPatches } = await open();
+    const { patches } = await open();
     const traffic = screen.getByLabelText('Include');
     await user.clear(traffic);
     await user.type(traffic, '150');
@@ -110,30 +112,11 @@ describe('basics', () => {
     await vi.waitFor(() =>
       expect(patches).toContainEqual({ id: 'trust', patch: { trafficPct: 80 } }),
     );
-
-    const control = screen.getByRole('textbox', { name: 'Control %' });
-    await user.clear(control);
-    await user.type(control, '30');
-    await user.tab();
-    expect(screen.getByText('The split must add up to 100% (now 80%).')).toBeInTheDocument();
-    const b = screen.getByRole('textbox', { name: 'B %' });
-    await user.clear(b);
-    await user.type(b, '70');
-    await user.tab();
-    await vi.waitFor(() =>
-      expect(variantPatches).toEqual([
-        { id: 'trust-c', patch: { weight: 30 } },
-        { id: 'trust-b', patch: { weight: 70 } },
-      ]),
+    expect(screen.queryByRole('textbox', { name: 'Control %' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Edit split' })).toHaveAttribute(
+      'href',
+      '/p/marketing-site/experiments/trust/variants',
     );
-  });
-
-  it('locks the split once started', async () => {
-    await open('/p/marketing-site/experiments/sticky/basics');
-    expect(screen.getByRole('textbox', { name: 'Control %' })).toBeDisabled();
-    expect(
-      screen.getByText(/The split is locked once an experiment has started/),
-    ).toBeInTheDocument();
   });
 
   it('plans the sample size and saves it', async () => {
@@ -281,7 +264,7 @@ describe('test page', () => {
     ).toBeInTheDocument();
     await user.clear(field);
     await user.type(field, '/checkout');
-    expect(screen.getByText(/isn't in the experiment's WHERE rules/)).toBeInTheDocument();
+    expect(screen.getByText(/isn't in the test's page rules/)).toBeInTheDocument();
   });
 });
 

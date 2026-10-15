@@ -7,6 +7,16 @@ import type {
   WhereRules,
 } from '../lib/targeting';
 
+export type FeedbackKind = 'help' | 'feedback' | 'problem';
+
+export interface FeedbackInput {
+  kind: FeedbackKind;
+  message: string;
+  /** The dashboard path it was sent from, if the sender chose to include it. */
+  page: string | null;
+  workspaceId: string | null;
+}
+
 export type Role = 'owner' | 'admin' | 'member';
 
 export interface Workspace {
@@ -388,6 +398,8 @@ export interface DataApi {
   inviteDetails(token: string): Promise<InviteDetails | null>;
   /** Returns the joined workspace's id. */
   acceptInvite(token: string): Promise<string>;
+  /** Help, feedback or a problem report from the signed-in user. False: too many this hour. */
+  sendFeedback(input: FeedbackInput): Promise<boolean>;
   getProject(projectId: string): Promise<Project | null>;
   projectOverview(workspaceId: string): Promise<ProjectStats[]>;
   workspaceActivity(workspaceId: string, limit: number): Promise<ActivityItem[]>;

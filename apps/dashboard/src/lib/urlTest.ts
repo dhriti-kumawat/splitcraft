@@ -44,8 +44,8 @@ export function testUrl(
       text: `Element ${el.selector} is checked on the page (waits up to ${(el.timeoutMs ?? 3000) / 1000} s)`,
     });
   }
-  if (t.who?.segmentIds.length)
-    lines.push({ ok: null, text: 'Segments are checked against the visitor on the site' });
+  if (t.who?.segmentIds.length || t.who?.rules?.items.length)
+    lines.push({ ok: null, text: 'The audience is checked against the visitor on the site' });
   if (t.how?.some((g) => g.items.length))
     lines.push({ ok: null, text: 'Triggers are checked in the visit on the site' });
 
