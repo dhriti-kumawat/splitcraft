@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { DataApi } from '../../data/api';
 import { fakeData, WORKSPACE } from '../../test/fakeData';
@@ -239,6 +239,30 @@ describe('workspaces', () => {
       expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull(),
     );
     expect(data.workspacesNow()[0]!.name).toBe('Larkspur Travel');
+  });
+
+  it("doesn't ask again after Later, or about a workspace named on purpose", async () => {
+    const user = userEvent.setup();
+    const data = fakeData({ workspaces: [{ ...WORKSPACE, name: "Jo's Workspace" }] });
+    const router = renderApp('/projects', { data: data.api });
+    await screen.findByRole('heading', { name: 'Give your workspace a name' });
+    await user.click(screen.getByRole('button', { name: 'Later' }));
+    router.dispose();
+    cleanup();
+    renderApp('/projects', { data: data.api });
+    await screen.findByRole('heading', { level: 1, name: 'Projects' });
+    expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull();
+    localStorage.clear();
+    cleanup();
+
+    // A workspace created with the name "Dhriti's Workspace" was named on purpose.
+    const fresh = fakeData({ workspaces: [] });
+    renderApp('/projects', { data: fresh.api });
+    await user.type(await screen.findByLabelText(/name/i), "Dhriti's Workspace");
+    await user.click(screen.getByRole('button', { name: /Create/ }));
+    await screen.findByRole('heading', { level: 1, name: 'Projects' });
+    expect(screen.queryByRole('heading', { name: 'Give your workspace a name' })).toBeNull();
+    localStorage.clear();
   });
 
   it("doesn't ask non-owners to name the workspace", async () => {

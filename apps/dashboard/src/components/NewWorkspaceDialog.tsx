@@ -1,3 +1,4 @@
+import { markNamed } from '../lib/workspaceNames';
 import { useId, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { useWorkspaceMutations } from '../data/queries';
@@ -28,6 +29,7 @@ export function NewWorkspaceDialog({
     if (error) return;
     create.mutate(name.trim(), {
       onSuccess: (workspaceId) => {
+        markNamed(workspaceId);
         onCreated(workspaceId);
         onClose();
         navigate('/projects');
