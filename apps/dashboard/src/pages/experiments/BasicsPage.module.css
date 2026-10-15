@@ -137,22 +137,44 @@
   border-color: var(--danger);
 }
 
+/* A thin bar for the shares, and a legend of soft chips with the names. */
 .splitBar {
   display: flex;
-  height: 34px;
-  border-radius: 7px;
+  gap: 2px;
+  height: 8px;
+  border-radius: 4px;
   overflow: hidden;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #ffffff;
 }
 
-.splitBar > div {
+.legend {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend li {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  height: 30px;
   padding: 0 12px;
-  white-space: nowrap;
-  overflow: hidden;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.legend b {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
 }
 
 .planInputs {
