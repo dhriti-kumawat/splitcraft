@@ -18,11 +18,13 @@ body {
   outline-offset: 2px;
 }
 
-a {
+/* Zero-specificity link colours: any class that styles a link (buttons, cards, nav items)
+   sets its own colours and wins, so a hover never repaints a label into its background. */
+:where(a) {
   color: var(--accent);
 }
 
-a:hover {
+:where(a):hover {
   color: var(--accent-hover);
 }
 

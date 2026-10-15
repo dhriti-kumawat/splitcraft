@@ -32,6 +32,9 @@ interface Step {
 export function Onboarding({ onNewProject }: { onNewProject(): void }) {
   const { workspace, projects } = useWorkspace();
   const [hidden, setHidden] = useState(() => readHidden(workspace.id));
+  // Once there's a project, the guide shrinks to one row under the projects; "All steps"
+  // opens the full list.
+  const [expanded, setExpanded] = useState(false);
   const demo = useCreateDemoProject(workspace.id);
   const navigate = useNavigate();
   const hasDemo = projects.some((p) => p.demo);
@@ -98,8 +101,61 @@ export function Onboarding({ onNewProject }: { onNewProject(): void }) {
     }
   };
 
+  if (own.length > 0 && !expanded) {
+    return (
+      <section className={styles.strip} aria-labelledby="onboarding-h">
+        <div className={styles.stripLead}>
+          <h2 id="onboarding-h" className={styles.stripTitle}>
+            Get your first test live
+          </h2>
+          <span className={styles.stripCount}>
+            {doneCount} of {steps.length}
+          </span>
+          <div
+            className={styles.miniBar}
+            role="progressbar"
+            aria-label="Setup progress"
+            aria-valuemin={0}
+            aria-valuemax={steps.length}
+            aria-valuenow={doneCount}
+          >
+            <span style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+          </div>
+        </div>
+        <span className={styles.stripNext}>
+          Next: <b>{next.title}</b>
+        </span>
+        <div className={styles.stripActions}>
+          {next.to ? (
+            <Link to={next.to} className={styles.action}>
+              {next.action}
+            </Link>
+          ) : (
+            <button type="button" className={styles.action} onClick={onNewProject}>
+              {next.action}
+            </button>
+          )}
+          <button
+            type="button"
+            className={styles.hide}
+            aria-expanded={false}
+            onClick={() => setExpanded(true)}
+          >
+            All steps
+          </button>
+          <button type="button" className={styles.hide} onClick={hide}>
+            Hide
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className={styles.card} aria-labelledby="onboarding-h">
+    <section
+      className={`${styles.card} ${own.length > 0 ? styles.below : ''}`}
+      aria-labelledby="onboarding-h"
+    >
       <div className={styles.head}>
         <div>
           <h2 id="onboarding-h" className={styles.title}>
@@ -109,9 +165,21 @@ export function Onboarding({ onNewProject }: { onNewProject(): void }) {
             {doneCount} of {steps.length} done · about 10 minutes
           </p>
         </div>
-        <button type="button" className={styles.hide} onClick={hide}>
-          Hide
-        </button>
+        <div className={styles.stripActions}>
+          {own.length > 0 && (
+            <button
+              type="button"
+              className={styles.hide}
+              aria-expanded={true}
+              onClick={() => setExpanded(false)}
+            >
+              Fewer details
+            </button>
+          )}
+          <button type="button" className={styles.hide} onClick={hide}>
+            Hide
+          </button>
+        </div>
       </div>
       {!hasDemo && doneCount < 2 && (
         <div className={styles.demo}>

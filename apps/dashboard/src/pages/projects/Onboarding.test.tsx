@@ -38,12 +38,22 @@ describe('onboarding checklist', () => {
         experiments: draftOnly,
       }),
     );
-    const card = await checklist();
-    expect(within(card).getByText('3 of 5 done · about 10 minutes')).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: 'Open experiment' })).toHaveAttribute(
+    // With projects, it's one row under them: progress, the next step and its action.
+    const strip = await checklist();
+    expect(within(strip).getByText('3 of 5')).toBeInTheDocument();
+    expect(strip).toHaveTextContent('Next: Write the variant and pick a goal');
+    expect(within(strip).getByRole('link', { name: 'Open experiment' })).toHaveAttribute(
       'href',
       '/p/marketing-site/experiments/trust/variants',
     );
+    const grid = screen.getAllByRole('article')[0]!;
+    expect(grid.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    // All steps opens the full list.
+    await userEvent.setup().click(within(strip).getByRole('button', { name: 'All steps' }));
+    const card = await checklist();
+    expect(within(card).getByText('3 of 5 done · about 10 minutes')).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Fewer details' })).toBeInTheDocument();
   });
 
   it('hides for good when asked, and when everything is done', async () => {
