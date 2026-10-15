@@ -68,12 +68,13 @@ export function evaluateTargeting(
   s: SessionPing,
 ): Maybe {
   const parts: Maybe[] = [];
-  if (t.who?.segmentIds.length) {
-    const each = t.who.segmentIds.map((id) =>
+  const who = [
+    ...(t.who?.segmentIds ?? []).map((id) =>
       segments[id] ? evaluateGroup(segments[id], s) : false,
-    );
-    parts.push(t.who.mode === 'any' ? or(each) : and(each));
-  }
+    ),
+    ...(t.who?.rules?.items.length ? [evaluateGroup(t.who.rules, s)] : []),
+  ];
+  if (who.length) parts.push(t.who?.mode === 'any' ? or(who) : and(who));
   if (t.where) {
     // Judged on the page the session started on; element rules need the live page.
     const url = matchWhereUrl(s.url, { ...t.where, elements: undefined });

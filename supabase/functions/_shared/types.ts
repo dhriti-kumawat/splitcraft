@@ -14,7 +14,8 @@ export interface ConditionGroup {
 
 /** `experiments.targeting` as the dashboard stores it. */
 export interface StoredTargeting {
-  who?: { mode: 'all' | 'any'; segmentIds: string[] };
+  /** Saved audiences (segments, shared across tests) and this test's own conditions. */
+  who?: { mode: 'all' | 'any'; segmentIds: string[]; rules?: ConditionGroup };
   where?: Json;
   how?: ConditionGroup[];
   when?: Json;
