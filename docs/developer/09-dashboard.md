@@ -68,6 +68,11 @@ the sidebar.
 
 - **⌘K / Ctrl+K**: search pages, projects, experiments in every project, and the current project's
   audiences and metrics.
+- **Help and feedback** (sidebar, above Documentation): ask for help, share feedback or report
+  a problem from any page. It's saved with the account's email (replies come by email), the
+  workspace and, unless unticked, the page it was sent from. Up to 10 an hour per account.
+- **Variant colours** are the same everywhere (lists, split bars, chips, charts): Control blue,
+  B green, C amber, D purple, from `lib/chartColors.ts` and `--variant-*` in `design/tokens.css`.
 - **Hide the sidebar** (from 1024 px): the button at the top of the sidebar, or Ctrl/Cmd+\. The
   menu button at the start of the top bar shows it again. The choice is remembered in your
   browser. Below 1024 px the sidebar is a drawer instead.
