@@ -224,18 +224,11 @@
   font-weight: 600;
 }
 
-/* Stays at the bottom of the window while the form scrolls. */
 .saveBar {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  margin: 0 -2px;
-  padding: 12px 2px;
-  background: linear-gradient(to top, var(--ground) 70%, transparent);
 }
 
 .status {

@@ -132,7 +132,7 @@ export function whoSentence(t: StoredTargeting, segmentName: (id: string) => str
   return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
-/** A save bar that stays at the bottom of the window while the form scrolls. */
+/** The save button with its status beside it. */
 export function SaveBar({
   label,
   onSave,

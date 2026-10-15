@@ -101,29 +101,12 @@
   color: var(--danger);
 }
 
-.grid4 {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.fact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .lbl {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-}
-
-.factValue {
-  font-size: 14px;
-  color: var(--text-2);
 }
 
 .trafficRow {
@@ -170,58 +153,6 @@
   padding: 0 12px;
   white-space: nowrap;
   overflow: hidden;
-}
-
-.weights {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.weight {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.goalRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-}
-
-.goalRow .mono {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 9px;
-  border-radius: 11px;
-  font-size: 12px;
-  font-weight: 600;
-  min-width: 86px;
-  justify-content: center;
-}
-
-.primary {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.secondary {
-  background: var(--line-soft);
-  color: var(--text-2);
-}
-
-.guardrail {
-  background: var(--warn-soft);
-  color: var(--warn);
 }
 
 .planInputs {
@@ -296,13 +227,53 @@
   }
 }
 
-@media (max-width: 719px) {
-  .grid4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.splitHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
 }
 
-.editLinks {
-  display: flex;
-  gap: 16px;
+/* Exclusion group, folded away: most tests don't need it. */
+.more > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.more[open] > summary {
+  margin-bottom: 12px;
+}
+
+.left,
+.ready {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.left {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.ready {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.checkText {
+  flex: 1;
+}
+
+.fix {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fixHint {
+  font-size: 12px;
+  color: var(--muted);
 }
