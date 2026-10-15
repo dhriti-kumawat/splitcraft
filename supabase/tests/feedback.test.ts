@@ -11,7 +11,7 @@ let anasWs: string;
 async function q<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
   return (await db.query<T>(sql, params)).rows;
 }
-const send = (who: typeof ana, ...args: unknown[]) =>
+const send = (who: { role: 'authenticated'; userId: string }, ...args: unknown[]) =>
   as(db, who, () =>
     q<{ n: number }>('select send_feedback($1, $2, $3, $4) as n', [
       args[0],
