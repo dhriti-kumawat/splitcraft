@@ -33,6 +33,7 @@ const LINE = [
 export function ProjectsPage() {
   const { workspace, workspaces, projects, user } = useWorkspace();
   const overview = useOverviewQuery(workspace.id);
+  const hasOwn = projects.some((p) => !p.demo);
   const [drawerOpen, setDrawerOpen] = useState(false);
   // Real numbers from project_overview; a project without activity counts as zero, and
   // a failed load shows dashes instead of waiting forever.
@@ -66,7 +67,9 @@ export function ProjectsPage() {
           title="Projects"
           description="One project per product. Each has its own snippet, audiences, goals and experiments."
         />
-        <Onboarding onNewProject={() => setDrawerOpen(true)} />
+        {/* No project yet: the full guide leads. With projects, they come first and the
+            guide shrinks to one row under them. */}
+        {!hasOwn && <Onboarding onNewProject={() => setDrawerOpen(true)} />}
         {user.role === 'owner' && isDefaultName(workspace.name) && !isNamed(workspace.id) && (
           <NameWorkspace key={workspace.id} />
         )}
@@ -92,6 +95,7 @@ export function ProjectsPage() {
             </button>
           </li>
         </ul>
+        {hasOwn && <Onboarding onNewProject={() => setDrawerOpen(true)} />}
         <RecentActivity workspaceId={workspace.id} />
       </section>
 

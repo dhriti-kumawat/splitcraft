@@ -17,9 +17,12 @@
   color: #ffffff;
 }
 
+/* The colour is repeated on hover: when the button is a link, the global a:hover colour
+   would otherwise win and hide the label. */
 .primary:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+  color: #ffffff;
 }
 
 .secondary {
@@ -30,6 +33,7 @@
 
 .secondary:hover {
   background: var(--surface-2);
+  color: var(--ink);
 }
 
 .button:disabled {
