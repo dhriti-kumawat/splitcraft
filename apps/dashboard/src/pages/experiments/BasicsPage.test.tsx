@@ -25,7 +25,7 @@ const withExperiments = (...list: Experiment[]) =>
   });
 
 describe('experiment layout', () => {
-  it('shows the name, status and the five steps', async () => {
+  it('shows the name, status and the six steps', async () => {
     await open();
     expect(
       screen.getByRole('heading', { level: 1, name: 'Trust badges under Book button' }),
@@ -38,9 +38,10 @@ describe('experiment layout', () => {
     ).toEqual([
       '1Basics',
       '2Variations & code',
-      '3Targeting',
-      '4Goals (done)'.replace('4', '✓'),
-      '5Results',
+      '3Audience',
+      '4Targeting',
+      '5Goals (done)'.replace('5', '✓'),
+      '6Results',
     ]);
     expect(within(steps).getByRole('link', { name: /Basics/ })).toHaveAttribute(
       'aria-current',
@@ -83,13 +84,17 @@ describe('basics', () => {
 
   it('summarises targeting and goals with links to edit them', async () => {
     await open('/p/marketing-site/experiments/sticky/basics');
-    const targeting = screen.getByRole('region', { name: 'Targeting' });
+    const targeting = screen.getByRole('region', { name: 'Audience and targeting' });
     expect(within(targeting).getByText('1 URL rule')).toBeInTheDocument();
     expect(within(targeting).getByText('1 trigger')).toBeInTheDocument();
     expect(within(targeting).getByText('Everyone')).toBeInTheDocument();
     expect(within(targeting).getByRole('link', { name: 'Edit targeting' })).toHaveAttribute(
       'href',
       '/p/marketing-site/experiments/sticky/targeting',
+    );
+    expect(within(targeting).getByRole('link', { name: 'Edit audience' })).toHaveAttribute(
+      'href',
+      '/p/marketing-site/experiments/sticky/audience',
     );
     const goals = screen.getByRole('region', { name: 'Goals' });
     expect(within(goals).getByText('Book click')).toBeInTheDocument();

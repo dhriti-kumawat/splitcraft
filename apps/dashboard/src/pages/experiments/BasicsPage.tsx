@@ -150,8 +150,12 @@ function About({ experiment, project }: { experiment: Experiment; project: Proje
 
 function TargetingSummary({ experiment, base }: { experiment: Experiment; base: string }) {
   const t = experiment.targeting;
-  const who = t.who?.segmentIds.length
-    ? `${t.who.segmentIds.length} ${t.who.segmentIds.length === 1 ? 'segment' : 'segments'}, ${t.who.mode}`
+  const saved = t.who?.segmentIds.length ?? 0;
+  const own = Boolean(t.who?.rules?.items.length);
+  const who = t.who
+    ? [saved && `${saved} saved ${saved === 1 ? 'audience' : 'audiences'}`, own && 'own conditions']
+        .filter(Boolean)
+        .join(' + ')
     : 'Everyone';
   const urlRules = (t.where?.include?.length ?? 0) + (t.where?.exclude?.length ?? 0);
   const elements = t.where?.elements?.length ?? 0;
@@ -177,18 +181,23 @@ function TargetingSummary({ experiment, base }: { experiment: Experiment; base: 
     <section className={styles.section} aria-labelledby="targeting-h">
       <div className={styles.sectionHead}>
         <h2 className={styles.title} id="targeting-h">
-          Targeting
+          Audience and targeting
         </h2>
-        <Link to={`${base}/targeting`} className={styles.editLink}>
-          Edit targeting
-        </Link>
+        <span className={styles.editLinks}>
+          <Link to={`${base}/audience`} className={styles.editLink}>
+            Edit audience
+          </Link>
+          <Link to={`${base}/targeting`} className={styles.editLink}>
+            Edit targeting
+          </Link>
+        </span>
       </div>
       <dl className={styles.grid4} style={{ margin: 0 }}>
         {[
-          ['Who', who],
-          ['Where', where],
-          ['How', how],
-          ['When', when],
+          ['Audience', who],
+          ['Pages', where],
+          ['Triggers', how],
+          ['Frequency', when],
         ].map(([label, value]) => (
           <div key={label} className={styles.fact}>
             <dt className={styles.lbl}>{label}</dt>

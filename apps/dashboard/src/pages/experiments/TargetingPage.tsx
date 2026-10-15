@@ -1,12 +1,10 @@
 import { Menu } from '../../components/Menu';
-import { PlusIcon } from '../../components/icons';
 import { useId, useState } from 'react';
-import { Link } from 'react-router';
-import { Button } from '../../components/Button';
 import { ConditionBuilder } from '../../components/ConditionBuilder';
 import { PageRulesEditor } from '../../components/PageRulesEditor';
-import { InsertSavedSelect, SaveAsDialog } from '../../components/SavedPicker';
-import type { SavedKind, Segment } from '../../data/api';
+import { SaveAsDialog } from '../../components/SavedPicker';
+import { Link } from 'react-router';
+import type { SavedKind } from '../../data/api';
 import {
   useExperimentStatsQuery,
   useSavedMutations,
@@ -15,7 +13,7 @@ import {
   useSessionSampleQuery,
   useUpdateExperiment,
 } from '../../data/queries';
-import { describeGroups, groupsProblemCount } from '../../lib/conditions';
+import { groupsProblemCount } from '../../lib/conditions';
 import {
   describePageRules,
   fromWhere,
@@ -25,15 +23,18 @@ import {
 } from '../../lib/pageRules';
 import { fromGroups, toGroups } from '../../lib/segments';
 import { summarize } from '../../lib/experiments';
-import { evaluateGroup, evaluateTargeting, formatRange, share } from '../../lib/reach';
+import { evaluateGroup, share } from '../../lib/reach';
 import type { ConditionGroup, Frequency, StoredTargeting } from '../../lib/targeting';
 import { testUrl } from '../../lib/urlTest';
 import { useExperiment } from './experimentContext';
+import { number, ReachEstimate, SaveBar, whoSentence } from './targetingShared';
 import styles from './TargetingPage.module.css';
 
-const number = new Intl.NumberFormat('en-US');
-
-/** Experiment step 3: WHO / WHERE / HOW / WHEN (14-exp-step3-targeting.html). */
+/**
+ * Experiment step: where and when the test runs (14-exp-step3-targeting.html): pages,
+ * optional triggers in the visit, and frequency, with activation and evaluation under
+ * Advanced. Who can see it is the Audience step.
+ */
 export function TargetingPage() {
   const { experiment, project } = useExperiment();
   const update = useUpdateExperiment(experiment);
@@ -48,8 +49,6 @@ export function TargetingPage() {
   const stats = useExperimentStatsQuery(project.id);
   const t = experiment.targeting;
 
-  const [whoMode, setWhoMode] = useState<'any' | 'all'>(t.who?.mode ?? 'any');
-  const [segmentIds, setSegmentIds] = useState<string[]>(t.who?.segmentIds ?? []);
   const [where, setWhere] = useState<PageRules>(() => fromWhere(t.where));
   const { pages, elements } = where;
   const [how, setHow] = useState<ConditionGroup[]>(t.how ?? []);
@@ -60,8 +59,9 @@ export function TargetingPage() {
   const [submitted, setSubmitted] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
 
+  // WHO is the Audience step's; it is kept as saved there.
   const next: StoredTargeting = {
-    ...(segmentIds.length ? { who: { mode: whoMode, segmentIds } } : {}),
+    ...(t.who ? { who: t.who } : {}),
     ...(toWhere(where) ? { where: toWhere(where) } : {}),
     ...(how.some((g) => g.items.length) ? { how: how.filter((g) => g.items.length) } : {}),
     ...(when.mode !== 'every_load' ? { when } : {}),
@@ -80,6 +80,8 @@ export function TargetingPage() {
     (waitProblem ? 1 : 0) +
     (activationProblem(activation) ? 1 : 0);
   const ended = experiment.status === 'ended';
+  // Open Advanced when something in it is set, or needs fixing.
+  const advancedSet = activation.mode !== 'immediate' || stay || Number(waitMs) > 0 || waitProblem;
 
   const save = () => {
     setSubmitted(true);
@@ -88,170 +90,90 @@ export function TargetingPage() {
   };
 
   const segmentName = (id: string) =>
-    segments.data?.find((s) => s.id === id)?.name ?? 'Deleted segment';
-  const available = (segments.data ?? []).filter((s) => !segmentIds.includes(s.id));
+    segments.data?.find((s) => s.id === id)?.name ?? 'Deleted audience';
   const summary = stats.data ? summarize(experiment, stats.data) : null;
+  const base = `/p/${project.id}/experiments/${experiment.id}`;
 
   return (
     <div className={styles.layout}>
       <div className={styles.main}>
-        {/* WHO */}
-        <section className={styles.section} aria-labelledby="who-h">
-          <div className={styles.head}>
-            <div className={styles.titleRow}>
-              <span className={styles.key}>WHO</span>
-              <h2 className={styles.title} id="who-h">
-                Segment
-              </h2>
-              <span className={styles.sub}>Traits that stay true across visits</span>
-            </div>
-            <Link to={`/p/${project.id}/audiences/new`} className={styles.link}>
-              Create segment
-            </Link>
-          </div>
-          <div className={styles.row}>
-            <span>Visitor is in</span>
-            <div className={styles.seg} role="group" aria-label="Segment match">
-              {(['any', 'all'] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  className={styles.segButton}
-                  aria-pressed={whoMode === m}
-                  onClick={() => setWhoMode(m)}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-            <span>of</span>
-            {segmentIds.length === 0 && <span className={styles.sub}>everyone (no segment)</span>}
-            {segmentIds.map((id) => (
-              <span key={id} className={styles.chip}>
-                {segmentName(id)}
-                <button
-                  type="button"
-                  className={styles.chipRemove}
-                  aria-label={`Remove ${segmentName(id)}`}
-                  onClick={() => setSegmentIds((ids) => ids.filter((x) => x !== id))}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-            {/* Pick a saved segment, or build a new one in another tab (it shows up here
-                when you come back, so unsaved targeting isn't lost). */}
-            <Menu
-              label="Add segment"
-              items={[
-                ...available.map((seg) => ({
-                  label: seg.name,
-                  onSelect: () => setSegmentIds((ids) => [...ids, seg.id]),
-                })),
-                {
-                  label: 'Create new segment…',
-                  onSelect: () =>
-                    window.open(`/p/${project.id}/audiences/new`, '_blank', 'noopener'),
-                },
-              ]}
-            >
-              <PlusIcon />
-            </Menu>
-            {segments.isPending && <span className={styles.sub}>Loading segments…</span>}
-            {segments.isError && (
-              <span className={styles.sub} role="alert">
-                Couldn't load segments.
-              </span>
-            )}
-            {segments.isSuccess && segments.data.length === 0 && (
-              <span className={styles.sub}>No saved segments yet: create one with +.</span>
-            )}
-          </div>
-        </section>
-
-        {/* WHERE */}
+        {/* Pages */}
         <section className={styles.section} aria-labelledby="where-h">
-          <div className={styles.head}>
-            <div className={styles.titleRow}>
-              <span className={styles.key}>WHERE</span>
-              <h2 className={styles.title} id="where-h">
-                Pages
-              </h2>
-              <span className={styles.sub}>
-                Include rules OR together, exclude rules always win
-              </span>
-            </div>
-            <div className={styles.buttons}>
-              <InsertSavedSelect
-                label="Use saved page set"
-                className={styles.small}
-                items={(pageSets.data ?? []).map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  hint: describePageRules(p.rules),
-                }))}
-                onInsert={(id) => {
-                  const set = fromWhere(pageSets.data!.find((p) => p.id === id)!.rules);
-                  setWhere({
-                    pages: [...pages, ...set.pages],
-                    elements: [...elements, ...set.elements],
-                  });
-                }}
-              />
-              <button
-                type="button"
-                className={styles.small}
-                onClick={() => setWhere({ pages, elements: [...elements, { selector: '' }] })}
-              >
-                + Element rule
-              </button>
-              <button
-                type="button"
-                className={styles.small}
-                onClick={() =>
-                  setWhere({
-                    pages: [...pages, { kind: 'include', op: 'matches', value: '' }],
-                    elements,
-                  })
-                }
-              >
-                + Rule
-              </button>
-            </div>
+          <div className={styles.titleBlock}>
+            <h2 className={styles.title} id="where-h">
+              Pages
+            </h2>
+            <span className={styles.sub}>
+              Where the test runs. Any include rule can match; exclude rules always win.
+            </span>
           </div>
           {pages.length === 0 && elements.length === 0 && (
-            <span className={styles.sub}>Runs on every page of the site.</span>
+            <p className={styles.empty}>Runs on every page of the site.</p>
           )}
           <PageRulesEditor value={where} onChange={setWhere} submitted={submitted} />
-          {toWhere(where) && pageRuleProblems(where) === 0 && (
+          <div className={styles.actions}>
             <button
               type="button"
-              className={styles.saveAs}
-              onClick={() => setSavingAs('page_sets')}
+              className={styles.small}
+              onClick={() =>
+                setWhere({
+                  pages: [...pages, { kind: 'include', op: 'matches', value: '' }],
+                  elements,
+                })
+              }
             >
-              Save these rules as a page set
+              + URL rule
             </button>
-          )}
+            <button
+              type="button"
+              className={styles.small}
+              onClick={() => setWhere({ pages, elements: [...elements, { selector: '' }] })}
+            >
+              + Element rule
+            </button>
+            {(pageSets.data ?? []).length > 0 && (
+              <Menu
+                text
+                label="Use saved page set"
+                items={pageSets.data!.map((p) => ({
+                  label: `${p.name} · ${describePageRules(p.rules)}`,
+                  onSelect: () => {
+                    const set = fromWhere(p.rules);
+                    setWhere({
+                      pages: [...pages, ...set.pages],
+                      elements: [...elements, ...set.elements],
+                    });
+                  },
+                }))}
+              >
+                Use saved page set
+              </Menu>
+            )}
+            {toWhere(where) && pageRuleProblems(where) === 0 && (
+              <button
+                type="button"
+                className={styles.saveAs}
+                onClick={() => setSavingAs('page_sets')}
+              >
+                Save as page set
+              </button>
+            )}
+          </div>
         </section>
 
-        {/* HOW */}
+        {/* Triggers */}
         <section className={styles.section} aria-labelledby="how-h">
-          <div className={styles.head}>
+          <div className={styles.titleBlock}>
             <div className={styles.titleRow}>
-              <span className={styles.key}>HOW</span>
               <h2 className={styles.title} id="how-h">
                 Triggers
               </h2>
-              <span className={styles.sub}>Conditions in this visit, checked on every page</span>
+              <span className={styles.optional}>Optional</span>
             </div>
-            <InsertSavedSelect
-              label="Insert saved trigger"
-              className={styles.small}
-              items={(triggers.data ?? []).map((t) => ({ id: t.id, name: t.name }))}
-              onInsert={(id) =>
-                setHow([...how, ...toGroups(triggers.data!.find((t) => t.id === id)!.rules)])
-              }
-            />
+            <span className={styles.sub}>
+              Only start the test when something is true in this visit: screen size, pages viewed,
+              time on page, a dataLayer value or your own JS.
+            </span>
           </div>
           <ConditionBuilder
             groups={how}
@@ -261,81 +183,108 @@ export function TargetingPage() {
               sample.data ? (g) => share(sample.data.sample, (s) => evaluateGroup(g, s)) : undefined
             }
           />
-          {how.some((g) => g.items.length) && groupsProblemCount(how) === 0 && (
-            <button type="button" className={styles.saveAs} onClick={() => setSavingAs('triggers')}>
-              Save these conditions as a trigger
-            </button>
+          {((triggers.data ?? []).length > 0 ||
+            (how.some((g) => g.items.length) && groupsProblemCount(how) === 0)) && (
+            <div className={styles.actions}>
+              {(triggers.data ?? []).length > 0 && (
+                <Menu
+                  text
+                  label="Use saved trigger"
+                  items={triggers.data!.map((tr) => ({
+                    label: tr.name,
+                    onSelect: () => setHow([...how, ...toGroups(tr.rules)]),
+                  }))}
+                >
+                  Use saved trigger
+                </Menu>
+              )}
+              {how.some((g) => g.items.length) && groupsProblemCount(how) === 0 && (
+                <button
+                  type="button"
+                  className={styles.saveAs}
+                  onClick={() => setSavingAs('triggers')}
+                >
+                  Save as trigger
+                </button>
+              )}
+            </div>
           )}
         </section>
 
-        {/* WHEN */}
+        {/* Frequency */}
         <section className={styles.section} aria-labelledby="when-h">
-          <div className={styles.titleRow}>
-            <span className={styles.key}>WHEN</span>
+          <div className={styles.titleBlock}>
             <h2 className={styles.title} id="when-h">
               Frequency
             </h2>
-            <span className={styles.sub}>How often a matched visitor sees the variant</span>
+            <span className={styles.sub}>How often a matched visitor sees the variant.</span>
           </div>
           <FrequencyPicker value={when} onChange={setWhen} />
         </section>
 
-        <ActivationPicker
-          value={activation}
-          onChange={setActivation}
-          experimentKey={experiment.key}
-          showErrors={submitted}
-        />
-
-        <section className={styles.section} aria-labelledby="eval-h">
-          <div className={styles.titleRow}>
-            <h2 className={styles.title} id="eval-h">
-              Evaluation
-            </h2>
-            <span className={styles.sub}>Checked on each page load and route change</span>
-          </div>
-          <label className={styles.row}>
-            <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} />
-            <span>
-              <b>Once matched, stay in audience.</b>{' '}
-              <span className={styles.sub}>
-                After a visitor sees the test, WHO and HOW aren't checked again; pages and frequency
-                still are.
-              </span>
+        {/* Advanced */}
+        <details className={styles.advanced} open={advancedSet || undefined}>
+          <summary>
+            <span className={styles.title}>Advanced</span>
+            <span className={styles.sub}>
+              {advancedSet
+                ? 'Activation or evaluation changed'
+                : 'Activation and evaluation: defaults suit most tests'}
             </span>
-          </label>
-          <div className={styles.row}>
-            <label htmlFor={waitId}>Wait for dataLayer up to</label>
-            <input
-              id={waitId}
-              type="number"
-              min={0}
-              max={5000}
-              step={100}
-              className={`${styles.input} ${styles.number}`}
-              value={waitMs}
-              onChange={(e) => setWaitMs(e.target.value)}
-              aria-describedby={`${waitId}-hint`}
-              aria-invalid={waitProblem}
+          </summary>
+          <div className={styles.advancedBody}>
+            <ActivationPicker
+              value={activation}
+              onChange={setActivation}
+              experimentKey={experiment.key}
+              showErrors={submitted}
             />
-            <span>ms</span>
-            <span id={`${waitId}-hint`} className={styles.sub}>
-              {waitProblem
-                ? 'Between 0 and 5,000 ms.'
-                : 'For dataLayer conditions pushed after the page loads. 0 = decide at once.'}
-            </span>
+            <div className={styles.subsection} aria-labelledby="eval-h">
+              <h3 className={styles.subTitle} id="eval-h">
+                Evaluation
+              </h3>
+              <label className={styles.check}>
+                <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} />
+                <span>
+                  <b>Once matched, stay in the test.</b>{' '}
+                  <span className={styles.sub}>
+                    After a visitor sees it, the audience and triggers aren&apos;t checked again;
+                    pages and frequency still are.
+                  </span>
+                </span>
+              </label>
+              <div className={styles.row}>
+                <label htmlFor={waitId}>Wait for dataLayer up to</label>
+                <input
+                  id={waitId}
+                  type="number"
+                  min={0}
+                  max={5000}
+                  step={100}
+                  className={`${styles.input} ${styles.number}`}
+                  value={waitMs}
+                  onChange={(e) => setWaitMs(e.target.value)}
+                  aria-describedby={`${waitId}-hint`}
+                  aria-invalid={waitProblem}
+                />
+                <span>ms</span>
+              </div>
+              <span id={`${waitId}-hint`} className={waitProblem ? styles.error : styles.sub}>
+                {waitProblem
+                  ? 'Between 0 and 5,000 ms.'
+                  : 'For dataLayer conditions pushed after the page loads. 0 decides at once.'}
+              </span>
+            </div>
           </div>
-        </section>
+        </details>
 
-        <div className={styles.saveBar}>
-          <Button onClick={save} disabled={!dirty || update.isPending || ended}>
-            Save targeting
-          </Button>
-          <span
-            role="status"
-            className={update.isError || (submitted && problems) ? styles.error : styles.status}
-          >
-            {update.isError
+        <SaveBar
+          label="Save targeting"
+          onSave={save}
+          disabled={!dirty || update.isPending || ended}
+          error={update.isError || (submitted && problems > 0)}
+          status={
+            update.isError
               ? `Couldn't save: ${update.error.message}`
               : submitted && problems
                 ? `${problems} ${problems === 1 ? 'rule needs' : 'rules need'} a value.`
@@ -343,14 +292,14 @@ export function TargetingPage() {
                   ? 'Saved.'
                   : dirty
                     ? 'Unsaved changes'
-                    : ''}
-          </span>
-          {experiment.status === 'live' && dirty && (
-            <span className={styles.note}>
-              Live: new rules apply from each visitor's next page.
-            </span>
-          )}
-        </div>
+                    : ''
+          }
+          note={
+            experiment.status === 'live' && dirty
+              ? "Live: new rules apply from each visitor's next page."
+              : undefined
+          }
+        />
         {savedAs && (
           <p role="status" className={styles.status}>
             {savedAs}
@@ -361,7 +310,7 @@ export function TargetingPage() {
             title={savingAs === 'triggers' ? 'Save as trigger' : 'Save as page set'}
             description={
               savingAs === 'triggers'
-                ? 'Reuse these conditions in other experiments with Insert saved trigger.'
+                ? 'Reuse these conditions in other experiments with Use saved trigger.'
                 : 'Reuse these page rules in other experiments with Use saved page set.'
             }
             placeholder={savingAs === 'triggers' ? 'Engaged mobile visit' : 'Trip and deal pages'}
@@ -392,6 +341,9 @@ export function TargetingPage() {
             Who will see this
           </span>
           <span className={styles.who}>{whoSentence(next, segmentName)}</span>
+          <Link to={`${base}/audience`} className={styles.link}>
+            {t.who ? 'Edit audience' : 'Narrow down who sees it in Audience'}
+          </Link>
           <ReachEstimate
             projectId={project.id}
             targeting={next}
@@ -410,87 +362,7 @@ export function TargetingPage() {
           )}
         </section>
         <UrlTester targeting={next} domain={project.mainDomain} testPage={experiment.previewUrl} />
-        <section className={styles.section} aria-labelledby="explain-h">
-          <span className={styles.lbl} id="explain-h">
-            Segment vs trigger
-          </span>
-          <span className={styles.explain}>
-            <b>Segments</b> remember the visitor (cookie, past sessions, first-touch UTMs).{' '}
-            <b>Triggers</b> only read the current visit (URL, screen, dataLayer, JS). Mixing both is
-            how you target tricky groups.
-          </span>
-        </section>
       </aside>
-    </div>
-  );
-}
-
-/**
- * Reach from a sample of the last 30 days' sessions (lib/reach.ts). A range means some
- * rules need the live page to check (cookies, dataLayer, page history, elements).
- */
-function ReachEstimate({
-  projectId,
-  targeting,
-  segments,
-  trafficPct,
-  plannedSample,
-  arms,
-}: {
-  projectId: string;
-  targeting: StoredTargeting;
-  segments: Segment[];
-  trafficPct: number;
-  plannedSample: number | null;
-  arms: number;
-}) {
-  const sample = useSessionSampleQuery(projectId);
-  if (sample.isPending) return null;
-  if (sample.isError) return <span className={styles.sub}>Couldn't estimate reach.</span>;
-  const { sessions, days } = sample.data;
-  const rules = Object.fromEntries(segments.map((s) => [s.id, s.rules]));
-  const reach = share(sample.data.sample, (s) => evaluateTargeting(targeting, rules, s));
-  if (!reach || !sessions) {
-    return (
-      <span className={styles.sub}>
-        Reach appears once the snippet has seen some visits. It samples the last 30 days.
-      </span>
-    );
-  }
-  const perDay = (x: number) => (x * sessions * (trafficPct / 100)) / days;
-  const lowDay = Math.round(perDay(reach.low));
-  const highDay = Math.round(perDay(reach.high));
-  const daysFor = (n: number) => Math.ceil(((plannedSample ?? 0) * arms) / n);
-  return (
-    <div className={styles.reach} aria-label="Reach estimate">
-      <span>
-        <span className={styles.big}>{formatRange(reach)}</span> of sessions ·{' '}
-        {lowDay === highDay
-          ? `≈ ${number.format(lowDay)}`
-          : `≈ ${number.format(lowDay)}–${number.format(highDay)}`}{' '}
-        visitors a day
-      </span>
-      {reach.high > reach.low && (
-        <span className={styles.sub}>
-          Some rules need the live page (cookies, dataLayer, page history or elements), so this is a
-          range.
-        </span>
-      )}
-      {plannedSample !== null && (
-        <span className={styles.sub}>
-          {highDay === 0
-            ? 'No recent session matches. Widen a rule.'
-            : `At this reach, the planned sample (${number.format(plannedSample)} per variant) takes about ${
-                lowDay === highDay || lowDay === 0
-                  ? daysFor(highDay)
-                  : `${daysFor(highDay)}–${daysFor(lowDay)}`
-              } days.`}
-        </span>
-      )}
-      <span className={styles.sub}>
-        From {number.format(sample.data.sample.length)} of {number.format(sessions)} sessions in the
-        last {days} {days === 1 ? 'day' : 'days'}. Pages are judged by where each session started.
-      </span>
     </div>
   );
 }
@@ -540,49 +412,6 @@ function FrequencyPicker({ value, onChange }: { value: Frequency; onChange(f: Fr
       )}
     </div>
   );
-}
-
-function whoSentence(t: StoredTargeting, segmentName: (id: string) => string): string {
-  const parts: string[] = [];
-  const ids = t.who?.segmentIds ?? [];
-  parts.push(
-    ids.length
-      ? ids.map((id) => segmentName(id)).join(t.who?.mode === 'all' ? ' and ' : ' or ')
-      : 'Everyone',
-  );
-  const include = t.where?.include ?? [];
-  const exclude = t.where?.exclude ?? [];
-  parts.push(
-    include.length ? `on pages ${include.map((r) => r.value).join(' or ')}` : 'on every page',
-  );
-  if (exclude.length) parts.push(`except ${exclude.map((r) => r.value).join(' or ')}`);
-  if (t.where?.elements?.length)
-    parts.push(`with ${t.where.elements.map((e) => e.selector).join(' and ')} on the page`);
-  if (t.how?.length)
-    parts.push(
-      `when ${describeGroups(t.how)
-        .replace(/\.$/, '')
-        .replace(/^./, (c) => c.toLowerCase())}`,
-    );
-  const freq =
-    t.when?.mode === 'once'
-      ? 'once'
-      : t.when?.mode === 'once_per_session'
-        ? 'once per session'
-        : t.when?.mode === 'every_n_days'
-          ? `every ${t.when.days} days`
-          : 'on every page load';
-  parts.push(freq);
-  const a = t.activation;
-  if (a)
-    parts.push(
-      a.mode === 'element'
-        ? `once ${a.selector} appears`
-        : a.mode === 'js'
-          ? 'once its JS condition is true'
-          : 'when your code activates it',
-    );
-  return `${parts.join(', ')}.`;
 }
 
 function UrlTester({
@@ -717,16 +546,13 @@ function ActivationPicker({
   const problem = activationProblem(value);
   const set = (patch: Partial<ActivationDraft>) => onChange({ ...value, ...patch });
   return (
-    <section className={styles.section} aria-labelledby={`${id}-h`}>
-      <div className={styles.titleRow}>
-        <h2 className={styles.title} id={`${id}-h`}>
-          Activation
-        </h2>
-        <span className={styles.sub}>When the test starts on a matching page</span>
-      </div>
+    <div className={styles.subsection} aria-labelledby={`${id}-h`}>
+      <h3 className={styles.subTitle} id={`${id}-h`}>
+        Activation <span className={styles.sub}>When the test starts on a matching page</span>
+      </h3>
       <div role="radiogroup" aria-labelledby={`${id}-h`} className={styles.activationModes}>
         {ACTIVATION_MODES.map((m) => (
-          <label key={m.id} className={styles.row}>
+          <label key={m.id} className={styles.check}>
             <input
               type="radio"
               name={`${id}-mode`}
@@ -797,6 +623,6 @@ function ActivationPicker({
       {value.mode !== 'immediate' && (
         <span className={styles.sub}>The page shows at once while the test waits.</span>
       )}
-    </section>
+    </div>
   );
 }
