@@ -5,19 +5,12 @@ import { useExperimentsQuery, useOverviewQuery, useUpdateExperiment } from '../.
 import { useWorkspace } from '../../data/workspace';
 import { matchWhereUrl } from '../../../../../packages/sdk/src/targeting';
 import { launchChecks, qaDone, testPageUrl } from '../../lib/launch';
+import { seriesColor, variantColors } from '../../lib/chartColors';
 import { sampleSizePerVariant } from '../../lib/stats';
 import { useExperiment } from './experimentContext';
 import styles from './BasicsPage.module.css';
 
 const number = new Intl.NumberFormat('en-US');
-// The split bar's quiet palette: a mid tone for the thin bar, and a soft tint with dark text
-// for each variant's chip in the legend.
-const SPLIT = [
-  { bar: '#8FA3C4', bg: '#E8ECF3', text: '#2C4268' },
-  { bar: '#5FA48F', bg: '#E4F1EC', text: '#0A4E40' },
-  { bar: '#E0B36A', bg: '#FBEFD9', text: '#6B4100' },
-  { bar: '#E5A26B', bg: '#FBE9DA', text: '#7A3F12' },
-];
 
 /**
  * Experiment step 1 (12-exp-step1-basics.html): what the test is, how much traffic it gets,
@@ -207,17 +200,17 @@ function Traffic({ experiment, base }: { experiment: Experiment; base: string })
                 key={v.id}
                 style={{
                   width: `${(v.weight / total) * 100}%`,
-                  background: SPLIT[i % SPLIT.length]!.bar,
+                  background: seriesColor(i),
                 }}
               />
             ))}
           </div>
           <ul className={styles.legend}>
             {experiment.variants.map((v, i) => {
-              const c = SPLIT[i % SPLIT.length]!;
+              const c = variantColors(i);
               return (
-                <li key={v.id} style={{ background: c.bg, color: c.text }}>
-                  <span className={styles.legendDot} style={{ background: c.bar }} />
+                <li key={v.id} style={{ background: c.soft, color: c.text }}>
+                  <span className={styles.legendDot} style={{ background: c.line }} />
                   {v.name}
                   <b>{Math.round((v.weight / total) * 100)}%</b>
                 </li>

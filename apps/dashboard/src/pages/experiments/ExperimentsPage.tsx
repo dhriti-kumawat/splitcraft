@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { seriesColor } from '../../lib/chartColors';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button';
 import { PlusIcon } from '../../components/icons';
@@ -193,7 +194,6 @@ function Row({
   projectId: string;
 }) {
   const started = exp.status !== 'draft';
-  const colors = ['var(--variant-a)', 'var(--variant-b)', 'var(--highlight)', 'var(--accent)'];
   const total = exp.variants.reduce((s, v) => s + v.weight, 0) || 1;
   const best = summary.best;
   // Colour only when the direction is fairly clear (≥ 90% either way); the results page
@@ -228,7 +228,7 @@ function Row({
               key={v.key}
               style={{
                 width: `${(v.weight / total) * 100}%`,
-                background: started ? colors[i % colors.length] : i % 2 ? '#DDE1DA' : '#C8CEC6',
+                background: started ? seriesColor(i) : i % 2 ? '#DDE1DA' : '#C8CEC6',
               }}
             />
           ))}
