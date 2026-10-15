@@ -101,11 +101,11 @@ export function ProjectsPage() {
 }
 
 /**
- * Names new accounts used to get ("Jo's Workspace") or get now ("My workspace"). A real
- * team name reads better in the switcher, invites and breadcrumbs, so ask for one.
+ * The name a workspace gets when someone skips naming it ("My workspace"). Only that one
+ * asks for a better name: "Jo's Workspace" may well be what someone chose.
  */
 function isDefaultName(name: string): boolean {
-  return /^my workspace$/i.test(name.trim()) || /['’]s workspace$/i.test(name.trim());
+  return /^my workspace$/i.test(name.trim());
 }
 
 const OWN_HINT_KEY = 'splitcraft_own_workspace_hint';
