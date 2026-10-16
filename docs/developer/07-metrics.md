@@ -45,7 +45,9 @@ navigation) as the value of each page's first click.
 
 - **Primary**: exactly one; it calls the winner. Set it before launch; you can change it at any
   time, also while live or after the end, and results are recalculated for the new goal.
-- **Secondary**: any number; reported only.
+- **Secondary**: any number; reported only. Results show each one in the same table as the primary
+  goal (visitors, conversions, rate, uplift with its 95% range, chance to win), marked "Secondary
+  goal", without guardrail columns.
 - **Guardrails**: a metric plus a limit (default: must not get worse by more than 2%). Crossing one
   with 95% confidence pauses the experiment automatically (see [Results](results)).
 

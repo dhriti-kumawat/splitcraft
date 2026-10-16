@@ -66,11 +66,25 @@ describe('results', () => {
     expect(within(figure).getByText('Control')).toBeInTheDocument();
   });
 
-  it('reports secondary goals with their range', async () => {
+  it('shows each secondary goal in the same table as the primary goal', async () => {
     await open();
-    const section = await screen.findByRole('region', { name: 'Secondary goals' });
-    expect(within(section).getByText('Confirmation page')).toBeInTheDocument();
-    expect(within(section).getByText('B vs Control')).toBeInTheDocument();
+    const section = await screen.findByRole('region', {
+      name: /^Confirmation page by variant/,
+    });
+    expect(within(section).getByText('Secondary goal')).toBeInTheDocument();
+    const headers = within(section)
+      .getAllByRole('columnheader')
+      .map((h) => h.textContent);
+    expect(headers).toEqual([
+      'Variant',
+      'Visitors',
+      'Confirmation pages',
+      'Conv. rate',
+      'Uplift',
+      'Chance to win',
+    ]);
+    expect(within(section).getAllByRole('row')).toHaveLength(3);
+    expect(within(section).getByRole('rowheader', { name: 'Control' })).toBeInTheDocument();
   });
 
   it('warns about a sample ratio mismatch before anything else', async () => {
