@@ -185,77 +185,14 @@ export function ResultsPage() {
         </div>
       </dl>
 
-      <section className={styles.section} aria-labelledby="variants-h">
-        <h2 className={styles.title} id="variants-h">
-          {primaryMetric.name} by variant
-        </h2>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th scope="col">Variant</th>
-              <th scope="col" className={styles.r}>
-                Visitors
-              </th>
-              <th scope="col" className={styles.r}>
-                {unique ? `${primaryMetric.name}s` : 'Converters'}
-              </th>
-              <th scope="col" className={styles.r}>
-                {unique ? 'Conv. rate' : MEASURES[primaryMetric.measure].label}
-              </th>
-              <th scope="col" className={styles.r}>
-                Uplift
-              </th>
-              <th scope="col" className={styles.r}>
-                Chance to win
-              </th>
-              {guardResults.map((g) => (
-                <th scope="col" key={g.goal.metric.id}>
-                  Guardrail: {g.goal.metric.name}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {orderedArms.map((a, i) => (
-              <tr key={a.variantKey}>
-                <th scope="row" style={{ textAlign: 'left', fontWeight: 400 }}>
-                  <span className={styles.variant}>
-                    <span
-                      className={styles.swatch}
-                      style={{ background: seriesColor(i) }}
-                      aria-hidden="true"
-                    />
-                    {a.name}
-                  </span>
-                </th>
-                <td className={styles.r}>{number.format(a.visitors)}</td>
-                <td className={styles.r}>{number.format(a.converters)}</td>
-                <td className={styles.r}>{a.visitors ? fmt(a.value) : '—'}</td>
-                <td className={styles.r}>
-                  <Uplift arm={a} />
-                </td>
-                <td className={styles.r}>
-                  {a.chanceBetter !== undefined
-                    ? `${Math.round(a.chanceBetter * 100)}%`
-                    : best?.chanceBetter !== undefined && a === control
-                      ? `${Math.round((1 - best.chanceBetter) * 100)}%`
-                      : '—'}
-                </td>
-                {guardResults.map((g) => (
-                  <td key={g.goal.metric.id}>
-                    <GuardCell
-                      arm={g.result.arms.find((x) => x.variantKey === a.variantKey)!}
-                      goal={g.goal}
-                      result={g.result}
-                      isControl={a === control}
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <GoalTable
+        id="variants-h"
+        metric={primaryMetric}
+        result={primary}
+        order={orderedArms.map((a) => a.variantKey)}
+        controlKey={control.variantKey}
+        guardResults={guardResults}
+      />
 
       {chart.length > 0 && unique && (
         <section className={styles.section} aria-labelledby="chart-h">
@@ -284,47 +221,124 @@ export function ResultsPage() {
 
       {unique && <Breakdown experiment={experiment} goalName={primaryMetric.name} />}
 
-      {secondary.length > 0 && (
-        <section className={styles.section} aria-labelledby="secondary-h">
-          <h2 className={styles.title} id="secondary-h">
-            Secondary goals
-          </h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Goal</th>
-                {orderedArms.slice(1).map((a) => (
-                  <th scope="col" className={styles.r} key={a.variantKey}>
-                    {a.name} vs {control.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {secondary.map((g) => {
-                const r = metricResult(g.metric, experiment, results.data);
-                return (
-                  <tr key={g.metric.id}>
-                    <th scope="row" style={{ textAlign: 'left', fontWeight: 600 }}>
-                      {g.metric.name}
-                      <span className={styles.range}>
-                        {MEASURES[g.metric.measure].label}
-                        {r.lowerIsBetter ? ' · lower is better' : ''}
-                      </span>
-                    </th>
-                    {orderedArms.slice(1).map((a) => (
-                      <td className={styles.r} key={a.variantKey}>
-                        <Uplift arm={r.arms.find((x) => x.variantKey === a.variantKey)!} />
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
-      )}
+      {secondary.map((g) => (
+        <GoalTable
+          key={g.metric.id}
+          id={`secondary-${g.metric.id}`}
+          metric={g.metric}
+          result={metricResult(g.metric, experiment, results.data)}
+          order={orderedArms.map((a) => a.variantKey)}
+          controlKey={control.variantKey}
+          label="Secondary goal"
+        />
+      ))}
     </div>
+  );
+}
+
+/**
+ * One goal's results by variant: visitors, conversions, rate, uplift with its 95% range and
+ * chance to win. The primary goal also shows guardrail columns; secondary goals get the same
+ * table without them, in the same variant order.
+ */
+function GoalTable({
+  id,
+  metric,
+  result,
+  order,
+  controlKey: control,
+  guardResults = [],
+  label,
+}: {
+  id: string;
+  metric: Metric;
+  result: ReturnType<typeof metricResult>;
+  order: string[];
+  controlKey: string;
+  guardResults?: Array<{ goal: ExperimentGoal; result: ReturnType<typeof metricResult> }>;
+  label?: string;
+}) {
+  const unique = metric.measure === 'unique';
+  const fmt = (x: number) => formatValue(metric.measure, x);
+  const arms = order
+    .map((key) => result.arms.find((a) => a.variantKey === key))
+    .filter((a): a is ArmResult => Boolean(a));
+  const controlArm = arms.find((a) => a.variantKey === control);
+  const best = result.best;
+  return (
+    <section className={styles.section} aria-labelledby={id}>
+      <h2 className={styles.title} id={id}>
+        {metric.name} by variant
+        {label && <span className={styles.goalLabel}>{label}</span>}
+        {result.lowerIsBetter && <span className={styles.goalLabel}>Lower is better</span>}
+      </h2>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th scope="col">Variant</th>
+            <th scope="col" className={styles.r}>
+              Visitors
+            </th>
+            <th scope="col" className={styles.r}>
+              {unique ? `${metric.name}s` : 'Converters'}
+            </th>
+            <th scope="col" className={styles.r}>
+              {unique ? 'Conv. rate' : MEASURES[metric.measure].label}
+            </th>
+            <th scope="col" className={styles.r}>
+              Uplift
+            </th>
+            <th scope="col" className={styles.r}>
+              Chance to win
+            </th>
+            {guardResults.map((g) => (
+              <th scope="col" key={g.goal.metric.id}>
+                Guardrail: {g.goal.metric.name}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {arms.map((a, i) => (
+            <tr key={a.variantKey}>
+              <th scope="row" style={{ textAlign: 'left', fontWeight: 400 }}>
+                <span className={styles.variant}>
+                  <span
+                    className={styles.swatch}
+                    style={{ background: seriesColor(i) }}
+                    aria-hidden="true"
+                  />
+                  {a.name}
+                </span>
+              </th>
+              <td className={styles.r}>{number.format(a.visitors)}</td>
+              <td className={styles.r}>{number.format(a.converters)}</td>
+              <td className={styles.r}>{a.visitors ? fmt(a.value) : '—'}</td>
+              <td className={styles.r}>
+                <Uplift arm={a} />
+              </td>
+              <td className={styles.r}>
+                {a.chanceBetter !== undefined
+                  ? `${Math.round(a.chanceBetter * 100)}%`
+                  : best?.chanceBetter !== undefined && a === controlArm
+                    ? `${Math.round((1 - best.chanceBetter) * 100)}%`
+                    : '—'}
+              </td>
+              {guardResults.map((g) => (
+                <td key={g.goal.metric.id}>
+                  <GuardCell
+                    arm={g.result.arms.find((x) => x.variantKey === a.variantKey)!}
+                    goal={g.goal}
+                    result={g.result}
+                    isControl={a === controlArm}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
   );
 }
 
