@@ -308,7 +308,6 @@ function Editor({
   // Full screen, like VWO's code editor: JS and CSS side by side across the whole window.
   const [full, setFull] = useState(false);
   const [theme, setTheme] = useEditorTheme();
-  const [controlCode, setControlCode] = useState(Boolean(code.js.trim() || code.css.trim()));
   const [viewing, setViewing] = useState<VariantVersion | null>(null);
   // One-column layout: the page scrolls, so the editor hands the wheel back at its ends.
   const passWheel = useStacked() && !full;
@@ -386,32 +385,6 @@ function Editor({
     </div>
   );
   const bytes = new Blob([code.js, code.css]).size;
-
-  // Control usually has no code, but sometimes needs some too (the same tracking as the
-  // variants, a flicker fix, a page tidy-up both sides share). Shown once asked for, or
-  // whenever it already has code.
-  if (isControl && !controlCode) {
-    return (
-      <section className={styles.editor} aria-label="Control">
-        <div className={styles.control}>
-          <strong style={{ color: '#fff' }}>{variant.name} is the page as it is</strong>
-          <span>
-            Visitors here see your site unchanged, so it usually has no code. Need some here too,
-            like the same tracking as your variations? Add it to {variant.name}.
-          </span>
-          {!readOnly && (
-            <button
-              type="button"
-              className={styles.darkButton}
-              onClick={() => setControlCode(true)}
-            >
-              Add code to {variant.name}
-            </button>
-          )}
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section
@@ -608,6 +581,26 @@ function Editor({
                   : 'Saved'}
         </span>
       </div>
+      {/* Control usually has no code; a short note at the end says what code here does, and
+          lets it be cleared again (Save keeps the change). */}
+      {isControl && (
+        <p className={styles.controlNote}>
+          <span>
+            {code.js.trim() || code.css.trim()
+              ? `Code here changes the original page for everyone in ${variant.name}. Use it only for what every variant needs too, like the same tracking.`
+              : `${variant.name} is the page as it is. Add code only if every variant needs it too, like the same tracking.`}
+          </span>
+          {!readOnly && (code.js.trim() || code.css.trim()) && (
+            <button
+              type="button"
+              className={styles.noteButton}
+              onClick={() => onChange({ js: '', css: '' })}
+            >
+              Remove {variant.name}&apos;s code
+            </button>
+          )}
+        </p>
+      )}
       {experiment.status === 'live' && (
         <p className={styles.liveNote}>
           This experiment is live: saved code reaches visitors within about a minute.

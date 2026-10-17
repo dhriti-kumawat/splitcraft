@@ -60,7 +60,7 @@ describe('variants list', () => {
     const user = userEvent.setup();
     const { variantPatches } = await open();
     await user.click(screen.getByRole('button', { name: /^Control/ }));
-    expect(screen.getByText('Control is the page as it is')).toBeInTheDocument();
+    expect(screen.getByText(/Control is the page as it is/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Rename Control' }));
     const name = screen.getByRole('textbox', { name: 'Original name' });
     await user.clear(name);
@@ -95,8 +95,10 @@ describe('variants list', () => {
     const user = userEvent.setup();
     const { variantPatches } = await open();
     await user.click(screen.getByRole('button', { name: /^Control/ }));
-    await user.click(screen.getByRole('button', { name: 'Add code to Control' }));
+    // Straight into the editor, with a short note at the end.
+    expect(screen.getByText(/Control is the page as it is/)).toBeInTheDocument();
     type('Control JS', 'splitcraft.trackEvent("seen")');
+    expect(screen.getByText(/Code here changes the original page/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await vi.waitFor(() =>
       expect(variantPatches).toContainEqual({
@@ -233,7 +235,11 @@ describe('editor', () => {
     await open();
     type('B JS', 'console.log(1)');
     await user.click(screen.getByRole('button', { name: /^Control/ }));
-    await user.click(screen.getByRole('button', { name: /^B/ }));
+    await user.click(
+      within(screen.getByRole('region', { name: 'Variations' })).getByRole('button', {
+        name: /^B/,
+      }),
+    );
     expect(editor('B JS')).toHaveValue('console.log(1)');
   });
 

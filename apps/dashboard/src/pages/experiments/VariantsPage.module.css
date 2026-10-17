@@ -808,3 +808,39 @@
   composes: editor;
   height: min(420px, 55vh);
 }
+
+.controlNote {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--ed-chrome);
+  border-top: 1px solid var(--ed-line);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ed-muted);
+}
+
+.noteButton {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--ed-btn-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ed-text);
+  font: 500 12px var(--font-ui);
+  cursor: pointer;
+}
+
+.noteButton:hover {
+  border-color: var(--ed-bad);
+  color: var(--ed-bad);
+}
+
+.noteButton:focus-visible {
+  outline: 2px solid var(--ed-accent);
+  outline-offset: 1px;
+}
