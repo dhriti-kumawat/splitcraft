@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { CodeField } from './CodeField';
 import {
   conditionProblems,
   DEVICES,
@@ -432,13 +433,17 @@ function Row({
       break;
     case 'custom_js':
       editor = (
-        <textarea
-          className={styles.textarea}
-          aria-label={a('code')}
-          spellCheck={false}
-          value={c.code}
-          onChange={(e) => set({ code: e.target.value })}
-        />
+        <div className={styles.codeCell}>
+          <CodeField
+            label={a('code')}
+            filename="condition.js"
+            value={c.code}
+            onChange={(code) => set({ code })}
+            height={170}
+            placeholder="return window.dataLayer.length > 2;"
+            status="Return true when the visitor should match."
+          />
+        </div>
       );
       break;
   }

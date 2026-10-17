@@ -1,0 +1,70 @@
+/* Uses the variant editor's theme colours (--ed-*), so Dark, Grey and Light match it. */
+.field {
+  composes: editor from '../pages/experiments/VariantsPage.module.css';
+  position: relative;
+  min-height: 140px;
+  border: 1px solid transparent;
+}
+
+.full {
+  composes: full from '../pages/experiments/VariantsPage.module.css';
+}
+
+.invalid {
+  border-color: var(--danger);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 8px 0 14px;
+  border-bottom: 1px solid var(--ed-line);
+  background: var(--ed-chrome);
+}
+
+.filename {
+  font: 500 12px var(--font-mono);
+  color: var(--ed-muted);
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon {
+  composes: iconButton from '../pages/experiments/VariantsPage.module.css';
+}
+
+.code {
+  position: relative;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.placeholder {
+  position: absolute;
+  top: 18px;
+  left: 64px;
+  z-index: 1;
+  font: 13px var(--font-mono);
+  color: var(--ed-muted);
+  pointer-events: none;
+}
+
+.status,
+.statusBad {
+  padding: 6px 14px;
+  border-top: 1px solid var(--ed-line);
+  background: var(--ed-chrome);
+  font: 500 12px var(--font-mono);
+  color: var(--ed-muted);
+}
+
+.statusBad {
+  color: var(--ed-bad);
+}

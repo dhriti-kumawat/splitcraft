@@ -23,7 +23,12 @@ tracker code) and Recharts (results). Styles are CSS Modules with the tokens in 
 | `/p/:projectId/install`, `/p/:projectId/settings` | Install code and switches; project settings |
 
 Heavy screens (Monaco, Recharts, the condition builder) load lazily. Breadcrumbs come from each
-route's `handle.crumbs` and show record names (`layout/CrumbNames.tsx`).
+route's `handle.crumbs` and show record names (`layout/CrumbNames.tsx`). Every crumb is a link: one
+without its own `to` goes to its route's page.
+
+JS typed into forms (a metric's tracker, a custom JS condition, an activation condition) uses
+`components/CodeField.tsx`: the variant editor's Monaco with its theme, Format, full screen and
+a status line.
 
 ## Data access
 

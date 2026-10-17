@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { Button } from '../../components/Button';
-import { CodeEditor } from '../../components/CodeEditor';
+import { CodeField } from '../../components/CodeField';
 import { Dialog } from '../../components/Dialog';
 import dialogStyles from '../../components/Dialog.module.css';
 import { PageHeader } from '../../components/PageHeader';
@@ -711,11 +711,18 @@ function Form({
                   </div>
                 </div>
                 <div>
-                  <div className={styles.codeHead}>
-                    <span>tracker.js</span>
-                    <span>
-                      Runs once per page · sandboxed try/catch{' '}
-                      {!code.trim() && (
+                  <CodeField
+                    label="Tracker code"
+                    filename="tracker.js"
+                    value={code}
+                    onChange={setCode}
+                    onSave={save}
+                    height={340}
+                    status="Runs once per page · sandboxed try/catch"
+                    error={code.trim() ? jsError : null}
+                    invalid={show('code')}
+                    actions={
+                      !code.trim() && (
                         <button
                           type="button"
                           className={styles.small}
@@ -723,18 +730,9 @@ function Form({
                         >
                           Insert snippet
                         </button>
-                      )}
-                    </span>
-                  </div>
-                  <div className={styles.editor}>
-                    <CodeEditor
-                      language="javascript"
-                      label="Tracker code"
-                      value={code}
-                      onChange={setCode}
-                      onSave={save}
-                    />
-                  </div>
+                      )
+                    }
+                  />
                   {show('code') && <span className={styles.error}>{errors.code}</span>}
                 </div>
               </>
