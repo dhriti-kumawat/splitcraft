@@ -16,7 +16,6 @@ import { TopBarActions } from '../../layout/TopBarActions';
 import { percent, summarize, timeAgo, type ExperimentSummary } from '../../lib/experiments';
 import { targetingSummary } from '../../lib/targeting';
 import { NewExperimentDialog } from './NewExperimentDialog';
-import { SuggestionsPanel } from './SuggestionsPanel';
 import styles from './ExperimentsPage.module.css';
 import { TypeTag } from './TypeTag';
 
@@ -175,7 +174,6 @@ export function ExperimentsPage() {
         </div>
       </div>
 
-      <SuggestionsPanel project={project} />
 
       {creating && (
         <NewExperimentDialog projectId={project.id} onClose={() => setCreating(false)} />
