@@ -174,7 +174,6 @@ export function ExperimentsPage() {
         </div>
       </div>
 
-
       {creating && (
         <NewExperimentDialog projectId={project.id} onClose={() => setCreating(false)} />
       )}
