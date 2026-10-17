@@ -733,3 +733,78 @@
   color: var(--ed-bad);
   background: var(--ed-chrome);
 }
+
+.versionActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.confirmRow {
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+
+.binSmall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--ed-btn-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ed-muted);
+  cursor: pointer;
+}
+
+.binSmall:hover {
+  border-color: var(--ed-bad);
+  color: var(--ed-bad);
+}
+
+.dangerSmall {
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--danger);
+  color: #ffffff;
+  font: 600 12px var(--font-ui);
+  cursor: pointer;
+}
+
+.binSmall:focus-visible,
+.dangerSmall:focus-visible {
+  outline: 2px solid var(--ed-accent);
+  outline-offset: 1px;
+}
+
+/* Version preview dialog: JS / CSS switch and a read-only editor. */
+.previewTabs {
+  display: flex;
+  gap: 4px;
+}
+
+.previewTab {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font: 600 12px var(--font-mono);
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.previewTab[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.previewCode {
+  composes: editor;
+  height: min(420px, 55vh);
+}

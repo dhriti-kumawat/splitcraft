@@ -262,11 +262,42 @@ describe('editor', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await screen.findByText(/Saved \d\d:\d\d/);
     await user.click(screen.getByRole('button', { name: 'Version history' }));
-    await screen.findByText('v3 · current');
+    await screen.findByText('Current version');
+    const views = await screen.findAllByRole('button', { name: /^View the version saved/ });
 
-    await user.click(await screen.findByRole('button', { name: 'Load v2 into the editor' }));
+    // View shows it read-only and leaves the editor alone.
+    await user.click(views[0]!);
+    const preview = screen.getByRole('dialog', { name: /^Version saved/ });
+    expect(within(preview).getByRole('textbox', { name: 'Saved JS' })).toHaveValue('first()');
+    expect(editor('B JS')).toHaveValue('second()');
+    await user.click(within(preview).getByRole('button', { name: 'Close' }));
+    expect(editor('B JS')).toHaveValue('second()');
+
+    // Load puts it in the editor, unsaved.
+    await user.click(screen.getByRole('button', { name: 'Version history' }));
+    await user.click(
+      (await screen.findAllByRole('button', { name: /^Load the version saved/ }))[0]!,
+    );
     expect(editor('B JS')).toHaveValue('first()');
     expect(screen.getByText(/Unsaved changes/)).toBeInTheDocument();
+  });
+
+  it('deletes a saved version after confirming', async () => {
+    const user = userEvent.setup();
+    await open();
+    type('B JS', 'first()');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText(/Saved \d\d:\d\d/);
+    await user.click(screen.getByRole('button', { name: 'Version history' }));
+    const bins = await screen.findAllByRole('button', { name: /^Delete the version saved/ });
+    const before = bins.length;
+    await user.click(bins[0]!);
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await vi.waitFor(() =>
+      expect(screen.queryAllByRole('button', { name: /^Delete the version saved/ })).toHaveLength(
+        before - 1,
+      ),
+    );
   });
 
   it('is read-only once ended', async () => {

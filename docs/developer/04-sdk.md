@@ -42,7 +42,8 @@ is under the pointer. Below 1024 px the page is one column and scrolls, and the 
 wheel back to the page at the top and bottom of the code.
 
 The editor bar has, from the left: **Built-in helpers** (the `splitcraft.*` functions, which are
-also suggested as you type), **Version history** (load an earlier save into the editor, then save
+also suggested as you type), **Version history** (**View** shows a saved version read-only without touching your code,
+**Load** puts it in the editor, the bin deletes it after a confirm; load, then save
 to keep it), the theme (**Dark**, **Grey** or **Light**), **Format** (Shift+Alt+F), **Full
 screen**, **Edit visually**, **Template** and **Save** (Cmd/Ctrl+S). The status bar shows syntax
 errors, the variation's key, the code's size and whether it's saved. Long lines wrap. Full screen

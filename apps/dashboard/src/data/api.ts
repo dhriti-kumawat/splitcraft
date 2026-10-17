@@ -437,6 +437,7 @@ export interface DataApi {
   updateVariant(variantId: string, patch: VariantPatch): Promise<void>;
   /** Earlier code of a variant, newest first. The current code is on the variant. */
   listVariantVersions(variantId: string): Promise<VariantVersion[]>;
+  deleteVariantVersion(versionId: string): Promise<void>;
   addVariant(
     experimentId: string,
     variant: { key: string; name: string; weight: number },
