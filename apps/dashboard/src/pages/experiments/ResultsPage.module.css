@@ -351,14 +351,37 @@
   gap: 12px;
 }
 
+.cardFold {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: -12px;
+  transition:
+    grid-template-rows 0.25s ease,
+    margin-top 0.25s ease;
+}
+
+.cardOpen {
+  grid-template-rows: 1fr;
+  margin-top: 0;
+}
+
 .cardBody {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.cardBody[hidden] {
-  display: none;
+.fold svg {
+  transition: transform 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardFold,
+  .fold svg {
+    transition: none;
+  }
 }
 
 .fold {

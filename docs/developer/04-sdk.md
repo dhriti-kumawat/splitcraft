@@ -51,6 +51,9 @@ shows JS and CSS side by side across the whole window (Esc leaves it); drag the 
 to resize (or focus it and use the arrow keys; double-click resets), and below 1024 px they stack
 and the bar resizes them up and down. The theme and the split are remembered in your browser.
 
+- **Control** has no code by default (it is the page as it is). When it needs some, like the
+  same tracking as the variants, **Add code to Control** gives it an editor; the SDK applies its
+  code like any variant's.
 - **CSS** goes into one `<style>` per experiment.
 - **JS** runs inside `try / catch` with a `splitcraft` object in scope: `waitForElement`,
   `onceInView`, `onRouteChange`, `injectStyles` and `trackEvent`. An error is logged and the page

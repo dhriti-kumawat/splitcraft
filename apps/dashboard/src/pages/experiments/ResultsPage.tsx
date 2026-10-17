@@ -271,8 +271,15 @@ function ResultCard({
           </svg>
         </button>
       </div>
-      <div id={`${id}-body`} className={styles.cardBody} hidden={!open}>
-        {children}
+      {/* Folds by animating its row height (0fr to 1fr). Closed content is hidden from
+          screen readers and the keyboard. */}
+      <div
+        id={`${id}-body`}
+        className={`${styles.cardFold} ${open ? styles.cardOpen : ''}`}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <div className={styles.cardBody}>{children}</div>
       </div>
     </section>
   );

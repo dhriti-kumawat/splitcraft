@@ -91,6 +91,24 @@ describe('variants list', () => {
     expect(data.experimentsNow().find((e) => e.id === 'trust')!.variants).toHaveLength(2);
   });
 
+  it('can give Control code when it needs some', async () => {
+    const user = userEvent.setup();
+    const { variantPatches } = await open();
+    await user.click(screen.getByRole('button', { name: /^Control/ }));
+    await user.click(screen.getByRole('button', { name: 'Add code to Control' }));
+    type('Control JS', 'splitcraft.trackEvent("seen")');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await vi.waitFor(() =>
+      expect(variantPatches).toContainEqual({
+        id: 'trust-c',
+        patch: { js: 'splitcraft.trackEvent("seen")', css: '' },
+      }),
+    );
+    expect(
+      screen.getByRole('button', { name: /^Control1 lines JS · 0 lines CSS/ }),
+    ).toBeInTheDocument();
+  });
+
   it('adds a variant and rebalances the split in a draft', async () => {
     const user = userEvent.setup();
     const { variantPatches } = await open();

@@ -202,7 +202,7 @@ function CodeVariants() {
                       {dirty(v) && <span className={styles.muted}> · unsaved</span>}
                     </span>
                     <span className={styles.variantMeta}>
-                      {isControl
+                      {isControl && !code.js.trim() && !code.css.trim()
                         ? 'Original page, no code'
                         : `${lines(code.js)} lines JS · ${lines(code.css)} lines CSS`}
                     </span>
@@ -308,6 +308,7 @@ function Editor({
   // Full screen, like VWO's code editor: JS and CSS side by side across the whole window.
   const [full, setFull] = useState(false);
   const [theme, setTheme] = useEditorTheme();
+  const [controlCode, setControlCode] = useState(Boolean(code.js.trim() || code.css.trim()));
   const [viewing, setViewing] = useState<VariantVersion | null>(null);
   // One-column layout: the page scrolls, so the editor hands the wheel back at its ends.
   const passWheel = useStacked() && !full;
@@ -386,15 +387,27 @@ function Editor({
   );
   const bytes = new Blob([code.js, code.css]).size;
 
-  if (isControl) {
+  // Control usually has no code, but sometimes needs some too (the same tracking as the
+  // variants, a flicker fix, a page tidy-up both sides share). Shown once asked for, or
+  // whenever it already has code.
+  if (isControl && !controlCode) {
     return (
       <section className={styles.editor} aria-label="Control">
         <div className={styles.control}>
           <strong style={{ color: '#fff' }}>{variant.name} is the page as it is</strong>
           <span>
-            Visitors here see your site unchanged, so it has no code. Rename it with the pencil in
-            the list, or pick a variation to edit its code.
+            Visitors here see your site unchanged, so it usually has no code. Need some here too,
+            like the same tracking as your variations? Add it to {variant.name}.
           </span>
+          {!readOnly && (
+            <button
+              type="button"
+              className={styles.darkButton}
+              onClick={() => setControlCode(true)}
+            >
+              Add code to {variant.name}
+            </button>
+          )}
         </div>
       </section>
     );
