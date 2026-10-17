@@ -29,7 +29,10 @@ export function TopBar({
   for (const match of useMatches()) {
     const handle = match.handle as RouteHandle | undefined;
     if (!handle?.crumbs) continue;
-    const own = handle.crumbs({ workspace, project, params: match.params });
+    // Every crumb links somewhere: one without its own link goes to its route's page.
+    const own = handle
+      .crumbs({ workspace, project, params: match.params })
+      .map((c, i, all) => (c.to || i < all.length - 1 ? c : { ...c, to: match.pathname }));
     crumbs.push(...own);
     if (own.length) levels.push({ path: match.pathname, label: own[own.length - 1]!.label });
   }
@@ -79,14 +82,16 @@ export function TopBar({
               const last = i === crumbs.length - 1;
               return (
                 <li key={i} className={`${styles.crumb} ${last ? '' : styles.parent}`}>
-                  {last ? (
-                    <span className={styles.current} aria-current="page">
+                  {crumb.to ? (
+                    <Link
+                      to={crumb.to}
+                      className={last ? styles.current : undefined}
+                      aria-current={last ? 'page' : undefined}
+                    >
                       {crumb.label}
-                    </span>
-                  ) : crumb.to ? (
-                    <Link to={crumb.to}>{crumb.label}</Link>
+                    </Link>
                   ) : (
-                    <span>{crumb.label}</span>
+                    <span className={last ? styles.current : undefined}>{crumb.label}</span>
                   )}
                 </li>
               );
