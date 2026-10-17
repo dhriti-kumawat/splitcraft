@@ -10,12 +10,9 @@ An experiment belongs to a project and has a unique **key** (made from its name,
 
 ## Experiment ideas
 
-**Scan site** on the Experiments page reads the project's main domain (home page, sitemap and a few
-key pages) and suggests tests: a new headline, button copy, reviews near prices, a sticky call to
-action, an offer bar, or hiding a distraction near a form. **Create draft** makes an A/B draft in
-one click with the idea's hypothesis, the page as its test page, and the matching template's code in
-Variation 1, then opens the Variants step. Change the template's example selectors and copy to fit
-your page before launching.
+Hidden for now (2026-10-17): without an AI key the scan fell back to fixed rules, and pages built
+with JavaScript looked nearly empty to it, so the ideas were generic. The `suggest` Edge Function
+and `SuggestionsPanel.tsx` stay, to bring back once the scan renders pages and reads real content.
 
 ## Test types
 

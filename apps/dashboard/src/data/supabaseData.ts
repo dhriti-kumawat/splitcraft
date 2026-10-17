@@ -741,6 +741,10 @@ export function createSupabaseData(supabase: SupabaseClient): DataApi {
       }));
     },
 
+    async deleteVariantVersion(versionId) {
+      check(await supabase.from('variant_versions').delete().eq('id', versionId));
+    },
+
     async listVariantVersions(variantId) {
       const rows = check(
         await supabase

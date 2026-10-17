@@ -720,3 +720,12 @@ export function useSendFeedback() {
   const api = useData();
   return useMutation({ mutationFn: (input: FeedbackInput) => api.sendFeedback(input) });
 }
+
+export function useDeleteVersion(variantId: string) {
+  const api = useData();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (versionId: string) => api.deleteVariantVersion(versionId),
+    onSuccess: () => void client.invalidateQueries({ queryKey: keys.versions(variantId) }),
+  });
+}

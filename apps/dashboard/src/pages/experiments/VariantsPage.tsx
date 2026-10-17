@@ -1,6 +1,9 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { editor as MonacoEditor } from 'monaco-editor';
-import { CodeEditor } from '../../components/CodeEditor';
+import { Button } from '../../components/Button';
+import { CodeEditor, type EditorTheme } from '../../components/CodeEditor';
+import { Dialog } from '../../components/Dialog';
+import dialogStyles from '../../components/Dialog.module.css';
 import { seriesColor } from '../../lib/chartColors';
 import {
   BarPopover,
@@ -10,11 +13,12 @@ import {
   useFillHeight,
   useStacked,
 } from './EditorTools';
-import type { Experiment, Variant } from '../../data/api';
+import type { Experiment, Variant, VariantVersion } from '../../data/api';
 import {
   useEditVariants,
   useSaveVariantCode,
   useUpdateVariants,
+  useDeleteVersion,
   useVersionsQuery,
 } from '../../data/queries';
 import { controlKey } from '../../lib/experiments';
@@ -198,7 +202,7 @@ function CodeVariants() {
                       {dirty(v) && <span className={styles.muted}> · unsaved</span>}
                     </span>
                     <span className={styles.variantMeta}>
-                      {isControl
+                      {isControl && !code.js.trim() && !code.css.trim()
                         ? 'Original page, no code'
                         : `${lines(code.js)} lines JS · ${lines(code.css)} lines CSS`}
                     </span>
@@ -304,6 +308,7 @@ function Editor({
   // Full screen, like VWO's code editor: JS and CSS side by side across the whole window.
   const [full, setFull] = useState(false);
   const [theme, setTheme] = useEditorTheme();
+  const [viewing, setViewing] = useState<VariantVersion | null>(null);
   // One-column layout: the page scrolls, so the editor hands the wheel back at its ends.
   const passWheel = useStacked() && !full;
   // The loaded Monaco editors, for Format. A plain map: nothing renders from it.
@@ -381,20 +386,6 @@ function Editor({
   );
   const bytes = new Blob([code.js, code.css]).size;
 
-  if (isControl) {
-    return (
-      <section className={styles.editor} aria-label="Control">
-        <div className={styles.control}>
-          <strong style={{ color: '#fff' }}>{variant.name} is the page as it is</strong>
-          <span>
-            Visitors here see your site unchanged, so it has no code. Rename it with the pencil in
-            the list, or pick a variation to edit its code.
-          </span>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section
       className={`${styles.editor} ${full ? styles.full : ''}`}
@@ -447,6 +438,10 @@ function Editor({
             {(close) => (
               <VersionList
                 variant={variant}
+                onView={(v) => {
+                  close();
+                  setViewing(v);
+                }}
                 onRestore={(v) => {
                   onRestore(v);
                   close();
@@ -586,10 +581,41 @@ function Editor({
                   : 'Saved'}
         </span>
       </div>
+      {/* Control usually has no code; a short note at the end says what code here does, and
+          lets it be cleared again (Save keeps the change). */}
+      {isControl && (
+        <p className={styles.controlNote}>
+          <span>
+            {code.js.trim() || code.css.trim()
+              ? `Code here changes the original page for everyone in ${variant.name}. Use it only for what every variant needs too, like the same tracking.`
+              : `${variant.name} is the page as it is. Add code only if every variant needs it too, like the same tracking.`}
+          </span>
+          {!readOnly && (code.js.trim() || code.css.trim()) && (
+            <button
+              type="button"
+              className={styles.noteButton}
+              onClick={() => onChange({ js: '', css: '' })}
+            >
+              Remove {variant.name}&apos;s code
+            </button>
+          )}
+        </p>
+      )}
       {experiment.status === 'live' && (
         <p className={styles.liveNote}>
           This experiment is live: saved code reaches visitors within about a minute.
         </p>
+      )}
+      {viewing && (
+        <VersionPreview
+          version={viewing}
+          theme={theme}
+          onClose={() => setViewing(null)}
+          onLoad={() => {
+            onRestore(viewing);
+            setViewing(null);
+          }}
+        />
       )}
       {menuOpen && (
         <TemplatePicker
@@ -612,38 +638,173 @@ function Editor({
   );
 }
 
-function VersionList({ variant, onRestore }: { variant: Variant; onRestore(v: Draft): void }) {
+/**
+ * Saved versions of a variant's code, newest first. View shows one read-only without
+ * touching the editor; Load puts it in the editor (Save keeps it); the bin deletes it.
+ */
+function VersionList({
+  variant,
+  onView,
+  onRestore,
+}: {
+  variant: Variant;
+  onView(v: VariantVersion): void;
+  onRestore(v: Draft): void;
+}) {
   const versions = useVersionsQuery(variant.id);
+  const remove = useDeleteVersion(variant.id);
+  const [confirming, setConfirming] = useState<string | null>(null);
   const older = versions.data ?? [];
   return (
     <>
       <p className={styles.popTitle}>Version history</p>
       <ul className={styles.popVersions}>
         <li>
-          <span style={{ fontWeight: 600 }}>v{variant.version} · current</span>
+          <span style={{ fontWeight: 600 }}>Current version</span>
         </li>
-        {older.map((v, i) => (
-          <li key={v.id}>
-            <span>
-              v{variant.version - 1 - i}
-              {v.note ? ` · ${v.note}` : ''}
-              <br />
-              <span className={styles.popVersionDate}>{date.format(new Date(v.createdAt))}</span>
-            </span>
-            <button
-              type="button"
-              className={styles.restore}
-              onClick={() => onRestore(v)}
-              aria-label={`Load v${variant.version - 1 - i} into the editor`}
-            >
-              Load
-            </button>
-          </li>
-        ))}
+        {older.map((v) => {
+          const when = date.format(new Date(v.createdAt));
+          return confirming === v.id ? (
+            <li key={v.id} className={styles.confirmRow}>
+              <span>Delete the version saved {when}?</span>
+              <span className={styles.versionActions}>
+                <button
+                  type="button"
+                  className={styles.dangerSmall}
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate(v.id, { onSuccess: () => setConfirming(null) })}
+                >
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  className={styles.restore}
+                  autoFocus
+                  onClick={() => setConfirming(null)}
+                >
+                  Keep
+                </button>
+              </span>
+            </li>
+          ) : (
+            <li key={v.id}>
+              <span>
+                Saved {when}
+                {v.note && <span className={styles.popVersionDate}> · {v.note}</span>}
+              </span>
+              <span className={styles.versionActions}>
+                <button
+                  type="button"
+                  className={styles.restore}
+                  onClick={() => onView(v)}
+                  aria-label={`View the version saved ${when}`}
+                >
+                  View
+                </button>
+                <button
+                  type="button"
+                  className={styles.restore}
+                  onClick={() => onRestore(v)}
+                  aria-label={`Load the version saved ${when} into the editor`}
+                >
+                  Load
+                </button>
+                <button
+                  type="button"
+                  className={styles.binSmall}
+                  onClick={() => setConfirming(v.id)}
+                  aria-label={`Delete the version saved ${when}`}
+                  title="Delete"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 6h12M8 6V4h4v2M6 6l1 10h6l1-10" />
+                  </svg>
+                </button>
+              </span>
+            </li>
+          );
+        })}
         {versions.isSuccess && older.length === 0 && <li>No earlier versions yet.</li>}
       </ul>
-      <p className={styles.popHint}>Loading a version puts it in the editor. Save to keep it.</p>
+      {remove.isError && (
+        <p className={styles.popHint} role="alert">
+          Couldn&apos;t delete it: {remove.error.message}
+        </p>
+      )}
+      <p className={styles.popHint}>
+        View leaves your code alone. Load puts the version in the editor; Save keeps it.
+      </p>
     </>
+  );
+}
+
+/** A saved version, read-only, next to nothing in the editor changing. */
+function VersionPreview({
+  version,
+  theme,
+  onLoad,
+  onClose,
+}: {
+  version: VariantVersion;
+  theme: EditorTheme;
+  onLoad(): void;
+  onClose(): void;
+}) {
+  const [file, setFile] = useState<'js' | 'css'>('js');
+  return (
+    <Dialog
+      title={`Version saved ${date.format(new Date(version.createdAt))}`}
+      description="Read only. Your current code isn't changed unless you load this version."
+      onClose={onClose}
+      wide
+    >
+      <div className={dialogStyles.body}>
+        <div className={styles.previewTabs} role="group" aria-label="File">
+          {(['js', 'css'] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              className={styles.previewTab}
+              aria-pressed={file === f}
+              onClick={() => setFile(f)}
+            >
+              {f.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <div className={styles.previewCode} data-theme={theme}>
+          <CodeEditor
+            fill
+            key={file}
+            readOnly
+            theme={theme}
+            language={file === 'js' ? 'javascript' : 'css'}
+            label={`Saved ${file.toUpperCase()}`}
+            value={
+              version[file] ||
+              (file === 'js' ? '// No JS in this version' : '/* No CSS in this version */')
+            }
+            onChange={() => {}}
+          />
+        </div>
+      </div>
+      <div className={dialogStyles.foot}>
+        <Button variant="secondary" onClick={onClose}>
+          Close
+        </Button>
+        <Button onClick={onLoad}>Load into editor</Button>
+      </div>
+    </Dialog>
   );
 }
 

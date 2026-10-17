@@ -7,7 +7,8 @@ import { fromGroups, toGroups } from '../../lib/segments';
 async function open(path = '/p/marketing-site/audiences', data = fakeData()) {
   const router = renderApp(path, { data: data.api });
   await screen.findByRole('heading', { level: 1, name: 'Audiences' });
-  await screen.findByRole('link', { name: /High-intent returners/ });
+  // On a segment's own page the breadcrumb links to it too.
+  await screen.findAllByRole('link', { name: /High-intent returners/ });
   return { router, ...data };
 }
 

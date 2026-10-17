@@ -15,6 +15,13 @@ description: How results are counted and tested, and what the verdict means.
   converters, events (and sum of squares), value sum (and sum of squares) and, for click-through
   rate, viewers. `experiment_daily` feeds the cumulative chart.
 
+## The Results page
+
+The verdict and the four headline numbers, then one card per goal, named exactly as the goal was
+created: the primary goal (with guardrail columns), the cumulative chart, then each secondary goal.
+Each card has Variant, Visitors, the goal's conversions, rate, uplift with its 95% range and chance
+to win, and folds away with the button in its header (cards start open).
+
 ## Tests
 
 | What                 | Method                                                                   |
