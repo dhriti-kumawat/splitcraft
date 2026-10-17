@@ -60,7 +60,7 @@ describe('variants list', () => {
     const user = userEvent.setup();
     const { variantPatches } = await open();
     await user.click(screen.getByRole('button', { name: /^Control/ }));
-    expect(screen.getByText('Control is the page as it is')).toBeInTheDocument();
+    expect(screen.getByText(/Control is the page as it is/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Rename Control' }));
     const name = screen.getByRole('textbox', { name: 'Original name' });
     await user.clear(name);
@@ -89,6 +89,26 @@ describe('variants list', () => {
       expect(screen.queryByRole('button', { name: /^Price first/ })).not.toBeInTheDocument(),
     );
     expect(data.experimentsNow().find((e) => e.id === 'trust')!.variants).toHaveLength(2);
+  });
+
+  it('can give Control code when it needs some', async () => {
+    const user = userEvent.setup();
+    const { variantPatches } = await open();
+    await user.click(screen.getByRole('button', { name: /^Control/ }));
+    // Straight into the editor, with a short note at the end.
+    expect(screen.getByText(/Control is the page as it is/)).toBeInTheDocument();
+    type('Control JS', 'splitcraft.trackEvent("seen")');
+    expect(screen.getByText(/Code here changes the original page/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await vi.waitFor(() =>
+      expect(variantPatches).toContainEqual({
+        id: 'trust-c',
+        patch: { js: 'splitcraft.trackEvent("seen")', css: '' },
+      }),
+    );
+    expect(
+      screen.getByRole('button', { name: /^Control1 lines JS · 0 lines CSS/ }),
+    ).toBeInTheDocument();
   });
 
   it('adds a variant and rebalances the split in a draft', async () => {
@@ -215,7 +235,11 @@ describe('editor', () => {
     await open();
     type('B JS', 'console.log(1)');
     await user.click(screen.getByRole('button', { name: /^Control/ }));
-    await user.click(screen.getByRole('button', { name: /^B/ }));
+    await user.click(
+      within(screen.getByRole('region', { name: 'Variations' })).getByRole('button', {
+        name: /^B/,
+      }),
+    );
     expect(editor('B JS')).toHaveValue('console.log(1)');
   });
 
@@ -262,11 +286,42 @@ describe('editor', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await screen.findByText(/Saved \d\d:\d\d/);
     await user.click(screen.getByRole('button', { name: 'Version history' }));
-    await screen.findByText('v3 · current');
+    await screen.findByText('Current version');
+    const views = await screen.findAllByRole('button', { name: /^View the version saved/ });
 
-    await user.click(await screen.findByRole('button', { name: 'Load v2 into the editor' }));
+    // View shows it read-only and leaves the editor alone.
+    await user.click(views[0]!);
+    const preview = screen.getByRole('dialog', { name: /^Version saved/ });
+    expect(within(preview).getByRole('textbox', { name: 'Saved JS' })).toHaveValue('first()');
+    expect(editor('B JS')).toHaveValue('second()');
+    await user.click(within(preview).getByRole('button', { name: 'Close' }));
+    expect(editor('B JS')).toHaveValue('second()');
+
+    // Load puts it in the editor, unsaved.
+    await user.click(screen.getByRole('button', { name: 'Version history' }));
+    await user.click(
+      (await screen.findAllByRole('button', { name: /^Load the version saved/ }))[0]!,
+    );
     expect(editor('B JS')).toHaveValue('first()');
     expect(screen.getByText(/Unsaved changes/)).toBeInTheDocument();
+  });
+
+  it('deletes a saved version after confirming', async () => {
+    const user = userEvent.setup();
+    await open();
+    type('B JS', 'first()');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText(/Saved \d\d:\d\d/);
+    await user.click(screen.getByRole('button', { name: 'Version history' }));
+    const bins = await screen.findAllByRole('button', { name: /^Delete the version saved/ });
+    const before = bins.length;
+    await user.click(bins[0]!);
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await vi.waitFor(() =>
+      expect(screen.queryAllByRole('button', { name: /^Delete the version saved/ })).toHaveLength(
+        before - 1,
+      ),
+    );
   });
 
   it('is read-only once ended', async () => {

@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { CumulativeChart } from '../../components/CumulativeChart';
-import { Breakdown } from './Breakdown';
 import type { Experiment, ExperimentGoal, Metric } from '../../data/api';
 import { useDailyQuery, useGoalsQuery, useMetricsQuery, useResultsQuery } from '../../data/queries';
 import { SERIES, seriesColor } from '../../lib/chartColors';
@@ -186,7 +185,6 @@ export function ResultsPage() {
       </dl>
 
       <GoalTable
-        id="variants-h"
         metric={primaryMetric}
         result={primary}
         order={orderedArms.map((a) => a.variantKey)}
@@ -195,10 +193,7 @@ export function ResultsPage() {
       />
 
       {chart.length > 0 && unique && (
-        <section className={styles.section} aria-labelledby="chart-h">
-          <h2 className={styles.title} id="chart-h">
-            Cumulative conversion rate
-          </h2>
+        <ResultCard title="Cumulative conversion rate">
           {orderedArms.length > SERIES.length && (
             <p className={styles.note}>
               Control and the {SERIES.length - 1} leading variants. The table has every variant.
@@ -212,19 +207,16 @@ export function ResultsPage() {
               .map((a) => `${a.name} ${fmt(a.value)}`)
               .join(', ')}. The table above has the exact numbers.`}
           />
-        </section>
+        </ResultCard>
       )}
 
       {experiment.type === 'mvt' && proportion && (
         <FactorEffects experiment={experiment} result={primary} fmt={fmt} />
       )}
 
-      {unique && <Breakdown experiment={experiment} goalName={primaryMetric.name} />}
-
       {secondary.map((g) => (
         <GoalTable
           key={g.metric.id}
-          id={`secondary-${g.metric.id}`}
           metric={g.metric}
           result={metricResult(g.metric, experiment, results.data)}
           order={orderedArms.map((a) => a.variantKey)}
@@ -236,13 +228,69 @@ export function ResultsPage() {
   );
 }
 
+/** A results card that folds away with the button in its header; open by default. */
+function ResultCard({
+  title,
+  badges,
+  children,
+}: {
+  title: string;
+  badges?: ReactNode;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  const id = useId();
+  return (
+    <section className={styles.section} aria-labelledby={`${id}-h`}>
+      <div className={styles.cardHead}>
+        <h2 className={styles.title} id={`${id}-h`}>
+          {title}
+          {badges}
+        </h2>
+        <button
+          type="button"
+          className={styles.fold}
+          aria-expanded={open}
+          aria-controls={`${id}-body`}
+          aria-label={open ? `Collapse ${title}` : `Expand ${title}`}
+          onClick={() => setOpen((o) => !o)}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            style={{ transform: open ? 'rotate(180deg)' : undefined }}
+          >
+            <path d="M5 8l5 5 5-5" />
+          </svg>
+        </button>
+      </div>
+      {/* Folds by animating its row height (0fr to 1fr). Closed content is hidden from
+          screen readers and the keyboard. */}
+      <div
+        id={`${id}-body`}
+        className={`${styles.cardFold} ${open ? styles.cardOpen : ''}`}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <div className={styles.cardBody}>{children}</div>
+      </div>
+    </section>
+  );
+}
+
 /**
- * One goal's results by variant: visitors, conversions, rate, uplift with its 95% range and
+ * One goal's results for each variant: visitors, conversions, rate, uplift with its 95% range and
  * chance to win. The primary goal also shows guardrail columns; secondary goals get the same
  * table without them, in the same variant order.
  */
 function GoalTable({
-  id,
   metric,
   result,
   order,
@@ -250,7 +298,6 @@ function GoalTable({
   guardResults = [],
   label,
 }: {
-  id: string;
   metric: Metric;
   result: ReturnType<typeof metricResult>;
   order: string[];
@@ -266,12 +313,15 @@ function GoalTable({
   const controlArm = arms.find((a) => a.variantKey === control);
   const best = result.best;
   return (
-    <section className={styles.section} aria-labelledby={id}>
-      <h2 className={styles.title} id={id}>
-        {metric.name} by variant
-        {label && <span className={styles.goalLabel}>{label}</span>}
-        {result.lowerIsBetter && <span className={styles.goalLabel}>Lower is better</span>}
-      </h2>
+    <ResultCard
+      title={metric.name}
+      badges={
+        <>
+          {label && <span className={styles.goalLabel}>{label}</span>}
+          {result.lowerIsBetter && <span className={styles.goalLabel}>Lower is better</span>}
+        </>
+      }
+    >
       <table className={styles.table}>
         <thead>
           <tr>
@@ -280,7 +330,8 @@ function GoalTable({
               Visitors
             </th>
             <th scope="col" className={styles.r}>
-              {unique ? `${metric.name}s` : 'Converters'}
+              {/* The goal's name exactly as it was created, e.g. hero_cta_clicks. */}
+              {unique ? metric.name : 'Converters'}
             </th>
             <th scope="col" className={styles.r}>
               {unique ? 'Conv. rate' : MEASURES[metric.measure].label}
@@ -338,7 +389,7 @@ function GoalTable({
           ))}
         </tbody>
       </table>
-    </section>
+    </ResultCard>
   );
 }
 
@@ -425,10 +476,7 @@ function FactorEffects({
   const better = (chance: number) => (result.lowerIsBetter ? 1 - chance : chance);
 
   return (
-    <section className={styles.section} aria-labelledby="factors-h">
-      <h2 className={styles.title} id="factors-h">
-        {result.metric.name} by section
-      </h2>
+    <ResultCard title={`${result.metric.name}: each section`}>
       <p className={styles.note}>
         Each variation pooled over every combination that shows it, compared with the section's
         original.
@@ -487,7 +535,7 @@ function FactorEffects({
           </table>
         );
       })}
-    </section>
+    </ResultCard>
   );
 }
 

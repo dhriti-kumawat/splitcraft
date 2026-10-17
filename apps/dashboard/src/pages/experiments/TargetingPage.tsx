@@ -1,5 +1,6 @@
 import { Menu } from '../../components/Menu';
 import { useId, useState } from 'react';
+import { CodeField } from '../../components/CodeField';
 import { ConditionBuilder } from '../../components/ConditionBuilder';
 import { PageRulesEditor } from '../../components/PageRulesEditor';
 import { SaveAsDialog } from '../../components/SavedPicker';
@@ -580,15 +581,15 @@ function ActivationPicker({
       )}
       {value.mode === 'js' && (
         <div className={styles.activationCode}>
-          <label htmlFor={`${id}-js`}>Condition (return true to activate)</label>
-          <textarea
-            id={`${id}-js`}
-            className={`${styles.input} mono`}
-            rows={3}
+          <span>Condition (return true to activate)</span>
+          <CodeField
+            label="Condition (return true to activate)"
+            filename="activation.js"
             value={value.code}
+            onChange={(code) => set({ code })}
+            height={170}
             placeholder="return window.cartLoaded === true;"
-            onChange={(e) => set({ code: e.target.value })}
-            aria-invalid={showErrors && Boolean(problem)}
+            invalid={showErrors && Boolean(problem)}
           />
         </div>
       )}

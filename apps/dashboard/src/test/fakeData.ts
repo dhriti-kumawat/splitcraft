@@ -702,6 +702,10 @@ export function fakeData(
       }
     },
     listVariantVersions: async (id) => versions[id] ?? [],
+    async deleteVariantVersion(versionId) {
+      for (const key of Object.keys(versions))
+        versions[key] = versions[key]!.filter((v) => v.id !== versionId);
+    },
     // The demo project's experiment reuses the Sticky example's numbers.
     experimentResults: async (id) => opts.results?.[id] ?? RESULTS[id.replace(/^demo-/, '')] ?? [],
     experimentDaily: async (id) => DAILY[id.replace(/^demo-/, '')] ?? [],

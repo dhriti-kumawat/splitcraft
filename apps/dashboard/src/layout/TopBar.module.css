@@ -122,7 +122,7 @@
   text-decoration: underline;
 }
 
-.current {
+.crumb .current {
   color: var(--ink);
   font-weight: 600;
   overflow: hidden;

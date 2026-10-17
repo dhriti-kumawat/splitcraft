@@ -37,9 +37,7 @@ describe('results', () => {
   it('lists variants with rates, uplift, chance and the guardrail', async () => {
     await open();
     await screen.findByText('B is ahead, with a 96% chance to beat Control');
-    const table = within(screen.getByRole('region', { name: 'Book click by variant' })).getByRole(
-      'table',
-    );
+    const table = within(screen.getByRole('region', { name: 'Book click' })).getByRole('table');
     const rows = within(table).getAllByRole('row');
     expect(within(rows[0]!).getByText('Guardrail: Purchase')).toBeInTheDocument();
     const control = rows.find((r) => within(r).queryByText('Control'))!;
@@ -69,7 +67,7 @@ describe('results', () => {
   it('shows each secondary goal in the same table as the primary goal', async () => {
     await open();
     const section = await screen.findByRole('region', {
-      name: /^Confirmation page by variant/,
+      name: /^Confirmation page/,
     });
     expect(within(section).getByText('Secondary goal')).toBeInTheDocument();
     const headers = within(section)
@@ -78,7 +76,7 @@ describe('results', () => {
     expect(headers).toEqual([
       'Variant',
       'Visitors',
-      'Confirmation pages',
+      'Confirmation page',
       'Conv. rate',
       'Uplift',
       'Chance to win',
@@ -105,22 +103,19 @@ describe('results', () => {
   });
 });
 
-describe('breakdown', () => {
-  it('shows the primary goal by device and by traffic source', async () => {
+describe('cards', () => {
+  it('fold away and open again, open to start with, with no device breakdown', async () => {
     const user = userEvent.setup();
     renderApp('/p/marketing-site/experiments/sticky/results');
-    const section = await screen.findByRole('region', { name: 'Book click by device' });
-    const mobile = await within(section).findByRole('row', { name: /Mobile/ });
-    expect(mobile).toHaveTextContent('4.94%');
-    expect(mobile).toHaveTextContent('5.81%');
-    expect(within(section).getByRole('row', { name: /Unknown/ })).toHaveTextContent(
-      'Too few visitors',
-    );
-    await user.click(within(section).getByRole('button', { name: 'Traffic source' }));
-    expect(
-      await screen.findByRole('region', { name: 'Book click by traffic source' }),
-    ).toBeInTheDocument();
-    expect(await screen.findByRole('row', { name: /Organic search/ })).toBeInTheDocument();
+    const card = await screen.findByRole('region', { name: 'Book click' });
+    const fold = within(card).getByRole('button', { name: 'Collapse Book click' });
+    expect(fold).toHaveAttribute('aria-expanded', 'true');
+    expect(within(card).getByRole('table')).toBeVisible();
+    await user.click(fold);
+    expect(within(card).queryByRole('table')).toBeNull();
+    await user.click(within(card).getByRole('button', { name: 'Expand Book click' }));
+    expect(within(card).getByRole('table')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /by device/ })).toBeNull();
   });
 });
 
@@ -164,7 +159,7 @@ describe('MVT results', () => {
         results: { sticky: keys.map(arm) },
       }),
     );
-    const byVariant = await screen.findByRole('region', { name: 'Book click by variant' });
+    const byVariant = await screen.findByRole('region', { name: 'Book click' });
     const names = within(byVariant)
       .getAllByRole('rowheader')
       .map((r) => r.textContent);

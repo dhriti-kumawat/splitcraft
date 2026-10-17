@@ -214,3 +214,9 @@
     flex: 1 1 140px;
   }
 }
+
+/* A custom JS condition takes the row's full width under the field picker. */
+.codeCell {
+  flex: 1 1 100%;
+  min-width: 0;
+}

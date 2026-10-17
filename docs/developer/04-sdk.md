@@ -42,7 +42,8 @@ is under the pointer. Below 1024 px the page is one column and scrolls, and the 
 wheel back to the page at the top and bottom of the code.
 
 The editor bar has, from the left: **Built-in helpers** (the `splitcraft.*` functions, which are
-also suggested as you type), **Version history** (load an earlier save into the editor, then save
+also suggested as you type), **Version history** (**View** shows a saved version read-only without touching your code,
+**Load** puts it in the editor, the bin deletes it after a confirm; load, then save
 to keep it), the theme (**Dark**, **Grey** or **Light**), **Format** (Shift+Alt+F), **Full
 screen**, **Edit visually**, **Template** and **Save** (Cmd/Ctrl+S). The status bar shows syntax
 errors, the variation's key, the code's size and whether it's saved. Long lines wrap. Full screen
@@ -50,6 +51,10 @@ shows JS and CSS side by side across the whole window (Esc leaves it); drag the 
 to resize (or focus it and use the arrow keys; double-click resets), and below 1024 px they stack
 and the bar resizes them up and down. The theme and the split are remembered in your browser.
 
+- **Control** has no code by default (it is the page as it is), but opens in the same editor in
+  case it needs some, like the same tracking as the variants. A note at the end of the editor says
+  what Control code does, with **Remove Control's code** to clear it. The SDK applies Control's
+  code like any variant's.
 - **CSS** goes into one `<style>` per experiment.
 - **JS** runs inside `try / catch` with a `splitcraft` object in scope: `waitForElement`,
   `onceInView`, `onRouteChange`, `injectStyles` and `trackEvent`. An error is logged and the page
