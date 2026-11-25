@@ -380,7 +380,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
   gap: 64px;
   align-items: start;
-  padding-bottom: 96px;
+  padding-bottom: 24px;
 }
 
 .accessLayout > :last-child {
@@ -471,7 +471,7 @@
   .accessLayout {
     grid-template-columns: minmax(0, 1fr);
     gap: 40px;
-    padding-bottom: 56px;
+    padding-bottom: 0;
   }
 
   .accessLayout > :last-child {
@@ -577,4 +577,21 @@ textarea.accessInput {
 .accessSend:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Phones: a tighter form card, so the fields get the width. (After .access, so it wins.) */
+@media (max-width: 600px) {
+  .access,
+  .accessDone {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .accessSteps li {
+    padding-left: 44px;
+  }
+
+  .accessDemo {
+    padding: 20px;
+  }
 }
