@@ -180,7 +180,7 @@ export function RequestAccessPage() {
       lede="Splitcraft is invite-only while it opens to a small group of teams. Tell us a little about your site and we'll reply by email."
     >
       {state.status === 'sent' ? (
-        <div className={`${home.contactDone} ${styles.access}`} role="status">
+        <div className={styles.accessDone} role="status">
           <b>Thanks, your request is in.</b>
           <span>We&apos;ll reply to {email}. Meanwhile, you can look around the demo.</span>
           <a className={home.secondary} href={DEMO_URL}>
@@ -188,32 +188,28 @@ export function RequestAccessPage() {
           </a>
         </div>
       ) : (
-        <form
-          className={`${home.contact} ${styles.access}`}
-          onSubmit={submit}
-          aria-labelledby={`${id}-t`}
-        >
-          <h2 className={home.contactTitle} id={`${id}-t`}>
+        <form className={styles.access} onSubmit={submit} aria-labelledby={`${id}-t`}>
+          <h2 className={styles.accessTitle} id={`${id}-t`}>
             Your details
           </h2>
-          <label className={home.contactLabel} htmlFor={`${id}-name`}>
+          <label className={styles.accessLabel} htmlFor={`${id}-name`}>
             Your name
           </label>
           <input
             id={`${id}-name`}
-            className={home.contactInput}
+            className={styles.accessInput}
             required
             maxLength={100}
             autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <label className={home.contactLabel} htmlFor={`${id}-email`}>
+          <label className={styles.accessLabel} htmlFor={`${id}-email`}>
             Work email
           </label>
           <input
             id={`${id}-email`}
-            className={home.contactInput}
+            className={styles.accessInput}
             type="email"
             required
             maxLength={254}
@@ -222,12 +218,12 @@ export function RequestAccessPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <label className={home.contactLabel} htmlFor={`${id}-site`}>
+          <label className={styles.accessLabel} htmlFor={`${id}-site`}>
             Your site
           </label>
           <input
             id={`${id}-site`}
-            className={home.contactInput}
+            className={styles.accessInput}
             required
             maxLength={200}
             inputMode="url"
@@ -235,12 +231,12 @@ export function RequestAccessPage() {
             value={site}
             onChange={(e) => setSite(e.target.value)}
           />
-          <label className={home.contactLabel} htmlFor={`${id}-goal`}>
+          <label className={styles.accessLabel} htmlFor={`${id}-goal`}>
             What would you like to test?
           </label>
           <textarea
             id={`${id}-goal`}
-            className={home.contactInput}
+            className={styles.accessInput}
             maxLength={1200}
             rows={3}
             placeholder="E.g. the checkout button, pricing page copy, a new onboarding step"
@@ -259,11 +255,15 @@ export function RequestAccessPage() {
             onChange={(e) => setTrap(e.target.value)}
           />
           {state.status === 'error' && (
-            <p className={home.contactError} role="alert">
+            <p className={styles.accessError} role="alert">
               {state.message}
             </p>
           )}
-          <button type="submit" className={home.contactSend} disabled={state.status === 'sending'}>
+          <button
+            type="submit"
+            className={`${home.primary} ${styles.accessSend}`}
+            disabled={state.status === 'sending'}
+          >
             {state.status === 'sending' ? 'Sending…' : 'Request access'}
           </button>
         </form>
