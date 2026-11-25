@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import styles from './Home.module.css';
-import { CONTACT_URL, DASHBOARD_URL, GITHUB_URL } from './links';
+import { CONTACT_URL, DASHBOARD_URL, DEMO_URL, GITHUB_URL, REQUEST_ACCESS_URL } from './links';
 
 const NAV = [
   { href: '#product', label: 'Product' },
@@ -85,8 +85,8 @@ export function Header({ home = true }: { home?: boolean }) {
           <a className={styles.navLink} href={`${DASHBOARD_URL}/login`}>
             Log in
           </a>
-          <a className={`${styles.primary} ${styles.small}`} href={`${DASHBOARD_URL}/signup`}>
-            Start free
+          <a className={`${styles.primary} ${styles.small}`} href={REQUEST_ACCESS_URL}>
+            Request access
           </a>
           <button
             type="button"
@@ -125,7 +125,7 @@ export function Header({ home = true }: { home?: boolean }) {
         ))}
         <a href={GITHUB_URL}>GitHub</a>
         <a href={`${DASHBOARD_URL}/login`}>Log in</a>
-        <a href={`${DASHBOARD_URL}/signup`}>Start free</a>
+        <a href={REQUEST_ACCESS_URL}>Request access</a>
       </nav>
     </header>
   );
@@ -148,14 +148,17 @@ function Hero() {
             code, target exactly who you mean, and get results you can defend.
           </p>
           <div className={styles.actions}>
-            <a className={styles.primary} href={`${DASHBOARD_URL}/signup`}>
-              Start free
+            <a className={styles.primary} href={REQUEST_ACCESS_URL}>
+              Request access
             </a>
             <a className={styles.secondary} href="#how">
               See how it works
             </a>
           </div>
-          <span className={styles.fine}>Free up to 100,000 events a month. No card needed.</span>
+          <span className={styles.fine}>
+            Invite-only during early access. Or <a href={DEMO_URL}>look around the demo</a>, no
+            account needed.
+          </span>
           <ul className={styles.trust} aria-label="At a glance">
             <li>
               <b>&lt; 8.5 KB</b> snippet
@@ -678,7 +681,7 @@ function Capabilities() {
 
 function Pricing() {
   const included = [
-    '100,000 events a month',
+    'Every feature, no seat limits',
     'Unlimited projects and experiments',
     'Every targeting rule and metric',
     'Guardrails, reach estimates, QA mode',
@@ -694,29 +697,27 @@ function Pricing() {
         <div className={styles.stackCol}>
           <span className={styles.eyebrow}>Pricing</span>
           <h2 className={styles.h2} id="price-title">
-            Free while you find what works.
+            Early access, by invitation.
           </h2>
           <p className={styles.lede}>
-            One plan, no card, every feature. When a workspace reaches its monthly events,
-            experiments pause and visitors see your original site until the month resets.
+            Splitcraft is opening to a small group of teams first. Tell us about your site and what
+            you want to test, and we&apos;ll set you up with every feature.
           </p>
         </div>
         <div className={styles.priceCard}>
           <div className={styles.priceHead}>
-            <span className={styles.priceName}>Free</span>
-            <span className={styles.price}>
-              $0 <small>/ month</small>
-            </span>
+            <span className={styles.priceName}>Early access</span>
+            <span className={styles.price}>On request</span>
           </div>
           <ul className={styles.priceList}>
             {included.map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
-          <a className={styles.primary} href={`${DASHBOARD_URL}/signup`}>
-            Start free
+          <a className={styles.primary} href={REQUEST_ACCESS_URL}>
+            Request access
           </a>
-          <span className={styles.fine}>Higher-volume plans aren&apos;t available yet.</span>
+          <span className={styles.fine}>Plans and prices are shared with each team.</span>
         </div>
       </div>
     </section>
@@ -808,8 +809,8 @@ function Contact() {
               </a>
             </li>
             <li>
-              <a href={`${DASHBOARD_URL}/signup`}>
-                <span>Try it with demo data</span>
+              <a href={DEMO_URL}>
+                <span>Look around the demo, no account needed</span>
                 <span aria-hidden="true">→</span>
               </a>
             </li>
@@ -1212,15 +1213,15 @@ function Cta() {
             Run your first test today.
           </h2>
           <p className={`${styles.lede} ${styles.ctaLede}`}>
-            Free up to 100,000 events a month. No card needed.
+            Splitcraft is invite-only during early access. Ask for an invite, or try the demo.
           </p>
         </div>
         <div className={styles.ctaActions}>
-          <a className={`${styles.primary} ${styles.ctaPrimary}`} href={`${DASHBOARD_URL}/signup`}>
-            Start free
+          <a className={`${styles.primary} ${styles.ctaPrimary}`} href={REQUEST_ACCESS_URL}>
+            Request access
           </a>
-          <a className={`${styles.secondary} ${styles.ctaSecondary}`} href={GITHUB_URL}>
-            View on GitHub
+          <a className={`${styles.secondary} ${styles.ctaSecondary}`} href={DEMO_URL}>
+            View demo
           </a>
         </div>
       </div>
@@ -1253,7 +1254,8 @@ export function Footer({ home = true }: { home?: boolean }) {
     {
       title: 'Get started',
       links: [
-        ['Start free', `${DASHBOARD_URL}/signup`],
+        ['Request access', REQUEST_ACCESS_URL],
+        ['View demo', DEMO_URL],
         ['Log in', `${DASHBOARD_URL}/login`],
         ['Contact us', '#contact'],
       ],

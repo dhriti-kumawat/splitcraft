@@ -1,0 +1,49 @@
+/* A small floating note: this is the demo, and how to get the real thing. */
+.note {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px 10px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #d8dcd5;
+  font-size: 13px;
+  box-shadow: 0 12px 30px rgba(21, 23, 26, 0.3);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.note b {
+  color: #ffffff;
+}
+
+.link {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--accent-hover);
+  color: #ffffff;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .note {
+    white-space: normal;
+    width: calc(100% - 32px);
+    justify-content: space-between;
+  }
+}

@@ -22,6 +22,10 @@ tracker code) and Recharts (results). Styles are CSS Modules with the tokens in 
 | `/p/:projectId/metrics`, `…/metrics/new?source=…`, `…/metrics/:metricId` | Metrics |
 | `/p/:projectId/install`, `/p/:projectId/settings` | Install code and switches; project settings |
 
+**Public demo**: `/demo.html` (built with the app) opens the dashboard with the example data
+(Larkspur Travel), signed in, with no account and no Supabase. Everything stays in memory, so
+nothing is saved; a note at the bottom links to Request access.
+
 Heavy screens (Monaco, Recharts, the condition builder) load lazily. Breadcrumbs come from each
 route's `handle.crumbs` and show record names (`layout/CrumbNames.tsx`). Every crumb is a link: one
 without its own `to` goes to its route's page.

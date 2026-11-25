@@ -56,7 +56,7 @@ http://localhost:5173/preview.html?path=/projects&workspaces=none   # first-run 
 Never put the service role key in a frontend `.env` file. The Edge Functions get it from Supabase
 automatically.
 
-The marketing site reads `VITE_DASHBOARD_URL` (where "Log in" and "Start free" go); see
+The marketing site reads `VITE_DASHBOARD_URL` (where "Log in" and "View demo" go); see
 `apps/web/.env.example`.
 
 ## Demo data

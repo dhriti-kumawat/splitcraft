@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/context';
 import { safeNext } from '../../auth/next';
 import { Logo } from '../../components/icons';
 import { passwordRules, strength, STRENGTH, validate, type FieldErrors, type Mode } from './rules';
+import { SITE_URL as MARKETING_SITE } from '../../lib/snippet';
 import styles from './AuthPage.module.css';
 
 /**
@@ -13,6 +14,7 @@ import styles from './AuthPage.module.css';
  * form. Set to false to open sign-up again.
  */
 const INVITE_ONLY: boolean = true;
+const REQUEST_ACCESS = new URL('/request-access/', MARKETING_SITE).href;
 const inviteOnlySignup = (mode: Mode): boolean => INVITE_ONLY && mode === 'signup';
 
 const COPY: Record<Mode, { title: string; subtitle: string; cta: string; busy: string }> = {
@@ -326,11 +328,17 @@ export function AuthPage({ mode }: { mode: Mode }) {
         <div className={styles.intro}>
           <h1 className={styles.title}>Splitcraft is invite-only</h1>
           <p className={styles.subtitle}>
-            Accounts are by invitation for now. If you have access, log in with your email or
-            GitHub.
+            Accounts are by invitation during early access. Ask for an invite, or look around the
+            demo with example data. Already have access? Log in.
           </p>
         </div>
-        <Link className={styles.cta} to={`/login${query}`}>
+        <a className={styles.cta} href={REQUEST_ACCESS}>
+          Request access
+        </a>
+        <a className={styles.github} href="/demo.html">
+          View the demo
+        </a>
+        <Link className={`${styles.link} ${styles.center}`} to={`/login${query}`}>
           Log in
         </Link>
       </div>
@@ -633,6 +641,9 @@ export function AuthPage({ mode }: { mode: Mode }) {
             {mode === 'login' && (
               <>
                 <span>Splitcraft is invite-only for now.</span>
+                <a href={REQUEST_ACCESS} className={styles.link}>
+                  Request access
+                </a>
               </>
             )}
             {mode === 'signup' && (
@@ -695,7 +706,7 @@ function Showcase({ signup }: { signup: boolean }) {
   return (
     <aside className={styles.showcase} aria-label="About Splitcraft">
       <div className={styles.showcaseInner}>
-        <p className={styles.kicker}>{signup ? 'Free to start' : 'Welcome back'}</p>
+        <p className={styles.kicker}>{signup ? 'Early access' : 'Welcome back'}</p>
         <h2 className={styles.showTitle}>
           {signup ? 'Run your first A/B test today.' : 'See what moved while you were away.'}
         </h2>
@@ -735,9 +746,7 @@ function Showcase({ signup }: { signup: boolean }) {
           <li>Variants in real JS and CSS, or point and click</li>
           <li>Targeting, goals and guardrails in one place</li>
           <li>
-            {signup
-              ? '100,000 events a month free, no card'
-              : 'Results you can trust, with a 95% range'}
+            {signup ? 'Invite-only during early access' : 'Results you can trust, with a 95% range'}
           </li>
         </ul>
         <p className={styles.showNote}>Example numbers from a demo test.</p>

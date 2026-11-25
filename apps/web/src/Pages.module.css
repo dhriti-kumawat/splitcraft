@@ -373,3 +373,12 @@
     flex-wrap: wrap;
   }
 }
+
+/* Request access: the home page's dark contact card, as a single column. */
+.access {
+  max-width: 560px;
+  padding: 32px;
+  border-radius: 20px;
+  background: var(--ink);
+  color: #ffffff;
+}
