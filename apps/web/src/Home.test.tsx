@@ -17,7 +17,7 @@ describe('home page', () => {
       'Built for the person who writes the variant.',
       'Results you can defend in any review.',
       'Live in an afternoon.',
-      'Free while you find what works.',
+      'Early access, by invitation.',
       'Before you install.',
       'Still have a question?',
       'Run your first test today.',
@@ -123,21 +123,26 @@ describe('home page', () => {
     vi.unstubAllGlobals();
   });
 
-  it('sends Start free and Log in to the dashboard', () => {
+  it('asks for access instead of a free sign-up, and logs in on the dashboard', () => {
     render(<Home />);
-    for (const a of screen.getAllByRole('link', { name: 'Start free' })) {
-      expect(a.getAttribute('href')).toMatch(/\/signup$/);
+    expect(screen.queryByRole('link', { name: 'Start free' })).toBeNull();
+    for (const a of screen.getAllByRole('link', { name: 'Request access' })) {
+      expect(a).toHaveAttribute('href', '/request-access/');
+    }
+    for (const a of screen.getAllByRole('link', { name: 'View demo' })) {
+      expect(a.getAttribute('href')).toMatch(/\/demo\.html$/);
     }
     expect(screen.getAllByRole('link', { name: 'Log in' })[0]!.getAttribute('href')).toMatch(
       /\/login$/,
     );
   });
 
-  it('keeps the pricing line from the spec', () => {
+  it('makes no free or no-card claims (Splitcraft is invite-only)', () => {
     render(<Home />);
-    expect(screen.getAllByText('Free up to 100,000 events a month. No card needed.')).toHaveLength(
-      2,
-    );
+    const text = document.body.textContent!;
+    for (const claim of ['Start free', 'No card needed', '$0', 'Free up to']) {
+      expect(text, claim).not.toContain(claim);
+    }
   });
 
   it('makes no claims the product can’t back (PRODUCT_SPEC §1, DECISIONS #14)', () => {
@@ -159,13 +164,13 @@ describe('home page', () => {
     ).toBeInTheDocument();
   });
 
-  it('answers common questions and shows the free plan', async () => {
+  it('answers common questions and shows early access by invitation', async () => {
     render(<Home />);
-    const pricing = screen.getByRole('region', { name: 'Free while you find what works.' });
-    expect(within(pricing).getByText('100,000 events a month')).toBeInTheDocument();
-    expect(within(pricing).getByRole('link', { name: 'Start free' })).toHaveAttribute(
+    const pricing = screen.getByRole('region', { name: 'Early access, by invitation.' });
+    expect(within(pricing).getByText('On request')).toBeInTheDocument();
+    expect(within(pricing).getByRole('link', { name: 'Request access' })).toHaveAttribute(
       'href',
-      expect.stringContaining('/signup'),
+      '/request-access/',
     );
     const faq = screen.getByRole('region', { name: 'Before you install.' });
     expect(within(faq).getAllByRole('group')).toHaveLength(6);
@@ -236,7 +241,7 @@ describe('other pages', () => {
     const { App } = await import('./App');
     render(<App path="/pricing" />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Free, with every feature.',
+      'Early access, by invitation.',
     );
   });
 
@@ -245,5 +250,29 @@ describe('other pages', () => {
     render(<App path="/compare/" />);
     const row = screen.getByRole('rowheader', { name: 'Native mobile SDKs' }).closest('tr')!;
     expect(row).toHaveTextContent('No');
+  });
+});
+
+describe('request access', () => {
+  it('sends name, email, site and what they want to test as one message', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true })));
+    vi.stubGlobal('fetch', fetchMock);
+    const { App } = await import('./App');
+    render(<App path="/request-access/" />);
+    await user.type(screen.getByLabelText('Your name'), 'Ana');
+    await user.type(screen.getByLabelText('Work email'), 'ana@shop.test');
+    await user.type(screen.getByLabelText('Your site'), 'shop.test');
+    await user.type(screen.getByLabelText('What would you like to test?'), 'Checkout button');
+    await user.click(screen.getByRole('button', { name: 'Request access' }));
+    expect(await screen.findByText('Thanks, your request is in.')).toBeInTheDocument();
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe(CONTACT_URL);
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      email: 'ana@shop.test',
+      message: 'Access request\nName: Ana\nSite: shop.test\nWants to test: Checkout button',
+      website: '',
+    });
+    vi.unstubAllGlobals();
   });
 });

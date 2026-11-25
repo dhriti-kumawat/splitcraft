@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import home from './Home.module.css';
 import { Footer, Header } from './Home';
-import { DASHBOARD_URL } from './links';
+import { CONTACT_URL, DEMO_URL, REQUEST_ACCESS_URL } from './links';
 import styles from './Pages.module.css';
 
 /** A marketing page below the home page: the site header and footer around its content. */
@@ -36,11 +36,11 @@ function PageShell({
             Run your first test today.
           </h2>
           <div className={styles.ctaRow}>
-            <a className={home.primary} href={`${DASHBOARD_URL}/signup`}>
-              Start free
+            <a className={home.primary} href={REQUEST_ACCESS_URL}>
+              Request access
             </a>
-            <a className={home.secondary} href="/docs/">
-              Read the docs
+            <a className={home.secondary} href={DEMO_URL}>
+              View demo
             </a>
           </div>
         </section>
@@ -60,7 +60,6 @@ const Check = ({ on }: { on: boolean | 'part' }) => (
 
 export function PricingPage() {
   const included = [
-    '100,000 events a month per workspace',
     'Unlimited projects and experiments',
     'A/B, split URL, multivariate tests and personalization',
     'Visual editor and code editor, preview on any page',
@@ -68,47 +67,49 @@ export function PricingPage() {
     'Feature flags with gradual rollout',
     'Guardrails that pause a losing test, Slack and webhook alerts',
     'Results with uplift ranges, chance to win and sample ratio checks',
+    'Help from the people who build it',
   ];
   const faq: Array<[string, string]> = [
     [
+      'How do I get access?',
+      'Request access with a few lines about your site and what you want to test. We reply by email and set up your workspace.',
+    ],
+    [
+      'What does it cost?',
+      'Plans and prices are shared with each team during early access, based on your traffic. There are no seat limits.',
+    ],
+    [
+      'Can I see it first?',
+      'Yes. The demo opens the dashboard with example data, no account needed. Nothing you change there is saved.',
+    ],
+    [
       'What counts as an event?',
       'Each exposure (a visitor seeing a variant) and each goal the snippet sends: a click, a page view, a custom event or a purchase.',
-    ],
-    [
-      'What happens at 100,000 events?',
-      'Experiments stop being served for the rest of the month, so visitors see your original site. Nothing breaks, and the count resets on the first of the month. The dashboard shows how close you are.',
-    ],
-    ['Do I need a card?', 'No. Sign up with GitHub or email and start testing.'],
-    [
-      'Are there paid plans?',
-      'Not yet. Splitcraft is a portfolio project, so there is one free plan with every feature. Higher-volume plans aren’t available.',
     ],
   ];
   return (
     <PageShell
       eyebrow="Pricing"
-      title="Free, with every feature."
-      lede="One plan with no card and no feature gates. When a workspace uses its monthly events, tests pause and visitors see your original site until the month resets."
+      title="Early access, by invitation."
+      lede="Splitcraft is opening to a small group of teams first. Every feature is included; plans and prices are shared with each team."
     >
       <div className={styles.pricing}>
         <div className={home.priceCard}>
           <div className={home.priceHead}>
-            <span className={home.priceName}>Free</span>
-            <span className={home.price}>
-              $0 <small>/ month</small>
-            </span>
+            <span className={home.priceName}>Early access</span>
+            <span className={home.price}>On request</span>
           </div>
           <ul className={home.priceList}>
             {included.map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
-          <a className={home.primary} href={`${DASHBOARD_URL}/signup`}>
-            Start free
+          <a className={home.primary} href={REQUEST_ACCESS_URL}>
+            Request access
           </a>
         </div>
         <div>
-          <h2 className={styles.h2}>Questions about the plan</h2>
+          <h2 className={styles.h2}>Questions about access</h2>
           <dl className={styles.faq}>
             {faq.map(([q, a]) => (
               <div key={q}>
@@ -119,6 +120,154 @@ export function PricingPage() {
           </dl>
         </div>
       </div>
+    </PageShell>
+  );
+}
+
+// ------------------------------------------------------------------ request access
+
+type SendState = { status: 'idle' | 'sending' | 'sent' } | { status: 'error'; message: string };
+
+/**
+ * Request access: name, email, site and what they want to test, sent to the contact Edge
+ * Function as one message (read in Supabase). Approved emails go on the allowlist.
+ */
+export function RequestAccessPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [site, setSite] = useState('');
+  const [goal, setGoal] = useState('');
+  const [trap, setTrap] = useState('');
+  const [state, setState] = useState<SendState>({ status: 'idle' });
+  const shownAt = useRef(0);
+  const id = useId();
+  useEffect(() => {
+    shownAt.current = Date.now();
+  }, []);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setState({ status: 'sending' });
+    try {
+      const res = await fetch(CONTACT_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          message: `Access request\nName: ${name}\nSite: ${site}\nWants to test: ${goal}`.slice(
+            0,
+            2000,
+          ),
+          website: trap,
+          elapsedMs: Date.now() - shownAt.current,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(body.error ?? 'Could not send your request.');
+      setState({ status: 'sent' });
+    } catch (err) {
+      setState({
+        status: 'error',
+        message: err instanceof Error ? err.message : 'Could not send your request.',
+      });
+    }
+  };
+
+  return (
+    <PageShell
+      eyebrow="Early access"
+      title="Request access to Splitcraft."
+      lede="Splitcraft is invite-only while it opens to a small group of teams. Tell us a little about your site and we'll reply by email."
+    >
+      {state.status === 'sent' ? (
+        <div className={`${home.contactDone} ${styles.access}`} role="status">
+          <b>Thanks, your request is in.</b>
+          <span>We&apos;ll reply to {email}. Meanwhile, you can look around the demo.</span>
+          <a className={home.secondary} href={DEMO_URL}>
+            View demo
+          </a>
+        </div>
+      ) : (
+        <form
+          className={`${home.contact} ${styles.access}`}
+          onSubmit={submit}
+          aria-labelledby={`${id}-t`}
+        >
+          <h2 className={home.contactTitle} id={`${id}-t`}>
+            Your details
+          </h2>
+          <label className={home.contactLabel} htmlFor={`${id}-name`}>
+            Your name
+          </label>
+          <input
+            id={`${id}-name`}
+            className={home.contactInput}
+            required
+            maxLength={100}
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <label className={home.contactLabel} htmlFor={`${id}-email`}>
+            Work email
+          </label>
+          <input
+            id={`${id}-email`}
+            className={home.contactInput}
+            type="email"
+            required
+            maxLength={254}
+            autoComplete="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <label className={home.contactLabel} htmlFor={`${id}-site`}>
+            Your site
+          </label>
+          <input
+            id={`${id}-site`}
+            className={home.contactInput}
+            required
+            maxLength={200}
+            inputMode="url"
+            placeholder="yourcompany.com"
+            value={site}
+            onChange={(e) => setSite(e.target.value)}
+          />
+          <label className={home.contactLabel} htmlFor={`${id}-goal`}>
+            What would you like to test?
+          </label>
+          <textarea
+            id={`${id}-goal`}
+            className={home.contactInput}
+            maxLength={1200}
+            rows={3}
+            placeholder="E.g. the checkout button, pricing page copy, a new onboarding step"
+            value={goal}
+            onChange={(e) => setGoal(e.target.value)}
+          />
+          {/* Hidden from people; bots fill it in. */}
+          <input
+            className={home.contactTrap}
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            value={trap}
+            onChange={(e) => setTrap(e.target.value)}
+          />
+          {state.status === 'error' && (
+            <p className={home.contactError} role="alert">
+              {state.message}
+            </p>
+          )}
+          <button type="submit" className={home.contactSend} disabled={state.status === 'sending'}>
+            {state.status === 'sending' ? 'Sending…' : 'Request access'}
+          </button>
+        </form>
+      )}
     </PageShell>
   );
 }
@@ -147,7 +296,7 @@ export function ComparePage() {
     <PageShell
       eyebrow="Compare"
       title="How Splitcraft compares."
-      lede="Splitcraft covers what most teams use day to day in Optimizely, VWO or AB Tasty, for free. Here is what it does, and where those tools still go further."
+      lede="Splitcraft covers what most teams use day to day in Optimizely, VWO or AB Tasty. Here is what it does, and where those tools still go further."
     >
       <div className={styles.tableWrap}>
         <table className={styles.table}>
@@ -194,7 +343,7 @@ export function ComparePage() {
         <div className={styles.panel}>
           <h2 className={styles.h3}>Why teams pick Splitcraft</h2>
           <ul className={styles.list}>
-            <li>Free, with every feature: no sales call, no seat limits.</li>
+            <li>Every feature included, no seat limits.</li>
             <li>A main snippet under 8.5 KB gzipped, with at most 400 ms of anti-flicker.</li>
             <li>Built for the person who writes the variant: real code, real previews.</li>
             <li>Results that show their uncertainty, so a call holds up in review.</li>

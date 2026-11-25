@@ -12,7 +12,7 @@ tracker code) and Recharts (results). Styles are CSS Modules with the tokens in 
 
 | Route                                       | Screen                                    |
 | ------------------------------------------- | ----------------------------------------- |
-| `/login`, `/login/link`, `/signup`, `/forgot-password`, `/reset-password` | Auth (email and password, magic link, GitHub, Google) |
+| `/login`, `/login/link`, `/signup`, `/forgot-password`, `/reset-password` | Auth (email and password, magic link, GitHub, Google). Invite-only: `/signup` explains it instead of a form |
 | `/invite/:token`                            | Accept a workspace invite                 |
 | `/projects`                                 | Projects, recent activity                 |
 | `/team`, `/workspace`                       | Team and invites; workspace settings      |
@@ -21,6 +21,10 @@ tracker code) and Recharts (results). Styles are CSS Modules with the tokens in 
 | `/p/:projectId/audiences[/…]`               | Segments, `triggers/…`, `page-sets/…`      |
 | `/p/:projectId/metrics`, `…/metrics/new?source=…`, `…/metrics/:metricId` | Metrics |
 | `/p/:projectId/install`, `/p/:projectId/settings` | Install code and switches; project settings |
+
+**Public demo**: `/demo.html` (built with the app) opens the dashboard with the example data
+(Larkspur Travel), signed in, with no account and no Supabase. Everything stays in memory, so
+nothing is saved; a note at the bottom links to Request access.
 
 Heavy screens (Monaco, Recharts, the condition builder) load lazily. Breadcrumbs come from each
 route's `handle.crumbs` and show record names (`layout/CrumbNames.tsx`). Every crumb is a link: one

@@ -1,11 +1,21 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { MESSAGES, type Provider } from '../../auth/api';
+import { isInviteOnlyError, MESSAGES, type Provider } from '../../auth/api';
 import { useAuth } from '../../auth/context';
 import { safeNext } from '../../auth/next';
 import { Logo } from '../../components/icons';
 import { passwordRules, strength, STRENGTH, validate, type FieldErrors, type Mode } from './rules';
+import { SITE_URL as MARKETING_SITE } from '../../lib/snippet';
 import styles from './AuthPage.module.css';
+
+/**
+ * Splitcraft is invite-only: the database only creates accounts for emails on its allowlist
+ * (migration 20261125100000_invite_only.sql), so /signup explains that instead of showing the
+ * form. Set to false to open sign-up again.
+ */
+const INVITE_ONLY: boolean = true;
+const REQUEST_ACCESS = new URL('/request-access/', MARKETING_SITE).href;
+const inviteOnlySignup = (mode: Mode): boolean => INVITE_ONLY && mode === 'signup';
 
 const COPY: Record<Mode, { title: string; subtitle: string; cta: string; busy: string }> = {
   login: {
@@ -75,7 +85,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
   // A failed GitHub or Google login comes back as ?error=… (see RequireAuth).
   const [formError, setFormError] = useState(() => {
     const failed = mode === 'login' ? params.get('error') : null;
-    return failed ? MESSAGES.providerFailed(failed) : '';
+    return failed
+      ? isInviteOnlyError(failed)
+        ? MESSAGES.inviteOnly
+        : MESSAGES.providerFailed(failed)
+      : '';
   });
   const [result, setResult] = useState<Result | null>(null);
   const [resendIn, setResendIn] = useState(0);
@@ -304,6 +318,29 @@ export function AuthPage({ mode }: { mode: Mode }) {
         >
           Use a different account
         </button>
+      </div>
+    );
+  } else if (inviteOnlySignup(mode)) {
+    // Invite-only: accounts exist only for approved emails (the database refuses others),
+    // so there is no sign-up form.
+    body = (
+      <div className={styles.stack}>
+        <div className={styles.intro}>
+          <h1 className={styles.title}>Splitcraft is invite-only</h1>
+          <p className={styles.subtitle}>
+            Accounts are by invitation during early access. Ask for an invite, or look around the
+            demo with example data. Already have access? Log in.
+          </p>
+        </div>
+        <a className={styles.cta} href={REQUEST_ACCESS}>
+          Request access
+        </a>
+        <a className={styles.github} href="/demo.html">
+          View the demo
+        </a>
+        <Link className={`${styles.link} ${styles.center}`} to={`/login${query}`}>
+          Log in
+        </Link>
       </div>
     );
   } else if (mode === 'reset' && state.status === 'signedOut') {
@@ -603,10 +640,10 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <div className={styles.switch}>
             {mode === 'login' && (
               <>
-                <span>New to Splitcraft?</span>
-                <Link to={`/signup${query}`} className={styles.link}>
-                  Create an account
-                </Link>
+                <span>Splitcraft is invite-only for now.</span>
+                <a href={REQUEST_ACCESS} className={styles.link}>
+                  Request access
+                </a>
               </>
             )}
             {mode === 'signup' && (
@@ -669,7 +706,7 @@ function Showcase({ signup }: { signup: boolean }) {
   return (
     <aside className={styles.showcase} aria-label="About Splitcraft">
       <div className={styles.showcaseInner}>
-        <p className={styles.kicker}>{signup ? 'Free to start' : 'Welcome back'}</p>
+        <p className={styles.kicker}>{signup ? 'Early access' : 'Welcome back'}</p>
         <h2 className={styles.showTitle}>
           {signup ? 'Run your first A/B test today.' : 'See what moved while you were away.'}
         </h2>
@@ -709,9 +746,7 @@ function Showcase({ signup }: { signup: boolean }) {
           <li>Variants in real JS and CSS, or point and click</li>
           <li>Targeting, goals and guardrails in one place</li>
           <li>
-            {signup
-              ? '100,000 events a month free, no card'
-              : 'Results you can trust, with a 95% range'}
+            {signup ? 'Invite-only during early access' : 'Results you can trust, with a 95% range'}
           </li>
         </ul>
         <p className={styles.showNote}>Example numbers from a demo test.</p>

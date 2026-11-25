@@ -4,6 +4,7 @@ import {
   ComparePage,
   IntegrationsPage,
   PricingPage,
+  RequestAccessPage,
   TourPage,
   UseCasesPage,
 } from './Pages';
@@ -16,7 +17,12 @@ export const PAGES: Record<
   '/pricing/': {
     component: PricingPage,
     title: 'Pricing · Splitcraft',
-    description: 'Splitcraft is free with every feature: 100,000 events a month, no card needed.',
+    description: 'Splitcraft is in early access by invitation, with every feature included.',
+  },
+  '/request-access/': {
+    component: RequestAccessPage,
+    title: 'Request access · Splitcraft',
+    description: 'Splitcraft is invite-only during early access. Request an invite.',
   },
   '/compare/': {
     component: ComparePage,

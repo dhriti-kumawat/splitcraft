@@ -1,4 +1,4 @@
-import { act, screen, within } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MESSAGES } from '../../auth/api';
 import { ALEX, fakeAuth, PASSWORD } from '../../test/fakeAuth';
@@ -125,63 +125,19 @@ describe('password field', () => {
   });
 });
 
-describe('sign up', () => {
-  it('shows the strength meter and checklist as the password is typed', async () => {
-    const user = userEvent.setup();
+describe('sign up (invite-only)', () => {
+  it('explains that Splitcraft is invite-only instead of showing a form', async () => {
     await openAt('/signup');
-    expect(screen.queryByText('8+ characters')).not.toBeInTheDocument();
-    await user.type(field('Password'), 'tripdemo');
-    expect(screen.getByText('Weak')).toBeInTheDocument();
-    await user.type(field('Password'), '1T');
-    expect(screen.getByText('Good')).toBeInTheDocument();
-    const rules = screen.getByRole('list', { name: 'Password requirements' });
-    expect(within(rules).getByText('8+ characters').closest('li')).toHaveTextContent('(done)');
-    expect(within(rules).getByText('A symbol (optional)').closest('li')).toHaveTextContent(
-      '(to do)',
-    );
+    expect(screen.getByRole('heading', { name: 'Splitcraft is invite-only' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Full name')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login');
   });
 
-  it('requires name, a strong password and the terms', async () => {
-    const user = userEvent.setup();
-    await openAt('/signup');
-    await user.type(field('Work email'), 'new@example.com');
-    await user.type(field('Password'), 'short');
-    await user.click(submit('Create workspace'));
-    expect(screen.getByText('Enter your full name.')).toBeInTheDocument();
+  it('says why a GitHub sign-in was refused for an email not on the list', async () => {
+    await openAt('/login?error=Database%20error%20saving%20new%20user');
     expect(
-      screen.getByText('Use 8+ characters with a number and upper and lower case.'),
+      screen.getByText("Splitcraft is invite-only, and this email isn't on the list."),
     ).toBeInTheDocument();
-    expect(screen.getByText('Accept the terms to create your workspace.')).toBeInTheDocument();
-  });
-
-  async function fillSignUp(user: ReturnType<typeof userEvent.setup>) {
-    await user.type(field('Full name'), 'Sam Rivera');
-    await user.type(field('Work email'), 'sam@example.com');
-    await user.type(field('Password'), 'Samples99');
-    await user.click(screen.getByRole('checkbox'));
-    await user.click(submit('Create workspace'));
-  }
-
-  it('creates the workspace and offers to set up the first project', async () => {
-    const user = userEvent.setup();
-    const { calls } = await openAt('/signup');
-    await fillSignUp(user);
-    expect(
-      await screen.findByRole('heading', { name: 'Your workspace is ready' }),
-    ).toBeInTheDocument();
-    expect(calls).toContain('signUp:Sam Rivera:sam@example.com');
-    expect(screen.getByRole('link', { name: 'Set up first project →' })).toHaveAttribute(
-      'href',
-      '/projects',
-    );
-  });
-
-  it('asks to confirm the email when Supabase requires it', async () => {
-    const user = userEvent.setup();
-    await openAt('/signup', fakeAuth({ confirmSignUps: true }));
-    await fillSignUp(user);
-    expect(await screen.findByRole('heading', { name: 'Check your email' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('confirmation link to sam@example.com');
   });
 });
 
@@ -211,14 +167,15 @@ describe('forgot password', () => {
     }
   });
 
-  it('links between log in, sign up and forgot password', async () => {
+  it('links between log in and forgot password, with no sign-up link', async () => {
     const user = userEvent.setup();
     const { router } = await openAt('/login');
+    expect(screen.queryByRole('link', { name: 'Create an account' })).toBeNull();
+    expect(screen.getByText('Splitcraft is invite-only for now.')).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Forgot password?' }));
     expect(router.state.location.pathname).toBe('/forgot-password');
     await user.click(screen.getByRole('link', { name: '← Back to log in' }));
-    await user.click(screen.getByRole('link', { name: 'Create an account' }));
-    expect(router.state.location.pathname).toBe('/signup');
+    expect(router.state.location.pathname).toBe('/login');
   });
 });
 
