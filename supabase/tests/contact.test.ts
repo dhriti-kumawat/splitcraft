@@ -14,9 +14,15 @@ describe('parseContact', () => {
   it('accepts a question and trims it', () => {
     expect(parseContact(form({ email: '  ana@shop.test ', message: ' Hi \n' }))).toEqual({
       ok: true,
+      kind: 'question',
       email: 'ana@shop.test',
       message: 'Hi',
     });
+  });
+
+  it('tells access requests from questions', () => {
+    expect(parseContact(form({ kind: 'access' }))).toMatchObject({ ok: true, kind: 'access' });
+    expect(parseContact(form({ kind: 'other' }))).toMatchObject({ ok: true, kind: 'question' });
   });
 
   it('explains what is wrong', () => {

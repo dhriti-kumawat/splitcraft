@@ -66,6 +66,24 @@ and forms sent within 2 seconds of loading are treated as spam and silently drop
 (an HMAC of their IP, which is not stored) can send 5 messages an hour, and the form as a whole 200.
 Read messages in the Supabase dashboard's table editor under `contact_messages`.
 
+The /request-access/ form posts to the same endpoint with `kind: "access"`. After a message is
+stored, the function sends email through [Resend](https://resend.com) when these secrets are set:
+
+| Secret           | What it does                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| `RESEND_API_KEY` | Turns email on. Without it nothing is sent.                                                        |
+| `NOTIFY_EMAIL`   | Every question and access request is emailed here. Reply to the email to answer the sender.      |
+| `MAIL_FROM`      | Sender on a domain verified in Resend. Turns on the confirmation sent to people who ask for access (once a day per address). Without it, notices go from Resend's test sender, which can only mail the Resend account's own address. |
+
+```sh
+npx supabase secrets set RESEND_API_KEY=re_... NOTIFY_EMAIL=you@example.com
+npx supabase secrets set MAIL_FROM="Splitcraft <hello@your-domain.com>"
+npx supabase functions deploy contact --use-api
+```
+
+A failed email never fails the form: the message is already stored, and the error goes to the
+function's logs.
+
 **`POST /functions/v1/suggest`**: experiment ideas for the Experiments page (`{ projectId }`, signed
 in). It reads the project with the caller's token, so Row Level Security decides access, then fetches
 the main domain's home page, `sitemap.xml` and up to five more pages (pricing, sign-up and checkout
