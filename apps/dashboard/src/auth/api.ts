@@ -25,6 +25,10 @@ export interface AuthApi {
 }
 
 // Messages from PRODUCT_SPEC §8, plus the cases Supabase can return.
+/** The database refuses accounts for emails not on the allowlist (invite-only). */
+export const isInviteOnlyError = (text: string): boolean =>
+  /database error saving new user|invite-only/i.test(text);
+
 export const MESSAGES = {
   invalidLogin: 'Email or password is incorrect. Try again or reset your password.',
   notConfirmed: 'Confirm your email first. Check your inbox for the link we sent.',
@@ -33,6 +37,7 @@ export const MESSAGES = {
   providerOff: (provider: string) => `${provider} sign-in isn't set up yet. Use email for now.`,
   providerFailed: (reason: string) => `Couldn't log you in: ${reason}`,
   sso: "Single sign-on isn't available yet. Use email or another option.",
+  inviteOnly: "Splitcraft is invite-only, and this email isn't on the list.",
   offline: "Can't reach Splitcraft. Check your connection and try again.",
   unknown: 'Something went wrong. Try again.',
 } as const;

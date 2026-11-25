@@ -12,7 +12,7 @@ tracker code) and Recharts (results). Styles are CSS Modules with the tokens in 
 
 | Route                                       | Screen                                    |
 | ------------------------------------------- | ----------------------------------------- |
-| `/login`, `/login/link`, `/signup`, `/forgot-password`, `/reset-password` | Auth (email and password, magic link, GitHub, Google) |
+| `/login`, `/login/link`, `/signup`, `/forgot-password`, `/reset-password` | Auth (email and password, magic link, GitHub, Google). Invite-only: `/signup` explains it instead of a form |
 | `/invite/:token`                            | Accept a workspace invite                 |
 | `/projects`                                 | Projects, recent activity                 |
 | `/team`, `/workspace`                       | Team and invites; workspace settings      |

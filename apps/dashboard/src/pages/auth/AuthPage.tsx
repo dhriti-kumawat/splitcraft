@@ -1,11 +1,19 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { MESSAGES, type Provider } from '../../auth/api';
+import { isInviteOnlyError, MESSAGES, type Provider } from '../../auth/api';
 import { useAuth } from '../../auth/context';
 import { safeNext } from '../../auth/next';
 import { Logo } from '../../components/icons';
 import { passwordRules, strength, STRENGTH, validate, type FieldErrors, type Mode } from './rules';
 import styles from './AuthPage.module.css';
+
+/**
+ * Splitcraft is invite-only: the database only creates accounts for emails on its allowlist
+ * (migration 20261125100000_invite_only.sql), so /signup explains that instead of showing the
+ * form. Set to false to open sign-up again.
+ */
+const INVITE_ONLY: boolean = true;
+const inviteOnlySignup = (mode: Mode): boolean => INVITE_ONLY && mode === 'signup';
 
 const COPY: Record<Mode, { title: string; subtitle: string; cta: string; busy: string }> = {
   login: {
@@ -75,7 +83,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
   // A failed GitHub or Google login comes back as ?error=… (see RequireAuth).
   const [formError, setFormError] = useState(() => {
     const failed = mode === 'login' ? params.get('error') : null;
-    return failed ? MESSAGES.providerFailed(failed) : '';
+    return failed
+      ? isInviteOnlyError(failed)
+        ? MESSAGES.inviteOnly
+        : MESSAGES.providerFailed(failed)
+      : '';
   });
   const [result, setResult] = useState<Result | null>(null);
   const [resendIn, setResendIn] = useState(0);
@@ -304,6 +316,23 @@ export function AuthPage({ mode }: { mode: Mode }) {
         >
           Use a different account
         </button>
+      </div>
+    );
+  } else if (inviteOnlySignup(mode)) {
+    // Invite-only: accounts exist only for approved emails (the database refuses others),
+    // so there is no sign-up form.
+    body = (
+      <div className={styles.stack}>
+        <div className={styles.intro}>
+          <h1 className={styles.title}>Splitcraft is invite-only</h1>
+          <p className={styles.subtitle}>
+            Accounts are by invitation for now. If you have access, log in with your email or
+            GitHub.
+          </p>
+        </div>
+        <Link className={styles.cta} to={`/login${query}`}>
+          Log in
+        </Link>
       </div>
     );
   } else if (mode === 'reset' && state.status === 'signedOut') {
@@ -603,10 +632,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <div className={styles.switch}>
             {mode === 'login' && (
               <>
-                <span>New to Splitcraft?</span>
-                <Link to={`/signup${query}`} className={styles.link}>
-                  Create an account
-                </Link>
+                <span>Splitcraft is invite-only for now.</span>
               </>
             )}
             {mode === 'signup' && (

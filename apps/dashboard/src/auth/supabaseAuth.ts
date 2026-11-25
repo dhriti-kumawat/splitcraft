@@ -4,7 +4,7 @@ import {
   type SupabaseClient,
   type User,
 } from '@supabase/supabase-js';
-import { MESSAGES, type AuthApi, type AuthUser } from './api';
+import { isInviteOnlyError, MESSAGES, type AuthApi, type AuthUser } from './api';
 
 const KEEP_KEY = 'splitcraft_keep_logged_in';
 
@@ -42,6 +42,7 @@ export function messageFor(error: AuthError | Error): string {
   if (code === 'weak_password') return MESSAGES.weakPassword;
   if (code?.startsWith('over_') || text.includes('rate limit')) return MESSAGES.rateLimited;
   if (text.includes('failed to fetch') || text.includes('network')) return MESSAGES.offline;
+  if (isInviteOnlyError(text)) return MESSAGES.inviteOnly;
   return MESSAGES.unknown;
 }
 
