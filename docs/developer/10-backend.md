@@ -88,3 +88,18 @@ npx supabase functions deploy events --use-api
 npx supabase functions deploy contact --use-api
 npx supabase functions deploy suggest --use-api
 ```
+
+## Invite-only accounts
+
+New accounts (email, magic link, GitHub or Google) are created only for emails in
+`public.allowed_emails`; a trigger on `auth.users` refuses the rest, and the dashboard shows
+"Splitcraft is invite-only". The list has no API access and isn't in the repository. To let
+someone in, add their email in the production database:
+
+```sql
+insert into public.allowed_emails (email) values ('someone@example.com');
+```
+
+To open sign-up again, drop the trigger `auth_users_invite_only` and set `INVITE_ONLY` to false in
+`apps/dashboard/src/pages/auth/AuthPage.tsx`.
+

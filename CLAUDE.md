@@ -6,7 +6,8 @@ A/B testing platform (portfolio project): a small client-side SDK plus a dashboa
 - Monorepo with npm workspaces
 - `packages/sdk` — TypeScript, Vite library mode, Vitest. Main bundle < 8.5 KB gzipped (QA panel is a separate file, < 3 KB), no runtime dependencies. `npm run size -w packages/sdk` checks it.
 - `apps/dashboard` — React + Vite + TypeScript, React Router, Monaco editor for variant code, Recharts for results.
-- `apps/web` — marketing site: home page plus `/tour/`, `/pricing/`, `/compare/`, `/use-cases/`, `/integrations/`, `/changelog/` (`src/Pages.tsx`, each pre-rendered).
+- `apps/web` — marketing site: home page plus `/tour/`, `/pricing/`, `/compare/`, `/use-cases/`, `/integrations/`, `/changelog/`, `/request-access/` (`src/Pages.tsx`, each pre-rendered). Splitcraft is invite-only: calls to action say "Request access" and "View demo", never "free".
+- `apps/dashboard/demo.html` — public read-only demo (example data, no account, nothing saved), built with the app.
 - Backend — Supabase (Postgres, Auth, Row Level Security). No custom server in v1.
 
 ## Design

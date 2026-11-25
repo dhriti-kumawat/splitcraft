@@ -26,14 +26,18 @@ alter default privileges in schema public grant all on functions to anon, authen
 
 export type Db = PGlite;
 
-/** A fresh database with every migration applied. */
-export async function createDb(): Promise<Db> {
+/**
+ * A fresh database with every migration applied. Tests create users freely, so the
+ * invite-only rule on auth.users is off unless `inviteOnly` asks for it.
+ */
+export async function createDb({ inviteOnly = false } = {}): Promise<Db> {
   const db = new PGlite();
   await db.exec(SUPABASE_STUB);
   const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith('.sql'))
     .sort();
   for (const file of files) await db.exec(readFileSync(new URL(file, migrationsDir), 'utf8'));
+  if (!inviteOnly) await db.exec('alter table auth.users disable trigger auth_users_invite_only');
   return db;
 }
 
