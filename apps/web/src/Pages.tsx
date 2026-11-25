@@ -10,11 +10,14 @@ function PageShell({
   title,
   lede,
   children,
+  cta = true,
 }: {
   eyebrow: string;
   title: string;
   lede: string;
   children: ReactNode;
+  /** The closing "Request access / View demo" band; off on the request access page itself. */
+  cta?: boolean;
 }) {
   return (
     <div className={home.page}>
@@ -31,19 +34,21 @@ function PageShell({
           <p className={`${home.lede} ${styles.lede}`}>{lede}</p>
         </section>
         <div className={`${home.wrap} ${styles.body}`}>{children}</div>
-        <section className={`${home.wrap} ${styles.cta}`} aria-labelledby="cta-title">
-          <h2 className={styles.ctaTitle} id="cta-title">
-            Run your first test today.
-          </h2>
-          <div className={styles.ctaRow}>
-            <a className={home.primary} href={REQUEST_ACCESS_URL}>
-              Request access
-            </a>
-            <a className={home.secondary} href={DEMO_URL}>
-              View demo
-            </a>
-          </div>
-        </section>
+        {cta && (
+          <section className={`${home.wrap} ${styles.cta}`} aria-labelledby="cta-title">
+            <h2 className={styles.ctaTitle} id="cta-title">
+              Run your first test today.
+            </h2>
+            <div className={styles.ctaRow}>
+              <a className={home.primary} href={REQUEST_ACCESS_URL}>
+                Request access
+              </a>
+              <a className={home.secondary} href={DEMO_URL}>
+                View demo
+              </a>
+            </div>
+          </section>
+        )}
       </main>
       <Footer home={false} />
     </div>
@@ -178,96 +183,125 @@ export function RequestAccessPage() {
       eyebrow="Early access"
       title="Request access to Splitcraft."
       lede="Splitcraft is invite-only while it opens to a small group of teams. Tell us a little about your site and we'll reply by email."
+      cta={false}
     >
-      {state.status === 'sent' ? (
-        <div className={`${home.contactDone} ${styles.access}`} role="status">
-          <b>Thanks, your request is in.</b>
-          <span>We&apos;ll reply to {email}. Meanwhile, you can look around the demo.</span>
-          <a className={home.secondary} href={DEMO_URL}>
-            View demo
-          </a>
-        </div>
-      ) : (
-        <form
-          className={`${home.contact} ${styles.access}`}
-          onSubmit={submit}
-          aria-labelledby={`${id}-t`}
-        >
-          <h2 className={home.contactTitle} id={`${id}-t`}>
-            Your details
+      <div className={styles.accessLayout}>
+        <aside className={styles.accessAside} aria-labelledby={`${id}-next`}>
+          <h2 className={styles.accessAsideTitle} id={`${id}-next`}>
+            What happens next
           </h2>
-          <label className={home.contactLabel} htmlFor={`${id}-name`}>
-            Your name
-          </label>
-          <input
-            id={`${id}-name`}
-            className={home.contactInput}
-            required
-            maxLength={100}
-            autoComplete="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <label className={home.contactLabel} htmlFor={`${id}-email`}>
-            Work email
-          </label>
-          <input
-            id={`${id}-email`}
-            className={home.contactInput}
-            type="email"
-            required
-            maxLength={254}
-            autoComplete="email"
-            placeholder="you@company.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <label className={home.contactLabel} htmlFor={`${id}-site`}>
-            Your site
-          </label>
-          <input
-            id={`${id}-site`}
-            className={home.contactInput}
-            required
-            maxLength={200}
-            inputMode="url"
-            placeholder="yourcompany.com"
-            value={site}
-            onChange={(e) => setSite(e.target.value)}
-          />
-          <label className={home.contactLabel} htmlFor={`${id}-goal`}>
-            What would you like to test?
-          </label>
-          <textarea
-            id={`${id}-goal`}
-            className={home.contactInput}
-            maxLength={1200}
-            rows={3}
-            placeholder="E.g. the checkout button, pricing page copy, a new onboarding step"
-            value={goal}
-            onChange={(e) => setGoal(e.target.value)}
-          />
-          {/* Hidden from people; bots fill it in. */}
-          <input
-            className={home.contactTrap}
-            type="text"
-            name="website"
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            value={trap}
-            onChange={(e) => setTrap(e.target.value)}
-          />
-          {state.status === 'error' && (
-            <p className={home.contactError} role="alert">
-              {state.message}
-            </p>
-          )}
-          <button type="submit" className={home.contactSend} disabled={state.status === 'sending'}>
-            {state.status === 'sending' ? 'Sending…' : 'Request access'}
-          </button>
-        </form>
-      )}
+          <ol className={styles.accessSteps}>
+            <li>
+              <b>We read every request.</b>
+              <span>You hear back by email, at the address you give.</span>
+            </li>
+            <li>
+              <b>We set up your workspace.</b>
+              <span>You get an invite for your work email, plus anyone you add.</span>
+            </li>
+            <li>
+              <b>You add the snippet and launch.</b>
+              <span>One script tag, then your first test from the dashboard.</span>
+            </li>
+          </ol>
+          <div className={styles.accessDemo}>
+            <b>Want to look around first?</b>
+            <span>The demo opens the dashboard with example data. No account needed.</span>
+            <a className={home.secondary} href={DEMO_URL}>
+              View demo
+            </a>
+          </div>
+        </aside>
+        {state.status === 'sent' ? (
+          <div className={styles.accessDone} role="status">
+            <b>Thanks, your request is in.</b>
+            <span>We&apos;ll reply to {email}. Meanwhile, you can look around the demo.</span>
+            <a className={home.secondary} href={DEMO_URL}>
+              View demo
+            </a>
+          </div>
+        ) : (
+          <form className={styles.access} onSubmit={submit} aria-labelledby={`${id}-t`}>
+            <h2 className={styles.accessTitle} id={`${id}-t`}>
+              Your details
+            </h2>
+            <label className={styles.accessLabel} htmlFor={`${id}-name`}>
+              Your name
+            </label>
+            <input
+              id={`${id}-name`}
+              className={styles.accessInput}
+              required
+              maxLength={100}
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <label className={styles.accessLabel} htmlFor={`${id}-email`}>
+              Work email
+            </label>
+            <input
+              id={`${id}-email`}
+              className={styles.accessInput}
+              type="email"
+              required
+              maxLength={254}
+              autoComplete="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <label className={styles.accessLabel} htmlFor={`${id}-site`}>
+              Your site
+            </label>
+            <input
+              id={`${id}-site`}
+              className={styles.accessInput}
+              required
+              maxLength={200}
+              inputMode="url"
+              placeholder="yourcompany.com"
+              value={site}
+              onChange={(e) => setSite(e.target.value)}
+            />
+            <label className={styles.accessLabel} htmlFor={`${id}-goal`}>
+              What would you like to test?
+            </label>
+            <textarea
+              id={`${id}-goal`}
+              className={styles.accessInput}
+              maxLength={1200}
+              rows={3}
+              placeholder="E.g. the checkout button, pricing page copy, a new onboarding step"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+            {/* Hidden from people; bots fill it in. */}
+            <input
+              className={home.contactTrap}
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              value={trap}
+              onChange={(e) => setTrap(e.target.value)}
+            />
+            {state.status === 'error' && (
+              <p className={styles.accessError} role="alert">
+                {state.message}
+              </p>
+            )}
+            <button
+              type="submit"
+              className={`${home.primary} ${styles.accessSend}`}
+              disabled={state.status === 'sending'}
+            >
+              {state.status === 'sending' ? 'Sending…' : 'Request access'}
+            </button>
+          </form>
+        )}
+      </div>
     </PageShell>
   );
 }
