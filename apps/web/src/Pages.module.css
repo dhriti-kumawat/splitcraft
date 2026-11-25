@@ -374,12 +374,117 @@
   }
 }
 
-/* Request access: a light form card, like the pricing card. */
+/* Request access: next steps on the left, the form on the right. */
+.accessLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  gap: 64px;
+  align-items: start;
+  padding-bottom: 96px;
+}
+
+.accessLayout > :last-child {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.accessAside {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 8px;
+}
+
+.accessAsideTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.accessSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.accessSteps li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 48px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+  counter-increment: step;
+}
+
+.accessSteps li::before {
+  content: counter(step);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: 600 14px var(--font-mono);
+}
+
+.accessSteps b {
+  color: var(--ink);
+}
+
+.accessDemo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.accessDemo b {
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.accessDemo a {
+  margin-top: 12px;
+  height: 40px;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .accessLayout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+    padding-bottom: 56px;
+  }
+
+  .accessLayout > :last-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+/* The form: a light card, like the pricing card. */
 .access,
 .accessDone {
   display: flex;
   flex-direction: column;
-  max-width: 560px;
   padding: 32px;
   border-radius: 20px;
   border: 1px solid #b9d8cc;
