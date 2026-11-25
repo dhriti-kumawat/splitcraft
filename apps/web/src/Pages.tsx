@@ -158,6 +158,7 @@ export function RequestAccessPage() {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
+          kind: 'access',
           email,
           message: `Access request\nName: ${name}\nSite: ${site}\nWants to test: ${goal}`.slice(
             0,

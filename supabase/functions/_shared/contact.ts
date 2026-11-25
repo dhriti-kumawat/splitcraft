@@ -6,11 +6,16 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Humans take longer than this to type a question; bots post at once. */
 export const MIN_FILL_MS = 2000;
 
+/** A question from the contact form, or a request from /request-access/. */
+export type ContactKind = 'question' | 'access';
+
 export type ParsedContact =
-  { ok: true; email: string; message: string } | { ok: false; error: string; spam?: true };
+  | { ok: true; kind: ContactKind; email: string; message: string }
+  | { ok: false; error: string; spam?: true };
 
 /**
- * `{ email, message, website, elapsedMs }`. `website` is a hidden field people never fill
+ * `{ email, message, kind, website, elapsedMs }`. `kind` is "access" for an access request,
+ * anything else is a question. `website` is a hidden field people never fill
  * in; a filled one, or a form sent within two seconds of loading, is treated as spam.
  */
 export function parseContact(body: string): ParsedContact {
@@ -23,7 +28,7 @@ export function parseContact(body: string): ParsedContact {
   }
   if (!data || typeof data !== 'object' || Array.isArray(data))
     return { ok: false, error: 'invalid form' };
-  const { email, message, website, elapsedMs } = data as Record<string, unknown>;
+  const { email, message, kind, website, elapsedMs } = data as Record<string, unknown>;
   if (typeof website === 'string' && website.trim())
     return { ok: false, error: 'spam', spam: true };
   if (typeof elapsedMs === 'number' && elapsedMs < MIN_FILL_MS)
@@ -35,7 +40,7 @@ export function parseContact(body: string): ParsedContact {
   if (!m) return { ok: false, error: 'Write your question.' };
   if (m.length > MAX_MESSAGE)
     return { ok: false, error: `Keep it under ${MAX_MESSAGE} characters.` };
-  return { ok: true, email: e, message: m };
+  return { ok: true, kind: kind === 'access' ? 'access' : 'question', email: e, message: m };
 }
 
 /** HMAC-SHA-256 of the sender's IP, hex. Keeps the IP itself out of the database. */
